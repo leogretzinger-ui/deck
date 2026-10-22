@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+# Jobs that execute repository code never hold release-writing authority.
+permissions:
+  contents: read
+
+jobs:
+  # Public mirrors opt in with their exact owner/name in this Actions variable.
+  # Private repositories and forks remain ineligible, even with an opt-in.
+  release-create:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.fork == false &&
+      (github.repository == 'noisefloor-oss/deck' ||
+       vars.NOISEDECK_PUBLIC_RELEASE_REPOSITORY == github.repository)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      # Existing releases, including drafts and curated notes, survive.
+      - name: Ensure the release for the tag exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && exit 0
+          gh release create "$GITHUB_REF_NAME" --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --notes "noise-deck $GITHUB_REF_NAME — binaries and SHA256SUMS attached by the release workflow."
+
+  build:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.fork == false &&
+      (github.repository == 'noisefloor-oss/deck' ||
+       vars.NOISEDECK_PUBLIC_RELEASE_REPOSITORY == github.repository)
+    needs: release-create
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install pinned pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.18.0
+          run_install: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26.5.0
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+
+      - name: Validate the release tag
+        # Make expands VERSION into a shell command when setting linker flags.
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "expected a vX.Y.Z release tag, optionally with prerelease or build metadata" >&2
+            exit 1
+          fi
+
+      - name: Build the binary with the embedded frontend
+        run: NOISEDECK_FONTS=free make build VERSION="${GITHUB_REF_NAME#v}"
+
+      - name: Smoke-run version and help outside the checkout
+        run: |
+          bin="$GITHUB_WORKSPACE/build/noise-deck"
+          smoke=$(mktemp -d)
+          trap 'rmdir "$smoke"' EXIT
+          cd "$smoke"
+          expected="${GITHUB_REF_NAME#v}"
+          actual=$("$bin" version)
+          if [ "$actual" != "$expected" ]; then
+            echo "version smoke failed: got '$actual', want '$expected'" >&2
+            exit 1
+          fi
+          "$bin" --help
+
+      - name: Name the release asset
+        run: cp build/noise-deck noise-deck-linux-${{ matrix.arch }}
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: noise-deck-linux-${{ matrix.arch }}
+          path: noise-deck-linux-${{ matrix.arch }}
+          if-no-files-found: error
+
+  asset-publish:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.fork == false &&
+      (github.repository == 'noisefloor-oss/deck' ||
+       vars.NOISEDECK_PUBLIC_RELEASE_REPOSITORY == github.repository)
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      # Hash and upload the complete matrix without executing downloaded assets.
+      - name: Download workflow artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: noise-deck-linux-*
+          merge-multiple: true
+
+      - name: Attach binaries and checksums to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha256sum noise-deck-linux-* > SHA256SUMS
+          cat SHA256SUMS
+          gh release upload "$GITHUB_REF_NAME" \
+            noise-deck-linux-* SHA256SUMS --clobber

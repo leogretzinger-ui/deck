@@ -1,0 +1,87 @@
+name: Public image build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NOISE_TASKS_REPO: ${{ vars.NOISE_TASKS_REPO }}
+  NOISE_SDLC_REPO: ${{ vars.NOISE_SDLC_REPO }}
+
+concurrency:
+  group: public-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Public mirrors opt in with their exact owner/name in this Actions variable.
+  # Private repositories and forks remain ineligible, even with an opt-in.
+  public-image:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.fork == false &&
+      (github.repository == 'noisefloor-oss/deck' ||
+       vars.NOISEDECK_PUBLIC_RELEASE_REPOSITORY == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      NOISEDECK_FONTS: free
+      NOISEDECK_BUILD_VERSION: public-${{ github.sha }}
+      NOISEDECK_IMAGE_TAG: public-${{ github.sha }}
+    steps:
+      - name: Check out source without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Reclaim hosted runner disk for the runtime image
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache \
+            /usr/share/dotnet /opt/ghc /usr/local/share/powershell
+          df -h /
+
+      - name: Extract the source archive
+        run: |
+          export_dir="$(mktemp -d "${RUNNER_TEMP}/deck-public.XXXXXX")"
+          git archive HEAD | tar --extract --directory "${export_dir}"
+          echo "EXPORT_DIR=${export_dir}" >> "${GITHUB_ENV}"
+          docker_config="$(mktemp -d "${RUNNER_TEMP}/deck-docker.XXXXXX")"
+          echo "DOCKER_CONFIG=${docker_config}" >> "${GITHUB_ENV}"
+
+      - name: Build the documented Compose image without secrets
+        working-directory: ${{ env.EXPORT_DIR }}
+        run: |
+          env -u GH_TOKEN -u GITHUB_TOKEN -u NOISE_TASKS_GITHUB_TOKEN \
+            docker compose --env-file /dev/null config --quiet
+          env -u GH_TOKEN -u GITHUB_TOKEN -u NOISE_TASKS_GITHUB_TOKEN \
+            docker compose --env-file /dev/null build app
+
+      - name: Verify packaged public tools
+        working-directory: ${{ env.EXPORT_DIR }}
+        run: |
+          tasks_version="$(sed -n 's/^ARG NOISE_TASKS_VERSION=//p' Dockerfile)"
+          sdlc_version="$(sed -n 's/^ARG NOISE_SDLC_VERSION=//p' Dockerfile)"
+          visual_diff_version="$(sed -n 's/^ARG NOISE_VISUAL_DIFF_VERSION=//p' Dockerfile)"
+          docker run --rm --entrypoint sh \
+            --env EXPECTED_DECK_VERSION="${NOISEDECK_BUILD_VERSION}" \
+            --env EXPECTED_TASKS_VERSION="${tasks_version}" \
+            --env EXPECTED_SDLC_VERSION="${sdlc_version}" \
+            --env EXPECTED_VISUAL_DIFF_VERSION="${visual_diff_version}" \
+            "deck:${NOISEDECK_IMAGE_TAG}" -eu -c '
+              test "$(noise deck version)" = "${EXPECTED_DECK_VERSION}"
+              test "$(noise tasks version)" = "noise-tasks ${EXPECTED_TASKS_VERSION}"
+              test "$(noise sdlc --version)" = "${EXPECTED_SDLC_VERSION}"
+              test "$(noise visual-diff version)" = "noise-visual-diff ${EXPECTED_VISUAL_DIFF_VERSION}"
+              noise tasks context --json | node -e '\''
+                let input = "";
+                process.stdin.on("data", chunk => input += chunk);
+                process.stdin.on("end", () => {
+                  const context = JSON.parse(input);
+                  if (context.schemaVersion !== 5 || context.engineSchemaVersion !== 5) process.exit(1);
+                });
+              '\''
+            '

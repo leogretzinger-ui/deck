@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      target: mempalace
+    environment:
+      MEMPALACE_MCP_IDLE_HOURS: "0"
+      MEMPALACE_MCP_HTTP_ALLOW_INSECURE_NO_TOKEN: "1"
+      # The relay palace: how often it pulls from its
+      # peers, and the bearer it requires when the host exposes it to a
+      # tailnet. Empty means token-free on loopback.
+      NOISEDECK_RELAY_SYNC_INTERVAL: ${NOISEDECK_RELAY_SYNC_INTERVAL:-2}
+      NOISEDECK_RELAY_TOKEN: ${NOISEDECK_RELAY_TOKEN:-}
+      NOISEDECK_RELAY_MODE: ${NOISEDECK_RELAY_MODE:-local}
+    # The relay palace on the host's loopback, for the tailnet proxy that
+    # forwards only /sync and /healthz to it (docs/a2a-chat.md, Across
+    # hosts). Loopback only: nothing on the network reaches it directly.
+    ports:
+      - "127.0.0.1:${NOISEDECK_RELAY_HOST_PORT:-18766}:8766"
+    volumes:
+      - type: bind
+        source: ${NOISEDECK_MEMPALACE_HOST_PATH:?set the existing MemPalace store path}
+        target: /home/agent/.mempalace

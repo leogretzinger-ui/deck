@@ -1,0 +1,178 @@
+/* Shared by the production enrollment gate and its deterministic preview. */
+.enrollment {
+  --type-caps: normal;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--color-surface);
+  line-height: var(--type-body-lh);
+  letter-spacing: -.002em;
+}
+.enrollment::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(rgb(251 252 254 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(251 252 254 / .05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 78% 68% at 50% 42%, #000, transparent 100%);
+}
+.enroll-content { width: 520px; max-width: 100%; display: flex; flex-direction: column; gap: 18px; }
+.enroll-content strong { font-weight: 400; color: var(--color-text-primary); }
+.enroll-logo { display: block; height: 22px; width: auto; }
+.enroll-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.enroll-step { font-size: var(--type-micro-size); letter-spacing: var(--type-label-ls); color: var(--color-text-tertiary); }
+.enroll-intro { display: flex; flex-direction: column; gap: 7px; }
+.enroll-title { font-family: var(--font-ui); font-size: var(--type-title-2-size); line-height: var(--type-title-2-lh); letter-spacing: var(--type-title-2-ls); font-variant-caps: var(--type-caps); font-weight: var(--weight-medium); text-wrap: pretty; }
+.enroll-copy { font-size: var(--type-body-size); line-height: var(--type-body-lh); color: var(--color-text-secondary); text-wrap: pretty; }
+.enroll-copy-small { font-size: var(--type-body-sm-size); line-height: 1.55; color: var(--color-text-secondary); text-wrap: pretty; }
+.enroll-caption { font-size: var(--type-caption-size); line-height: var(--type-caption-lh); color: var(--color-text-tertiary); }
+.enroll-caption .enroll-mono { font-size: inherit; }
+.enroll-eyebrow { font-size: var(--type-label-sm-size); font-variant-caps: var(--type-caps); letter-spacing: var(--type-label-ls); color: var(--color-text-tertiary); }
+.enroll-mono { font-family: var(--font-mono); font-size: min(var(--type-mono-size), calc(var(--type-body-size) * var(--type-mono-xh-ratio))); overflow-wrap: anywhere; }
+.enroll-card { padding: var(--card-pad); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface-card); }
+.enroll-flush { padding: 0; overflow: hidden; }
+.enroll-muted { background: var(--color-surface-muted); }
+.enroll-selected { border-color: var(--color-accent-border); background: var(--color-wash-selected); }
+.enroll-button { display: inline-flex; flex: none; align-self: flex-start; align-items: center; justify-content: center; gap: 8px; min-height: var(--control-h-md); padding: 0 var(--control-px); border: 1px solid transparent; border-radius: var(--radius-control); font-family: var(--font-ui); font-size: var(--type-button-size); font-weight: var(--weight-medium); font-variant-caps: normal; letter-spacing: var(--type-button-ls); line-height: 1; white-space: nowrap; cursor: pointer; }
+.enroll-button:disabled { opacity: .45; cursor: not-allowed; }
+.enroll-button-primary { color: var(--color-text-on-accent); background: var(--color-accent); }
+.enroll-button-primary:hover:not(:disabled) { background: var(--color-accent-hover); }
+.enroll-button-secondary { color: var(--color-text-primary); background: var(--color-surface-card); border-color: var(--color-border-strong); }
+.enroll-button-ghost, .enroll-button-password-choice { color: var(--color-text-secondary); background: transparent; }
+.enroll-button-secondary:hover:not(:disabled), .enroll-button-ghost:hover:not(:disabled), .enroll-button-password-choice:hover:not(:disabled), .enroll-button:focus-visible { background: var(--color-wash-hover); color: var(--color-text-primary); }
+.enroll-button-small { min-height: var(--control-h-sm); padding: 0 10px; font-size: 13px; border-radius: var(--radius-control-sm); }
+.enroll-actions { display: flex; align-items: center; gap: 10px; }
+.enroll-actions-vertical { display: flex; flex-direction: column; gap: 10px; }
+.enroll-disclosure { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: var(--type-body-sm-size); letter-spacing: normal; color: var(--color-accent); cursor: pointer; }
+.enroll-button[data-enroll-action="google-sign-in"] { gap: 10px; }
+.enroll-identity { margin: 0; display: flex; flex-direction: column; }
+.enroll-identity > div { display: flex; align-items: baseline; gap: 14px; padding: 11px 14px; border-bottom: 1px solid var(--color-border); }
+.enroll-identity > div:last-child { border-bottom: 0; }
+.enroll-identity dt { flex: none; width: 96px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); }
+.enroll-identity dd { font-size: var(--type-body-sm-size); color: var(--color-text-primary); }
+.enroll-identity dd.enroll-mono { font-size: min(var(--type-mono-size), calc(var(--type-body-size) * var(--type-mono-xh-ratio))); }
+.enroll-identity dd.enroll-secondary { color: var(--color-text-secondary); }
+.enroll-protection { display: flex; flex-direction: column; gap: 12px; }
+.enroll-protection > div { display: flex; gap: 10px; font-size: var(--type-body-sm-size); line-height: 1.5; color: var(--color-text-secondary); }
+.enroll-protection svg { margin-top: 3px; color: var(--color-text-tertiary); }
+.enroll-protection > div:first-child svg { color: var(--color-success); }
+.enroll-protection > div:nth-child(2) svg { color: var(--color-warning); }
+.enroll-card-heading { display: flex; align-items: center; gap: 10px; }
+.enroll-card-heading h2 { flex: 1; font-family: var(--font-ui); font-size: var(--type-body-size); font-weight: var(--weight-medium); }
+.enroll-badge { display: inline-flex; align-items: center; height: 18px; padding: 0 7px calc(2 * var(--caps-nudge)); border: 1px solid transparent; border-radius: var(--radius-pill); font-size: var(--type-label-sm-size); font-variant-caps: var(--type-caps); letter-spacing: var(--type-label-ls); line-height: 1; font-weight: var(--weight-medium); white-space: nowrap; }
+.enroll-badge-accent { color: var(--color-accent-on-tint); background: var(--color-accent-tint); border-color: var(--color-accent-border); }
+.enroll-badge-warning { color: var(--color-warning-on-tint); background: var(--color-warning-tint); }
+.enroll-method-card { display: flex; flex-direction: column; gap: 11px; }
+.enroll-status { display: flex; align-items: center; gap: 8px; font-size: var(--type-label-sm-size); font-variant-caps: var(--type-caps); letter-spacing: var(--type-label-ls); }
+.enroll-accent { color: var(--color-accent); }
+.enroll-primary { color: var(--color-text-primary); }
+.enroll-success { color: var(--color-success); }
+.enroll-error { color: var(--color-error); }
+.enroll-warning { color: var(--color-warning); }
+.enroll-tertiary { color: var(--color-text-tertiary); }
+.enroll-confirm-intro, .enroll-incompatible-intro { gap: 9px; }
+.enroll-why { display: flex; flex-direction: column; gap: 6px; }
+.enroll-why h2 { font-size: var(--type-body-sm-size); font-weight: var(--weight-medium); }
+.enroll-why .enroll-copy-small { line-height: 1.5; }
+.enroll-check-row { display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--color-border); font-size: var(--type-body-sm-size); color: var(--color-text-secondary); }
+.enroll-check-row:last-child { border-bottom: 0; }
+.enroll-symbol { display: inline-flex; flex: none; }
+.enroll-checking .enroll-check-row { padding: 13px 15px; }
+.enroll-waiting { opacity: .45; }
+.enroll-empty-circle { display: block; width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--color-text-tertiary); }
+.enroll-spinner { display: inline-block; flex: none; width: 15px; height: 15px; border: 1.5px solid var(--color-border-strong); border-top-color: var(--color-accent); border-radius: 50%; animation: enroll-spin 1s linear infinite; }
+@keyframes enroll-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .enroll-spinner { animation: none; } }
+.enroll-form { display: flex; flex-direction: column; gap: 18px; }
+.enroll-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.enroll-field > span:first-child { font-size: var(--type-label-size); font-weight: var(--weight-medium); font-variant-caps: var(--type-caps); letter-spacing: var(--type-label-ls); color: var(--color-text-secondary); }
+.enroll-input { width: 100%; height: var(--control-h-md); padding: 0 var(--field-px); font-family: var(--font-ui); font-size: var(--type-control-size); color: var(--color-text-primary); background: var(--color-surface-card); border: 1px solid var(--color-border-strong); border-radius: var(--radius-control); }
+.enroll-input::placeholder { color: var(--color-text-tertiary); }
+.enroll-input:focus { border-color: var(--color-border-focus); }
+.enroll-input:disabled { opacity: .45; }
+.enroll-length-meter { display: flex; gap: 4px; margin-top: 2px; }
+.enroll-length-meter i { flex: 1; height: 3px; border-radius: 2px; background: var(--color-border); }
+.enroll-length-meter[data-long-enough="true"] i:nth-child(-n+3) { background: var(--color-success); }
+.enroll-warning-copy { display: flex; gap: 10px; }
+.enroll-warning-copy > svg { margin-top: 2px; color: var(--color-warning); }
+.enroll-warning-copy .enroll-copy-small { line-height: 1.5; }
+.enroll-key-card { display: flex; flex-direction: column; gap: 14px; background: var(--color-surface-sunken); }
+.enroll-key-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.enroll-key-heading .enroll-mono { font-size: inherit; color: var(--color-text-secondary); }
+.enroll-key-groups { display: grid; grid-template-columns: repeat(4, max-content); gap: 7px 22px; font-family: var(--font-mono); font-size: 15px; line-height: 1.5; letter-spacing: .04em; }
+.enroll-key-check { display: flex; align-items: baseline; gap: 10px; padding-top: 11px; border-top: 1px solid var(--color-border); }
+.enroll-key-check > span:last-child { font-family: var(--font-mono); font-size: 15px; letter-spacing: .04em; color: var(--color-text-secondary); }
+.enroll-kit-note { display: flex; flex-direction: column; gap: 9px; }
+.enroll-kit-note .enroll-copy-small { line-height: 1.5; }
+.enroll-kit-note .enroll-warning-copy { gap: 9px; }
+.enroll-kit-note .enroll-mono { color: var(--color-text-primary); }
+.enroll-recovery-input { height: auto; padding: 12px 14px; resize: none; min-height: 88px; font-family: var(--font-mono); font-size: var(--type-mono-size); line-height: 1.6; }
+.enroll-input-error { border-color: var(--color-error); }
+.enroll-input-warning { border-color: var(--color-warning); }
+.enroll-group-editor { position: relative; display: block; }
+.enroll-group-preview { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 13px 14px; border: 1px solid var(--color-warning); border-radius: var(--radius-control); background: var(--color-surface-card); font-family: var(--font-mono); font-size: var(--type-mono-size); letter-spacing: .03em; color: var(--color-text-secondary); }
+.enroll-malformed-group { color: var(--color-warning); border-bottom: 1px solid var(--color-warning); }
+.enroll-group-editor .enroll-recovery-input { position: absolute; inset: 0; height: 100%; min-height: 0; opacity: 0; }
+.enroll-group-editor:focus-within .enroll-recovery-input { opacity: 1; }
+.enroll-group-editor:focus-within .enroll-group-preview { visibility: hidden; }
+.enroll-import-row, .enroll-verify-actions { gap: 12px; }
+.enroll-expired-note { display: flex; flex-direction: column; gap: 8px; }
+.enroll-pending-card { display: flex; flex-direction: column; gap: 10px; }
+.enrollment[data-enrollment="invitation"] .enroll-content { gap: 20px; }
+.enrollment[data-enrollment="invitation"] .enroll-logo, .enrollment[data-enrollment="invitation-expired"] .enroll-logo, .enrollment[data-enrollment="interrupted"] .enroll-logo { height: 24px; }
+.enrollment[data-boundary-open="true"] .enroll-content { gap: 18px; }
+.enrollment[data-enrollment="invitation-expired"] .enroll-content { width: 460px; }
+.enrollment:is([data-enrollment="interrupted"], [data-enrollment="checking-method"], [data-enrollment="password"], [data-enrollment="method-ready"]) .enroll-content { width: 480px; }
+.enrollment:is([data-enrollment="choose-method"], [data-enrollment="passkey-pending"], [data-enrollment="recovery-verify"]) .enroll-content { width: 560px; }
+.enrollment:is([data-enrollment="choose-method"], [data-enrollment="passkey-pending"], [data-enrollment="passkey-incompatible"], [data-enrollment="checking-method"]) .enroll-content { gap: 20px; }
+.enrollment[data-enrollment="passkey-pending"] .enroll-content { opacity: .45; }
+.enrollment[data-enrollment="recovery-save"] .enroll-content { width: 640px; }
+.enroll-mobile { display: none; }
+@media (max-width: 600px) {
+  .enrollment { padding: 24px 20px; }
+  .enroll-content, .enrollment[data-enrollment] .enroll-content { gap: 16px; }
+  .enroll-desktop, .enroll-identity > .enroll-desktop { display: none; }
+  .enroll-mobile { display: inline; }
+  .enroll-logo, .enrollment .enroll-logo { height: 20px; }
+  .enroll-brand-row { gap: 12px; }
+  .enroll-intro { gap: 6px; }
+  .enroll-copy { font-size: var(--type-body-sm-size); line-height: 1.55; }
+  .enroll-button { width: 100%; min-height: 44px; }
+  .enroll-actions-vertical { gap: 16px; }
+  .enroll-method-card { gap: 10px; }
+  .enroll-method-card .enroll-copy-small { line-height: 1.5; }
+  .enroll-card-heading { gap: 9px; }
+  .enroll-card-heading h2 { font-size: var(--type-body-sm-size); }
+  .enroll-button-password-choice { color: var(--color-text-primary); border-color: var(--color-border-strong); background: var(--color-surface-card); }
+  .enroll-incompatible-intro { display: contents; }
+  .enroll-incompatible-intro .enroll-status > svg { width: 14px; height: 14px; }
+  .enrollment[data-enrollment="passkey-incompatible"] .enroll-title { font-size: var(--type-title-3-size); line-height: var(--type-title-3-lh); letter-spacing: var(--type-title-3-ls); }
+  .enrollment[data-enrollment="invitation"] .enroll-content { gap: 18px; }
+  .enrollment[data-enrollment="invitation"] .enroll-logo { height: 22px; }
+  .enroll-identity > div { gap: 12px; padding: 11px 13px; }
+  .enroll-identity > div:nth-child(3) { border-bottom: 0; }
+  .enroll-identity dt { width: 76px; }
+  .enroll-disclosure { min-height: 44px; }
+  .enroll-key-card { gap: 12px; }
+  .enroll-key-heading { gap: 8px; }
+  .enroll-key-groups { grid-template-columns: repeat(3, max-content); column-gap: 18px; }
+  .enroll-key-check { padding-top: 10px; }
+  .enroll-save-actions > button { flex: 1; width: auto; }
+  .enroll-save-actions > .enroll-desktop { display: none; }
+  .enroll-recovery-input { height: calc(4lh + 26px); min-height: 0; }
+  .enroll-form { gap: 16px; }
+  .enroll-import-row { order: 3; }
+  .enroll-import-row button { background: transparent; border-color: transparent; color: var(--color-text-secondary); }
+  .enroll-verify-actions { flex-wrap: wrap; }
+}
+@media print {
+  .enrollment::before, .enroll-button, .enroll-step, .enroll-kit-note, .enroll-actions { display: none; }
+  .enrollment { min-height: 0; background: white; color: black; }
+  .enroll-key-card { break-inside: avoid; }
+}

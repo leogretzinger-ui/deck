@@ -1,0 +1,18 @@
+[Unit]
+Description=Reconcile Deck preview DNS registrations
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/deck-preview-dns/preview-dns.py /etc/deck-preview-dns/config.json --apply
+User=root
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+TimeoutStartSec=240
+

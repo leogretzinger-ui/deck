@@ -1,0 +1,100 @@
+name: Release images
+
+on:
+  workflow_run:
+    workflows: [Release acceptance]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+env:
+  NOISE_TASKS_REPO: ${{ vars.NOISE_TASKS_REPO }}
+  NOISE_SDLC_REPO: ${{ vars.NOISE_SDLC_REPO }}
+
+# Publication is a transaction: never interrupt between previous and latest.
+concurrency:
+  group: release-images
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.repository.private && vars.NOISEDECK_RELEASE_IMAGES_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.name == 'Release acceptance' &&
+        github.event.workflow_run.path == '.github/workflows/release-acceptance.yaml' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      RELEASE_UID: ${{ vars.NOISEDECK_RELEASE_UID || '1026' }}
+      RELEASE_GID: ${{ vars.NOISEDECK_RELEASE_GID || '100' }}
+      FONT_CONTEXT: ${{ vars.NOISEDECK_RELEASE_FONT_CONTEXT }}
+      REQUIRE_LICENSED: ${{ vars.NOISEDECK_RELEASE_REQUIRE_LICENSED || 'false' }}
+    steps:
+      - name: Check out exact accepted main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          persist-credentials: false
+
+      - name: Admit latest successful main acceptance
+        id: admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          sha = os.environ['RELEASE_SHA']
+          if not re.fullmatch('[0-9a-f]{40}', sha):
+              raise SystemExit('Invalid release SHA')
+          repo = os.environ['GITHUB_REPOSITORY']
+          def api(path):
+              return json.loads(subprocess.check_output(['gh', 'api', path], text=True))
+          runs = api('repos/' + repo + '/actions/workflows/release-acceptance.yaml/runs?branch=main&status=success&per_page=100')['workflow_runs']
+          accepted = next((r for r in runs if r.get('name') == 'Release acceptance' and r.get('path') == '.github/workflows/release-acceptance.yaml' and r['head_branch'] == 'main' and r['head_repository']['full_name'] == repo and r['conclusion'] == 'success'), None)
+          if accepted is None:
+              raise SystemExit('No successful exact-main acceptance')
+          if accepted['head_sha'] != sha:
+              print('Newer successful acceptance available; no publication')
+              raise SystemExit(0)
+          if api('repos/' + repo + '/compare/' + sha + '...main')['status'] not in ('ahead', 'identical'):
+              raise SystemExit('Accepted source is no longer on current mainline')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('accepted=true\n')
+          PY
+
+      - name: Reclaim unused hosted-runner SDKs
+        if: steps.admission.outputs.accepted == 'true'
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/hostedtoolcache /usr/share/dotnet /opt/ghc /usr/local/share/powershell
+
+      - name: Authenticate private registry
+        if: steps.admission.outputs.accepted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build, verify and publish complete production set
+        if: steps.admission.outputs.accepted == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--registry "ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" --sha "$RELEASE_SHA" --uid "$RELEASE_UID" --gid "$RELEASE_GID")
+          if [[ -n "$FONT_CONTEXT" ]]; then args+=(--font-context "$FONT_CONTEXT"); fi
+          if [[ "$REQUIRE_LICENSED" == true ]]; then args+=(--require-licensed); fi
+          python3 deploy/release-images.py publish "${args[@]}"
+
+      - name: Remove runner registry credentials
+        if: always()
+        run: docker logout ghcr.io

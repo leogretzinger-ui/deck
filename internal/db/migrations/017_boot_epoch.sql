@@ -1,0 +1,26 @@
+-- 017_boot_epoch: the host boot under which a session's process identity
+-- tuple was recorded.
+--
+-- process_start_ticks is boot-relative: the kernel counts scheduler ticks
+-- since boot, so after a host restart the same pid with the same start
+-- ticks can name a DIFFERENT process. Every check that acts on the
+-- recorded tuple — liveness, signalling, recovery's proof of death — is
+-- meaningless across a reboot unless the boot itself is part of the
+-- identity (FR-S13).
+--
+-- This column is that check's premise: the kernel's boot_id, sampled at
+-- the moment the live tuple is recorded. While it equals the current host
+-- boot the tuple means what it always did; a difference invalidates the
+-- tuple, and the session parks as needs_attention rather than signalling
+-- or recovering on a coincidental match (FR-R10). The product does not
+-- claim an OS process survives a host restart, so invalidation is honest
+-- and recovery is not attempted.
+--
+-- Nullable with no default: a row recorded before this column exists
+-- carries no epoch claim, and backfilling the current boot id would assert
+-- an observation that never happened. A NULL epoch therefore fails closed:
+-- the legacy row parks instead of trusting a boot-relative tuple.
+--
+-- Plain column addition, so no table rebuild and no foreign_keys toggle.
+
+ALTER TABLE sessions ADD COLUMN boot_epoch TEXT;

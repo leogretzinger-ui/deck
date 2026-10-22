@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+"""Forward only Codex's structured identity fields to Deck."""
+
+import json
+import os
+import subprocess
+import sys
+
+
+def diagnostic(stage):
+    if os.environ.get("NOISEDECK_HOOK_DIAGNOSTICS") != "true":
+        return
+    try:
+        subprocess.run(["/usr/local/bin/noisedeck-hook-diagnostics", stage],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+diagnostic("adapter_entered")
+try:
+    event = json.load(sys.stdin)
+except (TypeError, ValueError):
+    diagnostic("adapter_invalid_json")
+    raise SystemExit(0)
+if not isinstance(event, dict):
+    diagnostic("adapter_invalid_shape")
+    raise SystemExit(0)
+
+try:
+    hook = event.get("hook_event_name")
+    if hook not in ("SessionStart", "Stop"):
+        diagnostic("adapter_unsupported_event")
+        raise SystemExit(0)
+    payload = {
+        "hook_event_name": hook,
+        "session_id": event["session_id"],
+        "cwd": event.get("cwd", os.getcwd()),
+        "source": event.get("source", "startup") if hook == "SessionStart" else "current",
+    }
+except KeyError:
+    diagnostic("adapter_missing_session_id")
+    raise SystemExit(0)
+except (TypeError, ValueError):
+    diagnostic("adapter_invalid_shape")
+    raise SystemExit(0)
+
+try:
+    subprocess.run(
+        ["/usr/local/bin/noisedeck-provider-hook"],
+        input=json.dumps(payload, separators=(",", ":")),
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    diagnostic("adapter_forwarded")
+except OSError:
+    diagnostic("adapter_forward_unavailable")
+except subprocess.TimeoutExpired:
+    diagnostic("adapter_forward_timeout")

@@ -1,0 +1,108 @@
+# Grok Build (@xai-official/grok) — provider contract
+#
+# What was measured, against what:
+#   - The measured artifact is the pinned @xai-official/grok 1.0.5 npm
+#     package: a Node trampoline plus the per-platform binary package npm
+#     selects for the build arch (the binary ships brotli-compressed).
+#     Runtime shape was measured in a real private tmux pane with the same
+#     node interpreter path the image carries (/usr/local/bin/node); the
+#     launch path below is the deployment's configured executable.
+#   - Bootstrap behavior measured from that postinstall/trampoline
+#     source and confirmed at runtime: the binary is decompressed into
+#     ~/.grok/bin/grok-<version> with a canonical ~/.grok/bin/grok symlink
+#     ($GROK_HOME relocates the root). The interactive launch was measured
+#     UNAUTHENTICATED: the CLI stays up at the browser sign-in wall (a
+#     device code and "Waiting for approval..."). No input was delivered;
+#     every input-behaviour field below is unmeasured.
+#   - Resume semantics read from the measured --help, not exercised:
+#     -r/--resume resolves a session ID, a title, or the most recent session
+#     when omitted; non-ID values match titles case-insensitively with
+#     ambiguity errors; -s/--session-id assigns an id. Deck uses none of
+#     them until an authenticated run measures the exact contract.
+
+provider: grok
+version_tested: "1.0.5"
+measured_on: "2026-08-22"
+
+runtime_compatibility:
+  method: capability_probes
+  capability_probes:
+    - name: "approval and session syntax"
+      args: ["--help"]
+      required_flags:
+        - "--always-approve"
+        - "--resume"
+        - "--session-id"
+  probe_state_isolation:
+    - HOME
+  reason: >
+    Measured on the 1.0.5 package: the trampoline bootstraps its
+    binary into ~/.grok/bin and --version/--help write the ~/.grok state
+    trees before reporting. The probe runner redirects HOME into a
+    throwaway tree (the trampoline bootstraps the pinned binary there from
+    the installed platform package), so compatibility checks cannot mutate
+    the user's persisted state.
+
+executable:
+  # The pane process is the Node trampoline; /proc/exe is the interpreter
+  # and cannot distinguish Grok from any other Node process. Pane identity
+  # rests on the full pane-identity tuple, never on the executable.
+  launch_path: "/usr/local/bin/grok"
+  launch_target: "/usr/local/lib/node_modules/@xai-official/grok/bin/grok"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/grok"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+  child_process:
+    # Measured in the pane: the trampoline spawns the bootstrapped binary as
+    # a child in the same process group and session, with the canonical
+    # ~/.grok/bin/grok symlink path as its argv[0]. The real CLI is that
+    # child; the pane PID Deck observes is only its launcher.
+    exe: "~/.grok/bin/grok-<version>"
+    cmdline: "~/.grok/bin/grok"
+    same_pgid_and_sid_as_pane: true
+
+identity:
+  contract: fresh-relaunch-only
+  session_flag_present: true
+  trusted_identity_capture: false
+  provider_state_read_by_deck: false
+  provider_output_read_by_deck: false
+
+launch:
+  new_session_args: []
+  operator_bypass_args: ["--always-approve"]
+  resume_args: null
+
+session_storage:
+  root: "~/.grok"
+  contents_read_by_deck: false
+  bootstrap:
+    # Written by the package's own postinstall and first run: the
+    # decompressed platform binary (~167 MB) under ~/.grok/bin plus config,
+    # locks, and logs.
+    - "~/.grok/bin"
+
+first_run_walls:
+  browser_sign_in: "device code + Waiting for approval..."
+
+injection:
+  # Unmeasured: no authenticated Grok session has accepted input — the
+  # measured run stops at the browser sign-in wall, which injected bytes
+  # would answer instead of the user. These close only through an
+  # authenticated tmux conformance run (the Phase 0 spike), and the
+  # descriptor encodes nothing until then.
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unmeasured
+  verified: false
+
+exit:
+  sigterm_exits: unmeasured
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: trampoline-plus-bootstrapped-binary-child
+  process_tree_verified: true
+  group_kill_survivors: unmeasured

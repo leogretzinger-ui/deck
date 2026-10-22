@@ -1,0 +1,3534 @@
+{
+  "version": 1,
+  "states": {
+    "project-preview-desktop-enable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=enable",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-enable#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-enabling": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=enabling",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-enabling#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-failed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=failed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-failed#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-noports": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=noports",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-noports#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-setup": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=setup",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-setup#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-settings": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=settings",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-settings#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-checking": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checking",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-checking#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-up": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=up",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-up#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-down": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=down",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-down#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-checkfailed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checkfailed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-checkfailed#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-disableconfirm": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disableconfirm",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-disableconfirm#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-disablefailed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disablefailed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-disablefailed#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-disabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-disabled#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-unconfigured": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=unconfigured",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-unconfigured#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-settings-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=settings&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-settings-details#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-up-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=up&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-up-details#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-down-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=down&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-down-details#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-checkfailed-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checkfailed&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-checkfailed-details#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-menu-disabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-disabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-menu-disabled#menu",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-menu-enabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-enabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-menu-enabled#menu",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-menu-unconfigured": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-unconfigured",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-desktop-menu-unconfigured#menu",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-enable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=enable",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-enable#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-enabling": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=enabling",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-enabling#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-failed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=failed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-failed#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-noports": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=noports",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-noports#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-setup": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=setup",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-setup#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-settings": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=settings",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-settings#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-checking": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checking",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-checking#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-up": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=up",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-up#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-down": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=down",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-down#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-checkfailed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checkfailed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-checkfailed#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-disableconfirm": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disableconfirm",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-disableconfirm#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-disablefailed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disablefailed",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-disablefailed#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-disabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=disabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-disabled#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-unconfigured": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=unconfigured",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-unconfigured#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-settings-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=settings&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-settings-details#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-up-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=up&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-up-details#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-down-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=down&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-down-details#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-checkfailed-details": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=checkfailed&project-preview-details=1",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-checkfailed-details#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-menu-disabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-disabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-menu-disabled#menu",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-menu-enabled": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-enabled",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-menu-enabled#menu",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-menu-unconfigured": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=menu-unconfigured",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": "project-preview-mobile-menu-unconfigured#menu",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-menu-popover]",
+        "compSelector": "[data-screen-label=\"menu\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-static": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=static",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-static-only": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=static-only",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-desktop-loading": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=loading",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-static": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=static",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-static-only": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=static-only",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "project-preview-mobile-loading": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?project-preview=loading",
+        "setupScript": "web/tools/project-preview-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-project-preview-capture-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-project-preview-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "security-1a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=1a"
+      },
+      "comp": "workspace-enrollment-1a#1a-invitation",
+      "viewport": {
+        "width": 1120,
+        "height": 900,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"1a\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-1b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=1b"
+      },
+      "comp": "workspace-enrollment-1b#1b-boundary-detail",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"1b\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-1c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=1c"
+      },
+      "comp": "workspace-enrollment-1c#1c-invitation-expired",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"1c\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-1d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=1d"
+      },
+      "comp": "workspace-enrollment-1d#1d-setup-interrupted",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"1d\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-1m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=1m"
+      },
+      "comp": "workspace-enrollment-1m#1m-invitation-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"1m\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2a"
+      },
+      "comp": "workspace-enrollment-2a#2a-choose-unlock-method",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2a\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2b"
+      },
+      "comp": "workspace-enrollment-2b#2b-browser-passkey-prompt",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2b\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "native-passkey-picker": {
+          "x": 0.3125,
+          "y": 0.0375,
+          "width": 0.375,
+          "height": 0.4097222222222222,
+          "reason": "The reference draws the browser or password manager credential picker. Deck invokes WebAuthn and does not draw native credential UI. This rectangle covers only that externally owned picker; the Deck waiting state remains compared."
+        }
+      },
+      "clip": ".enrollment"
+    },
+    "security-2c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2c"
+      },
+      "comp": "workspace-enrollment-2c#2c-checking-it-unlocks",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2c\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2d"
+      },
+      "comp": "workspace-enrollment-2d#2d-passkey-cannot-unlock",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2d\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2e": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2e"
+      },
+      "comp": "workspace-enrollment-2e#2e-encryption-password",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2e\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2f": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2f"
+      },
+      "comp": "workspace-enrollment-2f#2f-unlock-method-ready",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2f\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2m"
+      },
+      "comp": "workspace-enrollment-2m#2m-choose-unlock-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2m\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-2n": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=2n"
+      },
+      "comp": "workspace-enrollment-2n#2n-incompatible-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"2n\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3a"
+      },
+      "comp": "workspace-enrollment-3a#3a-recovery-key",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3a\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3b"
+      },
+      "comp": "workspace-enrollment-3b#3b-verify-recovery-key",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3b\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3c"
+      },
+      "comp": "workspace-enrollment-3c#3c-key-not-recognised",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3c\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3d"
+      },
+      "comp": "workspace-enrollment-3d#3d-transcription-error",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3d\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3e": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3e"
+      },
+      "comp": "workspace-enrollment-3e#3e-setup-complete",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3e\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3m"
+      },
+      "comp": "workspace-enrollment-3m#3m-recovery-key-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3m\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-3n": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=3n"
+      },
+      "comp": "workspace-enrollment-3n#3n-verify-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"3n\"] [data-enrollment]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4a"
+      },
+      "comp": "workspace-runtime-4a#4a-signed-out",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4a\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4b"
+      },
+      "comp": "workspace-runtime-4b#4b-signed-in-but-locked",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4b\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4c"
+      },
+      "comp": "workspace-runtime-4c#4c-unlocking",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4c\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4e": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4e"
+      },
+      "comp": "workspace-runtime-4e#4e-unlock-cancelled",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4e\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4f": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4f"
+      },
+      "comp": "workspace-runtime-4f#4f-browser-cannot-unlock",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4f\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4g": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4g"
+      },
+      "comp": "workspace-runtime-4g#4g-server-unavailable",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4g\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4h": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4h"
+      },
+      "comp": "workspace-runtime-4h#4h-unlock-failed",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4h\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4i": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4i"
+      },
+      "comp": "workspace-runtime-4i#4i-restarted-locked-again",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4i\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4j": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4j"
+      },
+      "comp": "workspace-runtime-4j#4j-running-new-browser",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4j\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4k": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4k"
+      },
+      "comp": "workspace-runtime-4k#4k-unlock-with-password",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4k\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4l": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4l"
+      },
+      "comp": "workspace-runtime-4l#4l-wrong-password",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4l\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4m"
+      },
+      "comp": "workspace-runtime-4m#4m-locked-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4m\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-4n": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=4n"
+      },
+      "comp": "workspace-runtime-4n#4n-unlock-failed-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"4n\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5b"
+      },
+      "comp": "workspace-runtime-5b#5b-lock-confirmation",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5b\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5c"
+      },
+      "comp": "workspace-runtime-5c#5c-locking",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5c\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5d"
+      },
+      "comp": "workspace-runtime-5d#5d-locked-confirmed",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5d\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5e": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5e"
+      },
+      "comp": "workspace-runtime-5e#5e-lock-failed",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5e\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5f": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5f"
+      },
+      "comp": "workspace-runtime-5f#5f-lock-unconfirmed",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5f\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-5m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=5m"
+      },
+      "comp": "workspace-runtime-5m#5m-lock-sheet-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"5m\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-7a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=7a"
+      },
+      "comp": "workspace-runtime-7a#7a-recover-with-the-key",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"7a\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-7c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=7c"
+      },
+      "comp": "workspace-runtime-7c#7c-two-kinds-of-help",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"7c\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-7d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=7d"
+      },
+      "comp": "workspace-runtime-7d#7d-nothing-left",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"7d\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-7m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=7m"
+      },
+      "comp": "workspace-runtime-7m#7m-recover-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"7m\"] [data-security-runtime]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".enrollment"
+    },
+    "security-6a": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6a"
+      },
+      "comp": "workspace-management-6a#6a-unlock-methods",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6a\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-6b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6b"
+      },
+      "comp": "workspace-management-6b#6b-add-and-test-a-passkey",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6b\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-6c": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6c"
+      },
+      "comp": "workspace-management-6c#6c-replace-a-method",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6c\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-6d": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6d"
+      },
+      "comp": "workspace-management-6d#6d-last-method",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6d\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-6e": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6e"
+      },
+      "comp": "workspace-management-6e#6e-change-encryption-password",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6e\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-6m": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=6m"
+      },
+      "comp": "workspace-management-6m#6m-methods-on-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"6m\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "security-7b": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?security=7b"
+      },
+      "comp": "workspace-management-7b#7b-replacement-method",
+      "viewport": {
+        "width": 1120,
+        "height": 720,
+        "fullPage": true
+      },
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-security-figure=\"7b\"] [data-method-management]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "clip": ".security-management"
+    },
+    "onboarding-welcome": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=welcome"
+      },
+      "comp": "onboarding-welcome#welcome",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"welcome\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-welcome-required": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=welcome-required"
+      },
+      "comp": "onboarding-welcome-required#welcome-required",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"welcome-required\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-welcome-unavailable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=welcome-unavailable"
+      },
+      "comp": "onboarding-welcome-unavailable#welcome-unavailable",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"welcome-unavailable\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-needlink": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=needlink"
+      },
+      "comp": "onboarding-needlink#needlink",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"needlink\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-expired": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=expired"
+      },
+      "comp": "onboarding-expired#expired",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"expired\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-used": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=used"
+      },
+      "comp": "onboarding-used#used",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"used\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-notowner": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=notowner"
+      },
+      "comp": "onboarding-notowner#notowner",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"notowner\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-unreachable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=unreachable"
+      },
+      "comp": "onboarding-unreachable#unreachable",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"unreachable\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-interrupted": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=interrupted"
+      },
+      "comp": "onboarding-interrupted#interrupted",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"interrupted\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-resume": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=resume"
+      },
+      "comp": "onboarding-resume#resume",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"resume\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption"
+      },
+      "comp": "onboarding-encryption#encryption",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-required": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-required"
+      },
+      "comp": "onboarding-encryption-required#encryption-required",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-required\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-unavailable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-unavailable"
+      },
+      "comp": "onboarding-encryption-unavailable#encryption-unavailable",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-unavailable\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-boundary": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-boundary"
+      },
+      "comp": "onboarding-encryption-boundary#encryption-boundary",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-boundary\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-finishing": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=finishing"
+      },
+      "comp": "onboarding-finishing#finishing",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"finishing\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-finishing-unencrypted": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=finishing-unencrypted"
+      },
+      "comp": "onboarding-finishing-unencrypted#finishing-unencrypted",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"finishing-unencrypted\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-unconfirmed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=unconfirmed"
+      },
+      "comp": "onboarding-unconfirmed#unconfirmed",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"unconfirmed\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-failed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=failed"
+      },
+      "comp": "onboarding-failed#failed",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"failed\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-done": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=done"
+      },
+      "comp": "onboarding-done#done",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"done\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-done-unencrypted": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=done-unencrypted"
+      },
+      "comp": "onboarding-done-unencrypted#done-unencrypted",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"done-unencrypted\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-signin": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=signin"
+      },
+      "comp": "onboarding-signin#signin",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"signin\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-signin-unencrypted": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=signin-unencrypted"
+      },
+      "comp": "onboarding-signin-unencrypted#signin-unencrypted",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"signin-unencrypted\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-welcome-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=welcome-mobile"
+      },
+      "comp": "onboarding-welcome-mobile#welcome-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"welcome-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-needlink-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=needlink-mobile"
+      },
+      "comp": "onboarding-needlink-mobile#needlink-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"needlink-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-mobile"
+      },
+      "comp": "onboarding-encryption-mobile#encryption-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-required-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-required-mobile"
+      },
+      "comp": "onboarding-encryption-required-mobile#encryption-required-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-required-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-encryption-unavailable-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=encryption-unavailable-mobile"
+      },
+      "comp": "onboarding-encryption-unavailable-mobile#encryption-unavailable-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"encryption-unavailable-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-resume-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=resume-mobile"
+      },
+      "comp": "onboarding-resume-mobile#resume-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"resume-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "onboarding-done-mobile": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?onboarding=done-mobile"
+      },
+      "comp": "onboarding-done-mobile#done-mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": ".onboarding",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-onboarding] h1",
+        "compSelector": "[data-screen-label=\"done-mobile\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-desktop-licensed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=pending",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": "harness-login-desktop-licensed#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-mobile-licensed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=invalid",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": "harness-login-mobile-licensed#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-desktop-ofl": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=pending",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": "harness-login-desktop-ofl#dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-mobile-ofl": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=invalid",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": "harness-login-mobile-ofl#dialog",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "compSelector": "[data-screen-label=\"dialog\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-submitting": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=submitting",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-completed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=completed",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-delivered": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=delivered",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-expired": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=expired",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-unavailable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=unavailable",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-uncertain": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=uncertain",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "harness-login-pi": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?harness-login=pi",
+        "setupScript": "web/tools/harness-login-design-capture.mjs"
+      },
+      "comp": null,
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-harness-login-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-harness-login-dialog]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "global-menu-desktop-licensed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?menu=settings",
+        "setupScript": "web/tools/global-menu-design-capture.mjs"
+      },
+      "comp": "global-menu-desktop-licensed#menu",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-global-menu-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-more-popover]",
+        "compSelector": "[data-menu-reference-frame]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compDrive": [
+        {
+          "mouse": "away"
+        }
+      ],
+      "drive": [
+        {
+          "mouse": "away"
+        }
+      ]
+    },
+    "global-menu-mobile-licensed": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?menu=settings",
+        "setupScript": "web/tools/global-menu-design-capture.mjs"
+      },
+      "comp": "global-menu-mobile-licensed#menu",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-global-menu-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-more-popover]",
+        "compSelector": "[data-menu-reference-frame]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compDrive": [
+        {
+          "mouse": "away"
+        }
+      ],
+      "drive": [
+        {
+          "mouse": "away"
+        }
+      ]
+    },
+    "global-menu-desktop-ofl": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?menu=settings",
+        "setupScript": "web/tools/global-menu-design-capture.mjs"
+      },
+      "comp": "global-menu-desktop-ofl#menu",
+      "viewport": {
+        "width": 1180,
+        "height": 760,
+        "fullPage": false
+      },
+      "clip": "[data-global-menu-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-more-popover]",
+        "compSelector": "[data-menu-reference-frame]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compDrive": [
+        {
+          "mouse": "away"
+        }
+      ],
+      "drive": [
+        {
+          "mouse": "away"
+        }
+      ]
+    },
+    "global-menu-mobile-ofl": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?menu=settings",
+        "setupScript": "web/tools/global-menu-design-capture.mjs"
+      },
+      "comp": "global-menu-mobile-ofl#menu",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-global-menu-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-more-popover]",
+        "compSelector": "[data-menu-reference-frame]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compDrive": [
+        {
+          "mouse": "away"
+        }
+      ],
+      "drive": [
+        {
+          "mouse": "away"
+        }
+      ]
+    },
+    "viewer-image": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-shown",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-canvas=\"fit\"] [data-files-image-frame] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-actual": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-actual",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-actual",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-canvas=\"actual\"] [data-files-image-frame] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-alpha": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-alpha",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-alpha",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-frame][data-files-alpha=\"true\"] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-oversized": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-oversized",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-oversized",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-message=\"oversized\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-gone": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-gone",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-gone",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-message=\"gone\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-undecodable": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-undecodable",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-undecodable",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-message=\"undecodable\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-expanded": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image&expanded=1",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-expanded",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-canvas=\"fit\"] [data-files-image-frame] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-actual-expanded": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-actual&expanded=1",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-expanded-actual",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-canvas=\"actual\"] [data-files-image-frame] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-oversized-expanded": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-oversized&expanded=1",
+        "setupScript": "web/tools/files-viewer-design-capture.mjs"
+      },
+      "comp": "deck-assets-desktop-viewer-expanded-oversized",
+      "compTarget": "aside",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-files-viewer-capture]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-message=\"oversized\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "viewer-image-phone": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-viewer-shown#p-viewer-shown",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-phone-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-canvas=\"fit\"] [data-files-image-frame] img",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "status-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 0.06455399061032864
+        },
+        "home-band": {
+          "x": 0,
+          "y": 0.9589201877934272,
+          "width": 1,
+          "height": 0.04107981220657277
+        }
+      }
+    },
+    "viewer-image-oversized-phone": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=files&viewer=image-oversized&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-viewer-oversized#p-viewer-oversized",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-phone-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-files-image-message=\"oversized\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "status-strip": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 0.06455399061032864
+        },
+        "home-band": {
+          "x": 0,
+          "y": 0.9589201877934272,
+          "width": 1,
+          "height": 0.04107981220657277
+        }
+      }
+    },
+    "assets-loading": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=loading"
+      },
+      "comp": "deck-assets-desktop-assets-loading",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-assets-loading]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "assets-empty": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=empty"
+      },
+      "comp": "deck-assets-desktop-assets-empty",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-assets-empty]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "assets-list": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=list"
+      },
+      "comp": "deck-assets-desktop-assets-list",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-assets-list]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "assets-selected": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=selected"
+      },
+      "comp": "deck-assets-desktop-assets-selected",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-asset-path][aria-checked=\"true\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "assets-truncated": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=truncated"
+      },
+      "comp": "deck-assets-desktop-assets-truncated",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-assets-truncated]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "delete-confirm": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=selected&dialog=delete-assets"
+      },
+      "comp": "deck-assets-desktop-delete-confirm",
+      "compTarget": ".bp-dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-assets-dialog]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-assets-dialog=\"confirm\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "delete-outcome": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=after&dialog=delete-outcome"
+      },
+      "comp": "deck-assets-desktop-delete-outcome",
+      "compTarget": ".bp-dialog",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-assets-dialog]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-assets-dialog=\"outcome\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "delete-after": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=after"
+      },
+      "comp": "deck-assets-desktop-delete-after",
+      "compTarget": "aside[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"assets\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-asset-fact]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "assets-compact": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?menu=panels&assets-unseen=3"
+      },
+      "comp": "deck-assets-desktop-assets-compact",
+      "compTarget": ".bp-menu",
+      "viewport": {
+        "width": 760,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-panels-menu]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-panels-menu] [data-panel-choice=\"assets\"][data-assets-new=\"3\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "notify-unseen": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?assets-unseen=3"
+      },
+      "comp": "deck-assets-desktop-notify-unseen",
+      "compTarget": "span[aria-label=\"Assets, 3 new\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-titlebar-assets]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-titlebar-assets][data-assets-new=\"3\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "notify-unseen-news": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?assets-unseen=3"
+      },
+      "comp": "deck-assets-desktop-notify-unseen",
+      "compTarget": ".bp-chrome--bottom",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-region=\"info-bar\"]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-titlebar-assets][data-assets-new=\"3\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "notify-seen": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html"
+      },
+      "comp": "deck-assets-desktop-notify-seen",
+      "compTarget": "span[aria-label=\"Assets\"]",
+      "viewport": {
+        "width": 1180,
+        "height": 720,
+        "fullPage": false
+      },
+      "clip": "[data-titlebar-assets]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-titlebar-assets][data-assets-new=\"0\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5
+    },
+    "p-notify": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?assets-unseen=3&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-notify#p-notify",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-phone-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-titlebar-panels][data-assets-new=\"3\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "device-chrome-top": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 0.064554,
+          "reason": "Device mock, not app chrome. The comp draws the screen inside a 393x852 phone frame with a 1px bezel and a 54px status strip. On device that strip is the OS's and the bezel does not exist, so the app renders none of it. The preview reserves the same geometry so the app's content lands at this reference's origin; this band is the reservation and is not ours to converge."
+        },
+        "os-home-band": {
+          "x": 0,
+          "y": 0.95892,
+          "width": 1,
+          "height": 0.04108,
+          "reason": "Device mock, not app chrome. The comp reserves a 35px home-indicator band under the screen that belongs to the OS; the app never paints there."
+        }
+      }
+    },
+    "assets-phone-list": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=list&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-assets-list#p-assets-list",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-phone-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-assets-list]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "device-chrome-top": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 0.064554,
+          "reason": "Device mock, not app chrome. The comp draws the screen inside a 393x852 phone frame with a 1px bezel and a 54px status strip. On device that strip is the OS's and the bezel does not exist, so the app renders none of it. The preview reserves the same geometry so the app's content lands at this reference's origin; this band is the reservation and is not ours to converge."
+        },
+        "os-home-band": {
+          "x": 0,
+          "y": 0.95892,
+          "width": 1,
+          "height": 0.04108,
+          "reason": "Device mock, not app chrome. The comp reserves a 35px home-indicator band under the screen that belongs to the OS; the app never paints there."
+        }
+      }
+    },
+    "assets-phone-selected": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=selected&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-assets-selected#p-assets-selected",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-phone-frame]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-region=\"assets\"] [data-asset-path][aria-checked=\"true\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "masks": {
+        "device-chrome-top": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 0.064554,
+          "reason": "Device mock, not app chrome. The comp draws the screen inside a 393x852 phone frame with a 1px bezel and a 54px status strip. On device that strip is the OS's and the bezel does not exist, so the app renders none of it. The preview reserves the same geometry so the app's content lands at this reference's origin; this band is the reservation and is not ours to converge."
+        },
+        "os-home-band": {
+          "x": 0,
+          "y": 0.95892,
+          "width": 1,
+          "height": 0.04108,
+          "reason": "Device mock, not app chrome. The comp reserves a 35px home-indicator band under the screen that belongs to the OS; the app never paints there."
+        }
+      }
+    },
+    "delete-phone-confirm": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=selected&dialog=delete-assets&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-delete-confirm",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-assets-dialog]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-assets-dialog=\"confirm\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compTarget": "[role=\"alertdialog\"]"
+    },
+    "delete-phone-outcome": {
+      "route": {
+        "url": "http://127.0.0.1:8899/preview.html?panel=assets&assets=after&dialog=delete-outcome&frame=phone-screen"
+      },
+      "comp": "deck-assets-phone-p-delete-outcome",
+      "viewport": {
+        "width": 393,
+        "height": 852,
+        "fullPage": false
+      },
+      "clip": "[data-assets-dialog]",
+      "readiness": {
+        "policy": "networkidle",
+        "selector": "[data-assets-dialog=\"outcome\"]",
+        "timeout": 10000,
+        "settle": 250
+      },
+      "threshold": 0.5,
+      "compTarget": "[role=\"dialog\"]"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+/* The free type set: the four roles of the design system carried by three
+   OFL families, with the trims each face needs to sit where the licensed cut
+   sat. Selected at build time (vite.config.ts resolves "@fonts" to this
+   sheet or to licensed.css), so a tree without the licensed webfonts
+   renders these and never references a file it does not carry.
+
+   The files under /fonts/free are the Fontsource builds of the Google
+   Fonts variable masters: one file per family, style and script block,
+   with the weight axis intact. Their OFL text ships beside them. */
+
+/* --- Jost (interface + display) --- */
+@font-face{font-family:"Jost";size-adjust:104%;ascent-override:96.15%;descent-override:25.77%;line-gap-override:0%;src:url("/fonts/free/jost-latin-wght-normal.woff2") format("woff2-variations");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Jost";size-adjust:104%;ascent-override:96.15%;descent-override:25.77%;line-gap-override:0%;src:url("/fonts/free/jost-latin-wght-italic.woff2") format("woff2-variations");font-weight:100 900;font-style:italic;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Jost";size-adjust:104%;ascent-override:96.15%;descent-override:25.77%;line-gap-override:0%;src:url("/fonts/free/jost-latin-ext-wght-normal.woff2") format("woff2-variations");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Jost";size-adjust:104%;ascent-override:96.15%;descent-override:25.77%;line-gap-override:0%;src:url("/fonts/free/jost-latin-ext-wght-italic.woff2") format("woff2-variations");font-weight:100 900;font-style:italic;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* --- EB Garamond (prose) --- */
+@font-face{font-family:"EB Garamond";size-adjust:113.1%;ascent-override:65.8%;descent-override:25.6%;line-gap-override:14.7%;src:url("/fonts/free/eb-garamond-latin-wght-normal.woff2") format("woff2-variations");font-weight:400 800;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"EB Garamond";size-adjust:113.1%;ascent-override:65.8%;descent-override:25.6%;line-gap-override:14.7%;src:url("/fonts/free/eb-garamond-latin-wght-italic.woff2") format("woff2-variations");font-weight:400 800;font-style:italic;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"EB Garamond";size-adjust:113.1%;ascent-override:65.8%;descent-override:25.6%;line-gap-override:14.7%;src:url("/fonts/free/eb-garamond-latin-ext-wght-normal.woff2") format("woff2-variations");font-weight:400 800;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"EB Garamond";size-adjust:113.1%;ascent-override:65.8%;descent-override:25.6%;line-gap-override:14.7%;src:url("/fonts/free/eb-garamond-latin-ext-wght-italic.woff2") format("woff2-variations");font-weight:400 800;font-style:italic;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* --- IBM Plex Mono (code + data) --- */
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-500-normal.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-500-italic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-500-italic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-700-normal.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-700-normal.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-700-italic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";size-adjust:104.17%;ascent-override:92.16%;descent-override:23.04%;line-gap-override:0%;src:url("/fonts/free/ibm-plex-mono-latin-ext-700-italic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* Each @font-face above carries size-adjust and the vertical overrides
+   that make the free face metric-compatible with the licensed one it stands
+   in for: the x-height lands where the licensed cut's did, and
+   line-height:normal, baseline position and every px token in the scale
+   compute exactly as they did. Only what the descriptors cannot express is
+   set here. */
+:root {
+  --font-ui: "Jost", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Jost", -apple-system, "Segoe UI", sans-serif;
+  --font-prose: "EB Garamond", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* No stylistic set to bind: the percent, zero and one of the licensed
+     cut were composited from a second outline, which nothing here has. */
+  --font-features: normal;
+
+  /* Advance. The vertical metrics above are exact, but at the matched
+     x-height Jost's lowercase sets about 0.035em per glyph narrower than
+     Euclid's at every size step, its small caps 0.025em narrower, and its
+     word space 0.06em wider, so a line reads tight and a sentence reads
+     gappy. The tracking gives each glyph its advance back and the
+     word-spacing takes the surplus off the space. The deficit is not the
+     same at every step (the 13px menus set nearly even, the 15px rows
+     3.5% narrow), so each text step states its own through the scale's
+     hooks and the general value on body stays mild. Measured on the same
+     strings in both builds at 11 to 28px. Digits are the exception:
+     Jost's run wider, so the micro step, which is mostly ticks, tracks
+     negative to take that width back. */
+  --face-ui-tracking: 0.015em;
+  --face-ui-word-spacing: -0.06em;
+  --face-ui-tracking-body: 0.03em;
+  --face-ui-tracking-body-sm: 0.012em;
+  --face-ui-tracking-caption: 0.02em;
+  --face-ui-tracking-micro: -0.03em;
+  --face-ui-tracking-title-3: 0.02em;
+  --face-ui-tracking-title-2: 0.02em;
+  --type-title-3-ls: 0.062em;
+  --type-body-ls: 0.035em;
+  --type-body-sm-ls: 0.035em;
+  --type-caption-ls: 0.037em;
+  --type-micro-ls: 0.07em;
+  --type-label-ls: 0.075em;
+  --type-button-ls: 0.015em;
+
+  /* Mono: IBM Plex Mono is anchored on ADVANCE, not x-height. Operator's
+     cell is 0.625em and Plex's 0.6em, so at 104.17% every glyph sits on
+     the licensed cell at its natural spacing — exact at every size and
+     device pixel ratio, since both faces then round the same advance to
+     the same pixels — and its x-height lands within 1% of Operator's
+     (0.516em against 0.544em before the adjust), its caps 6% over. That
+     is why Plex and not a taller mono: matching the cell with a large
+     x-height face makes the letters big and heavy inside it. No tracking,
+     so the terminal, which draws on a canvas and rounds letter spacing to
+     whole device pixels, needs none either. Plex's regular lays the ink
+     Operator's Book does, and its italic and bold are real cuts, so no
+     Dank-specific compensation carries over. */
+  --type-mono-size: 13px;
+  --type-mono-lh: 1.62;
+  --type-mono-weight: 400;
+  --type-mono-tracking: 0em;
+  --type-mono-cursive-weight: 400;
+  --type-mono-xh-ratio: 1;
+}
+
+/* The workspace's mono metrics scope carries the same numbers: with one
+   mono face app-wide there is nothing for it to distinguish. */
+[data-mono="operator"] {
+  --type-mono-size: 13px;
+  --type-mono-lh: 1.62;
+  --type-mono-weight: 400;
+  --type-mono-tracking: 0em;
+  --type-mono-xh-ratio: 1;
+}
+
+/* The general correction is set once on body and inherits as the length
+   it computes to there, which is why it is the mildest of the values: the
+   steps whose deficit is larger state their own through the text
+   utilities' --text-*--letter-spacing hooks and the --type-*-ls tokens,
+   both of which land on the element and are inherited by its children in
+   turn. Mono surfaces reset word-spacing beside their tracking, so the
+   interface face's word correction never reaches a monospace string. */
+body {
+  letter-spacing: var(--face-ui-tracking);
+  word-spacing: var(--face-ui-word-spacing);
+}

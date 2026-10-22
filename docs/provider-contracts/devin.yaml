@@ -1,0 +1,96 @@
+# Devin CLI — Phase 0 behavioural contract
+#
+# Identity, exact resume, unknown-id fallback, terminal input, lifecycle, and
+# process containment were measured against the real authenticated CLI in a
+# private tmux namespace. Deck consumes only the documented SessionStart hook;
+# terminal output and provider history/state are never identity sources.
+
+provider: devin
+version_tested: "3000.6.14"
+build_tested: "18033302"
+measured_on: "2026-09-06"
+# The identity, resume, unknown-id fallback, injection and SIGTERM claims
+# below were re-measured on 3000.6.14 by the conformance probe
+# (scripts/provider-spike/conformance/devin_test.go); each earlier version
+# named in a note is where that behaviour was first observed. Containment
+# and modal input were not re-measured and stay at their recorded versions.
+
+official_contract:
+  commands: "https://docs.devin.ai/cli/reference/commands"
+  hooks: "https://docs.devin.ai/cli/extensibility/hooks/overview"
+  lifecycle_hooks: "https://docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks"
+
+runtime_compatibility_probe:
+  command: ["--help"]
+  required_flags: ["--resume", "--respect-workspace-trust", "--permission-mode"]
+  scope: "Credential-free startup and launch syntax only."
+  does_not_remeasure: "Historical hook identity, fallback discrimination, input, or lifecycle observations."
+
+executable:
+  launch_path: "/usr/local/bin/devin"
+  resolved_at_launch: "/opt/devin/3000.11.92/bin/devin"
+  proc_exe: "/opt/devin/3000.11.92/bin/devin"
+  proc_cmdline: "/usr/local/bin/devin"
+  usable_runtime_executable_evidence: true
+
+identity:
+  contract: retrieved-by-hook
+  new_session_args: ["--respect-workspace-trust", "false"]
+  resume_args: ["--resume", "$NATIVE_ID", "--respect-workspace-trust", "false"]
+  id_format: lowercase-two-word-opaque-slug
+  hook:
+    config_path: "~/.config/devin/config.json"
+    config_shape: nested-json
+    event: "SessionStart"
+    session_id_field: "session_id"
+    source_field: "source"
+    project_directory_field: absent
+    project_directory_environment: "DEVIN_PROJECT_DIR"
+    timing: at-process-launch
+    install_owner: provisioning
+    console_role: verify-and-refuse
+  exact_resume_verified: true
+  exact_resume_attestation:
+    source: resume
+    native_id: exact-requested-id
+  unknown_id_fails_loudly: false
+  unknown_id_behavior: "starts a different new session with source=startup"
+  fallback_safety: "candidate remains provisional; mismatch revokes the grant before exact-tuple cleanup"
+  workspace_trust:
+    provider_check_disabled: true
+    authority: "the explicit Deck project/provider launch gesture and Deck's outer project policy"
+    enforcement_role: none
+    reason: "SessionStart is emitted only after Devin's trust prompt, while exact-resume candidates remain provisional and unattachable"
+
+injection:
+  bracket_paste: true
+  submit_sequence: [paste, settle, Enter]
+  submit_note: "the 3000.5.20 TUI swallowed an Enter that landed while it was still processing a bracketed paste; paste, a bounded settle, then Enter submitted reliably there and on 3000.6.14. Immediate Enter was not re-tried on 3000.6.14"
+  multiline: true
+  active_turn_input: queued
+  active_turn_verified: true
+  active_turn_note: "3000.4.25 rejected mid-turn input; 3000.5.20 and 3000.6.14 queue it silently — no hook fires while the turn runs — and UserPromptSubmit fires at dequeue, when the queued message is processed after the turn ends, executing it exactly once"
+  prompt_hook_timing: at-dequeue
+
+modal_prompts:
+  input_during_modal: unmeasured
+
+exit:
+  sigterm_status: signal-15
+  force_signal: SIGKILL
+
+containment:
+  pane_process:
+    implementation: native-elf
+    pid_equals_pgid: true
+    pid_equals_sid: true
+  tool_subprocesses_stay_in_process_group: false
+  tool_subprocesses_stay_in_session: false
+  group_kill_survivors: tool-children
+  verified: true
+
+acceptance:
+  native_identity_source: documented-SessionStart-stdin-json-only
+  exact_resume: real-authenticated-cli
+  unknown_id_fallback: real-authenticated-cli
+  terminal_or_provider_state_parsing: forbidden

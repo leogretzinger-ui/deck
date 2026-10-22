@@ -1,0 +1,24 @@
+-- 015_resume_probation: provisional recovery identity (FR-R6 as amended).
+--
+-- Publishing a replacement generation and process identity does not clear
+-- the resume-attempt series. The series resets only after a later
+-- authoritative observation proves the same generation, marker, pane, and
+-- PID/start-ticks tuple stayed alive past a bounded deadline, so a process
+-- that survives the spawn round-trip but exits shortly afterward stays a
+-- death of the same series instead of restarting the count at one.
+--
+-- resume_probation_until holds that deadline. The reconciler clears it and
+-- resets the series exactly once when that proof lands; every transition
+-- out of `running` clears it atomically, so a provisional identity that
+-- died or parked carries no stale deadline forward.
+--
+-- Nullable with no default: nothing is provisional before a recovery runs
+-- or after its stability commits. The deadline is durable state, so a
+-- service restart during probation finishes the same observation from the
+-- recorded deadline rather than treating publication as success — the row
+-- is already running, so no duplicate provider is a recovery candidate, and
+-- the series is not reset.
+--
+-- Plain column addition, so no table rebuild and no foreign_keys toggle.
+
+ALTER TABLE sessions ADD COLUMN resume_probation_until TEXT;

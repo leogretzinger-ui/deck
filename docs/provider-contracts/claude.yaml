@@ -1,0 +1,219 @@
+# Claude Code — Phase 0 behavioural contract
+#
+# Every behavioural value here was MEASURED against the real CLI in a tmux
+# pane, not read from documentation. Where a behaviour was not measured it says
+# so; nothing is inferred. The launch flags below are a record of what was
+# measured; nothing at runtime re-checks them.
+
+provider: claude
+version_tested: "2.1.220"
+measured_on: "2026-07-30"
+
+runtime_compatibility:
+  # The --help surface measured against the version above.
+  command: ["--help"]
+  required_flags:
+    - "--session-id"
+    - "--resume"
+    - "--dangerously-skip-permissions"
+
+native_receive_probe:
+  # Drives the real claude CLI against a synthetic a2a mailbox and a
+  # loopback model: the Stop-hook block that surfaces mail at turn end, the
+  # UserPromptSubmit stdout that surfaces it at the next turn's start, and
+  # the cross-session inbox socket that wakes an idle TUI session when the
+  # courier posts the wake line through it (the claude-socket rung).
+  script: "probe_a2a_claude.py"
+  network: none
+  timeout_s: 600
+
+messaging_socket:
+  # Measured 2026-10-15 against the pinned 2.1.296, real TUI in a private
+  # tmux socket (probe_a2a_claude.py, claude-socket phase).
+  available_since: "2.1.224"
+  path_from_hook_env: "CLAUDE_CODE_MESSAGING_SOCKET"
+  # A plain absolute path (no uds: prefix), shaped
+  # /tmp/cc-socks-<uid>/<pid>.sock when XDG_RUNTIME_DIR is unset.
+  path_shape: "/tmp/cc-socks-<uid>/<pid>.sock"
+  # The wire is newline-delimited JSON. One post is one line:
+  #   {"type":"user","message":{"role":"user","content":"<text>"}}
+  # The auth line the docs describe is optional on Linux and was not sent.
+  wire: 'ndjson user message'
+  auth_line_needed_on_linux: false
+  # MEASURED: an idle session started a new turn containing the posted text
+  # with no terminal input. With crossSessionInbound unset and the session
+  # in bypass mode, the same post was HELD behind an approval dialog
+  # ("The sender did not attest its permission mode") and never reached the
+  # model; Deck sessions all run bypassed, so provisioning sets accept.
+  idle_turn_on_post: true
+  held_by_default_in_bypass_mode: true
+  inbound_accept_setting: "crossSessionInbound"
+  # While CLAUDE_CONFIG_DIR is set, the trust record moves with it:
+  # <config-dir>/.claude.json, not $HOME/.claude.json.
+  trust_record_follows_config_dir: true
+
+executable:
+  # The command on PATH is a SYMLINK to a version-stamped binary:
+  #   /home/claude/.local/bin/claude -> ~/.local/share/claude/versions/2.1.220
+  #
+  # Claude is a NATIVE BINARY, so here — and only here — /proc/<pid>/exe is the
+  # provider itself and matching it is sufficient identity. Do not generalise
+  # this: Codex and Kimi are Node scripts whose /proc/exe is the interpreter.
+  # See the README; an earlier draft stated the rule globally and would have
+  # rejected every valid Codex and Kimi process.
+  #
+  # The expected value MOVES on every upgrade, so it must be captured from the
+  # launch path at launch rather than configured.
+  launch_path: "/home/claude/.local/bin/claude"
+  resolved_at_launch: "/home/claude/.local/share/claude/versions/2.1.220"
+  # MEASURED separately from the symlink target — they are different facts.
+  proc_exe: "/home/claude/.local/share/claude/versions/2.1.220"
+  # native binary: the kernel executable IS the provider, so matching it is sufficient
+  proc_exe_matches_launch_path: false
+  # Claude is the one provider where /proc/exe identifies the provider.
+  usable_runtime_executable_evidence: true
+
+identity:
+  contract: assigned-at-launch
+  new_session_args: ["--session-id", "$LAUNCH_ID"]
+  resume_args: ["--resume", "$NATIVE_ID"]
+  id_format: canonical-uuid
+  # Verified: assigned a UUID, sent a message, resumed that exact id in a
+  # separate process, and got the earlier answer back.
+  exact_resume_verified: true
+  # An unknown id is REFUSED rather than silently starting a fresh
+  # conversation: "No conversation found with session ID: ...". This is what
+  # makes a successful resume meaningful.
+  unknown_id_fails_loudly: true
+  # Measured on 2.1.261: the ledger file for an assigned id is written at the
+  # FIRST SUBMISSION, not at launch. A session killed at the prompt, or in the
+  # workspace-trust, onboarding, or login dialogs, leaves nothing to resume:
+  # `--resume <assigned-id>` exits 1 with the line above, and `--session-id
+  # <assigned-id>` is accepted again. Those dialogs also run before the id is
+  # looked up, so the refusal can arrive minutes after launch. SessionStart
+  # does not fire for a refused resume; SessionEnd fires with reason "other".
+  ledger_written_at_first_submission: true
+
+injection:
+  bracket_paste: true
+  submit_sequence: "Enter"
+  multiline: true
+  # Verified: a body containing a newline, delivered inside bracketed-paste
+  # markers, lands in the composer as two lines and is NOT submitted until
+  # Enter is sent separately. Without bracketed paste the newline would submit.
+  multiline_verified: true
+  active_turn_input: queued-by-cli
+  # Verified: injected mid-turn, the TUI showed "Press up to edit queued
+  # messages", and the message was processed exactly once after the turn
+  # finished — one prompt echo, one reply.
+  active_turn_verified: true
+
+native_history:
+  # Documented by Claude Code and re-measured by the real-CLI acceptance gate
+  # against this pinned version. The argument is a test-owned path; Agent
+  # Console never reads Claude's internal transcript storage.
+  export_command: "/export $TEST_OWNED_PATH"
+  export_format: plain-text-conversation
+  documentation: "https://code.claude.com/docs/en/commands#all-commands"
+  verified: true
+
+modal_prompts:
+  # A new working directory triggers a trust picker before the session is
+  # usable: "Is this a project you created or one you trust?" with numbered
+  # options, answered with Enter.
+  startup_trust_prompt: true
+  # WHERE THE ANSWER IS KEPT, and what it takes to prepare it. Measured
+  # 2026-09-06 on 2.1.261: the modal's default option is "No, exit", and
+  # --dangerously-skip-permissions does NOT skip it. The answer lands in
+  # ~/.claude.json under projects["<cwd>"].hasTrustDialogAccepted; seeding
+  # that entry before the launch removed the modal. Deck READS this record for
+  # its per-project harness-readiness diagnostic and never writes
+  # it; no launch path consults it.
+  startup_trust_record: '~/.claude.json projects["<cwd>"].hasTrustDialogAccepted'
+  startup_trust_record_verified: true
+  startup_trust_bypass_flag: none
+  # The decision is INHERITED downward: a fresh directory under a trusted one
+  # launched with no modal and gained no entry of its own
+  # (/workspace/tmp/<new> under a trusted /workspace/tmp). So an exact-key
+  # miss is not evidence of a modal, and a reader must answer from the
+  # nearest trusted ancestor. Whether a nearer FALSE entry overrides a
+  # farther true one is unmeasured.
+  startup_trust_inherited_by_subdirectories: true
+  # An entry recording that the dialog was NOT accepted asks again: seeding
+  # hasTrustDialogAccepted: false for a fresh directory produced the modal on
+  # the next launch. This is the opposite of codex's untrusted decision.
+  startup_trust_refusal_reprompts: true
+  # THE IMPORTANT MEASUREMENT. Text delivered by bracketed paste while that
+  # modal is open is SILENTLY DISCARDED. It does not appear in the composer,
+  # it is not queued, and the modal is unchanged — while tmux reports the write
+  # as successful.
+  #
+  # So `injected` genuinely means only "tmux acknowledged the paste and submit
+  # for the intended pane", exactly as the input-state table says. A composer
+  # item marked injected during a modal would be lost with no error anywhere.
+  # This is why Deck never infers provider mode and never drains held input
+  # on its own: no observation distinguishes delivered from discarded, so the
+  # release has to be an explicit user gesture.
+  input_during_modal: silently-discarded
+  input_during_modal_verified: true
+
+interrupt:
+  # Escape cancels the in-flight turn. The process stays alive and the session
+  # remains usable.
+  key: "Escape"
+  kills_process: false
+  verified: true
+
+exit:
+  # No keyboard path terminated the process in this environment: "/exit",
+  # Ctrl-D, and Ctrl-C twice all left it running. Not established.
+  graceful_keyboard_path: none-established
+  # SIGTERM works, and note HOW it is reported: Claude handles the signal and
+  # exits 143 itself, so tmux records pane_dead_status=143 with an EMPTY
+  # pane_dead_signal. Contrast /bin/sleep, which dies from the signal and
+  # reports pane_dead_signal=15 with an empty status.
+  #
+  # Both shapes are representable by the sessions table's
+  # exit-code-xor-signal constraint, but a reconciler that expected a signal
+  # here would record nothing.
+  sigterm_status: 143
+  sigterm_reported_as: exit-status-not-signal
+  verified: true
+
+containment:
+  # DECISIVE, and it invalidates a load-bearing assumption. Claude's bash tool
+  # runs subprocesses in a NEW process group AND a NEW session:
+  #
+  #   sleep(31805) <- bash(31803) <- claude(31194) <- tmux server
+  #   claude:  pid 31194  pgid 31194  sid 31194
+  #   sleep:   pid 31805  pgid 31805  sid 31803
+  #
+  # The pane's process group still had exactly one member while a tool
+  # subprocess was running.
+  #
+  # Therefore "the recorded process group is empty" does NOT mean "every
+  # process this provider started is gone", and kill(-pgid) does not reach
+  # tool subprocesses. A Unix process group is signal routing, not a
+  # supervision boundary — and Claude actively leaves it.
+  tool_subprocesses_stay_in_process_group: false
+  tool_subprocesses_stay_in_session: false
+  verified: true
+  # The containment probe measured the kill itself rather than deriving it
+  # from the topology. Reproduced the escape first (bash tool shell setsid:
+  # claude(871) pgid=871 sid=871; bash(1150) pgid=1150 sid=1150;
+  # python3(1152) pgid=1152 sid=1150), then sent SIGKILL to the pane's
+  # process group. Only claude died: tmux recorded pane_dead_signal=9 with an
+  # empty status (died FROM the signal — the opposite shape from the handled
+  # SIGTERM above). Both tool processes SURVIVED and were reparented to init
+  # (ppid=1).
+  group_kill_survivors: tool-shell-and-children
+  group_kill_verified: true
+  resolution: >
+    Decided by the maintainer, 2026-07-31: accept and state
+    plainly. "Stop" signals the pane's process group per this contract and
+    records the requested action, the observed exit, and its status.
+    Escaped tool subprocesses are outside that boundary: the stop must not
+    chase them through /proc, the reconciler cannot see them, and product
+    surfaces must state that they can outlive a stop rather than implying
+    total teardown. See the README's containment section for the cross-
+    provider results and the full decision.

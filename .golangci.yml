@@ -1,0 +1,39 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - nilerr
+    - rowserrcheck
+    - sqlclosecheck
+
+  settings:
+    gosec:
+      excludes:
+        # Subprocess launched with variable arguments is inherent to this
+        # product: it launches provider CLIs and tmux by design. The relevant
+        # protection is a fixed executable plus argv, never a shell,
+        # which is enforced by review and tests, not by this rule.
+        - G204
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gosec
+
+formatters:
+  enable:
+    - gofmt

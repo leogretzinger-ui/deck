@@ -1,0 +1,22 @@
+# Compose Go and MemPalace in one BuildKit graph. Referencing the build-only
+# service as a named context makes Compose build it first without requiring an
+# intermediate tag to cross builder boundaries.
+services:
+  go-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mempalace
+      args:
+        VERSION: ${NOISEDECK_BUILD_VERSION:-${NOISEDECK_IMAGE_TAG:-local}}
+        NOISEDECK_RUNTIME_UID: ${NOISEDECK_RUNTIME_UID:-1026}
+        NOISEDECK_RUNTIME_GID: ${NOISEDECK_RUNTIME_GID:-100}
+        NOISEDECK_FONTS: ${NOISEDECK_FONTS:-auto}
+        NOISE_TASKS_REPO: ${NOISE_TASKS_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/tasks.git}
+        NOISE_SDLC_REPO: ${NOISE_SDLC_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/sdlc.git}
+        NOISE_VISUAL_DIFF_REPO: ${NOISE_VISUAL_DIFF_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/visual-diff.git}
+    scale: 0
+  app:
+    build:
+      additional_contexts:
+        deck-base: service:go-base

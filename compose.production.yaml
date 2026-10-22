@@ -1,0 +1,37 @@
+# Canonical Noisefloor production policy. Use only through
+# deploy/production-compose.sh, which supplies the complete capability stack
+# and validates both the rendered and running configuration.
+services:
+  app:
+    image: deck:${NOISEDECK_IMAGE_TAG:?set the immutable production image tag}
+    container_name: noisefloor-deck
+    # The container's host name is this Deck's chat identity: a2a announces
+    # its key under it and peers pin that name, so it must not change at a
+    # redeploy, which a container id does. Fixed, and distinct from any
+    # other Deck on the machine.
+    hostname: ${NOISEDECK_HOSTNAME:-noisefloor-deck}
+    labels:
+      com.noisefloor.deck.capability-profile: production-v1
+    environment:
+      NOISEDECK_SERVER_ALLOWED_ORIGINS: ${NOISEDECK_PUBLIC_ORIGIN:?set the production public origin}
+      NOISEDECK_AUTH_MODE: oidc
+      NOISEDECK_AUTH_GOOGLE_CLIENT_ID: ${GOOGLE_OIDC_CLIENT_ID:?set the production Google OIDC client ID}
+      NOISEDECK_AUTH_GOOGLE_CLIENT_SECRET: ${GOOGLE_OIDC_CLIENT_SECRET:?set the production Google OIDC client secret}
+      NOISEDECK_AUTH_GOOGLE_REDIRECT_URL: ${NOISEDECK_PUBLIC_ORIGIN:?set the production public origin}/auth/callback
+      NOISEDECK_AUTH_GOOGLE_ALLOWED_EMAIL: ${GOOGLE_OIDC_ALLOWED_EMAIL:?set the production Google email}
+      NOISEDECK_AUTH_SESSION_SECRET: ${NOISEDECK_AUTH_SESSION_SECRET:?set the production session secret}
+      NOISEDECK_DEPLOYMENT_HOST_SHA256: ${NOISEDECK_DEPLOYMENT_HOST_SHA256:?set the production host fingerprint}
+    ports: !override
+      - "${NOISEDECK_PUBLISH_ADDRESS:?set the production publish address}:${NOISEDECK_HOST_PORT:-18082}:8837"
+      # The relay palace, on the host's loopback only, for the tailnet proxy
+      # that forwards /sync and /healthz to it (docs/a2a-chat.md, Across
+      # hosts); nothing on the network reaches it directly.
+      - "127.0.0.1:${NOISEDECK_RELAY_HOST_PORT:-18766}:8766"
+    volumes:
+      - type: bind
+        source: ${NOISEDECK_TMP_HOST_PATH:?set the production disk-backed temporary path}
+        target: /tmp
+        bind:
+          create_host_path: false
+    tmpfs: !override
+      - /run/noisedeck:rw,noexec,nosuid,nodev,size=16m,uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100},mode=0700

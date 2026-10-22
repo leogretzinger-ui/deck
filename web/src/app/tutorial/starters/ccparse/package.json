@@ -1,0 +1,9 @@
+{
+  "name": "ccparse",
+  "version": "0.1.0",
+  "description": "Parses one conventional commit subject.",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": { "test": "node --test" },
+  "license": "MIT"
+}

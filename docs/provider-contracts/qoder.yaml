@@ -1,0 +1,109 @@
+# Qoder CLI (@qoder-ai/qodercli) — provider contract
+#
+# What was measured, against what:
+#   - The measured artifact is the pinned @qoder-ai/qodercli 1.1.28 npm
+#     package (a Node bundle with platform ripgrep
+#     optional dependencies selected by npm for the build arch). Its runtime
+#     shape was measured in a real private tmux pane with the same node
+#     interpreter path the image carries (/usr/local/bin/node); the launch
+#     path below is the deployment's configured executable.
+#   - The interactive launch was measured UNAUTHENTICATED and with no CI
+#     variable in the environment: the CLI stays up and shows two walls in
+#     order — the folder-trust modal ("Do you trust the files in this
+#     folder?", choices "1. Trust folder" / "2. Don't trust and exit") and
+#     the banner "Not Login Please Auth". No input was delivered; every
+#     input-behaviour field below is unmeasured.
+#   - Headless surface measured: `qoder --list-models` prints
+#     "Not logged in. Run `qodercli login` to authenticate."
+#   - CI trap measured: with CI=true in the environment the CLI skips the
+#     TUI, takes its headless path, and exits 42
+#     ("No input provided via stdin", source "gemini.headless") before any
+#     wall appears. Deck's launch allowlist carries no CI variable.
+
+provider: qoder
+version_tested: "1.1.28"
+measured_on: "2026-08-22"
+
+runtime_compatibility:
+  method: capability_probes
+  capability_probes:
+    - name: "permission, bypass, and session syntax"
+      args: ["--help"]
+      required_flags:
+        - "--permission-mode"
+        - "--dangerously-skip-permissions"
+        - "--resume"
+        - "--session-id"
+  probe_state_isolation:
+    - HOME
+  reason: >
+    Measured on the 1.1.28 package: --version and --help are not
+    side-effect-free — they append to the ~/.qoder log tree and to the
+    global git ignore at ~/.config/git/ignore. The probe runner redirects
+    HOME into a throwaway tree (which covers both roots) so compatibility
+    checks cannot mutate the user's persisted state.
+
+executable:
+  # The pane process is the Node launcher; /proc/exe is the interpreter and
+  # cannot distinguish Qoder from any other Node process. Pane identity
+  # rests on the full pane-identity tuple, never on the executable.
+  launch_path: "/usr/local/bin/qoder"
+  launch_target: "/usr/local/lib/node_modules/@qoder-ai/qodercli/bundle/qodercli.js"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/qoder"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+  child_process:
+    # Measured in the pane: the npm bin shim (dispatcher) spawns the bundle
+    # entry as a Node child in the same process group and session. The real
+    # CLI is that child; the pane PID Deck observes is the launcher.
+    exe: "/usr/local/bin/node"
+    cmdline: "/usr/local/bin/node /usr/local/lib/node_modules/@qoder-ai/qodercli/bundle/qodercli.js"
+    same_pgid_and_sid_as_pane: true
+
+identity:
+  contract: fresh-relaunch-only
+  session_flag_present: true
+  trusted_identity_capture: false
+  provider_state_read_by_deck: false
+  provider_output_read_by_deck: false
+
+launch:
+  new_session_args: []
+  operator_bypass_args: ["--dangerously-skip-permissions"]
+  resume_args: null
+
+session_storage:
+  root: "~/.qoder"
+  contents_read_by_deck: false
+  global_writes:
+    # Qoder appends its local-files block ("AGENTS.local.md", "*.local.md")
+    # to the user's global git ignore on first run. It is regenerated if
+    # absent; it is a global mutation a user should know about, not a
+    # Deck-managed path.
+    - "~/.config/git/ignore"
+
+first_run_walls:
+  folder_trust_modal: true
+  auth_banner: "Not Login Please Auth"
+
+injection:
+  # Unmeasured: no authenticated Qoder session has accepted input — the
+  # measured run stops at the folder-trust modal, which injected bytes would
+  # answer instead of the user. These close only through an authenticated
+  # tmux conformance run (the Phase 0 spike), and the descriptor encodes
+  # nothing until then.
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unmeasured
+  verified: false
+
+exit:
+  sigterm_exits: unmeasured
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: launcher-plus-node-child
+  process_tree_verified: true
+  group_kill_survivors: unmeasured

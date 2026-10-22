@@ -1,0 +1,133 @@
+# Kimi Code CLI — Phase 0 behavioural contract
+#
+# Identity was measured against the real CLI. The injection contract has NOT
+# been measured yet and says so.
+
+provider: kimi
+version_tested: "0.29.2"
+measured_on: "2026-07-30"
+
+runtime_compatibility_probe:
+  commands:
+    - args: ["--help"]
+      required_flags: ["-S", "--auto"]
+    - args: ["doctor", "config", "/dev/stdin"]
+      accepted_stdin: |
+        [[hooks]]
+        event = "SessionStart"
+        command = "/usr/local/bin/noisedeck-provider-hook"
+  scope: command-line-and-config-syntax-only
+  side_effects: none
+  does_not_remeasure: [exact-resume, hook-delivery, injection, modal-handling, containment]
+
+native_receive_probe:
+  # The blockable Stop hook writes the wake reason back into the turn and
+  # UserPromptSubmit stdout joins the next turn's context; the probe drives
+  # the real kimi CLI against a synthetic mailbox and a loopback model.
+  script: "probe_a2a_kimi.py"
+  network: none
+  timeout_s: 420
+
+executable:
+  launch_path: "/usr/local/bin/kimi"
+  resolved_at_launch: "/usr/local/lib/node_modules/@moonshot-ai/kimi-code/dist/main.mjs"
+  # MEASURED separately from the symlink target — they are different facts.
+  proc_exe: "/usr/local/bin/node"
+  # node script: /proc/exe is the INTERPRETER, identical to codex and to every other node process — necessary but NOT sufficient
+  # MEASURED: cmdline does NOT contain the resolved target above.
+  proc_cmdline: "kimi-code"
+  proc_exe_matches_launch_path: false
+  # No runtime executable evidence identifies this provider. Identity
+  # rests on the tmux pane identity/generation markers we write.
+  usable_runtime_executable_evidence: false
+
+identity:
+  contract: retrieved-by-hook
+  # Kimi allocates its own id and reports it through a SessionStart hook:
+  #   {"hook_event_name":"SessionStart",
+  #    "session_id":"session_772662c7-b482-4700-95fa-4f4495fbce00",
+  #    "cwd":"/tmp","source":"startup"}
+  new_session_args: []
+  resume_args: ["-S", "$NATIVE_ID"]
+  # NOT a bare UUID — a "session_" prefix precedes it. Store and replay the id
+  # verbatim; do not parse it as a UUID.
+  id_format: prefixed-uuid
+  hook:
+    config_path: "~/.kimi-code/config.toml"
+    # FLAT TOML, not Codex's nested arrays. Only event, matcher, command, and
+    # timeout are permitted keys — ANY extra key makes the whole config fail to
+    # load, which breaks every Kimi session, not just ours. The two hook
+    # formats are not interchangeable; assuming they were cost a wrong
+    # conclusion earlier.
+    config_shape: flat-toml
+    example: |
+      [[hooks]]
+      event = "SessionStart"
+      command = "sh /path/to/capture.sh"
+      timeout = 10
+    event: "SessionStart"
+    session_id_field: "session_id"
+    # MEASURED: a fresh process emits source:"startup" before any submission.
+    timing: at-process-launch
+    # Provisioning installs this hook;
+    # Deck never writes the user's provider config, and must
+    # verify the hook before every launch/resume; see codex.yaml for the full
+    # note. The verifier must respect
+    # the FLAT-TOML constraint above when judging "correctly shaped".
+    install_owner: provisioning
+    console_role: verify-and-refuse
+  exact_resume_verified: true
+  # 'Session "session_00000000-..." not found.'
+  unknown_id_fails_loudly: true
+
+injection:
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unmeasured
+  active_turn_verified: false
+
+modal_prompts:
+  input_during_modal: unmeasured
+  # Measured 2026-09-06 on 0.41.0. A new working directory stops the launch at
+  # "Trust this folder?" — whose default option is now "Trust this folder",
+  # not the exit entry an earlier note recorded — and --auto does NOT skip it.
+  # The answer is one file per directory under ~/.kimi-code/workspace-trust,
+  # named wd_<base name>_<first 12 hex of sha256(cwd)> and holding
+  # {"root": "<cwd>", "trustedAt": <ms>}. THE NAME IS LOAD-BEARING: renaming a
+  # working record brought the modal back, so a record filed anywhere else is
+  # invisible. Seeding the file under that exact name removed the modal. Deck
+  # READS it for its per-project harness-readiness diagnostic and
+  # never writes it; no launch path consults it.
+  startup_trust_prompt: true
+  startup_trust_record: '~/.kimi-code/workspace-trust/wd_<base>_<sha256(cwd)[:12]>'
+  startup_trust_record_verified: true
+  startup_trust_bypass_flag: none
+  # Unlike Claude and Codex, the decision is NOT inherited: /workspace/deck is
+  # trusted and /workspace/deck/internal met the modal. One record per exact
+  # directory, so its absence is the answer.
+  startup_trust_inherited_by_subdirectories: false
+interrupt:
+  key: unmeasured
+exit:
+  sigterm_status: unmeasured
+containment:
+  # Measured with the interactive TUI as the pane process.
+  # Launch argv: kimi -y. Driving one foreground
+  # `python3 -c 'import time; time.sleep(180)'` produced:
+  #
+  #   kimi-code(pane 5535)  pgid=5535 sid=5535 tty=tmux-pty
+  #     python3(5672)       pgid=5672 sid=5672 tty=none
+  #
+  # Kimi spawns the tool child directly (no intermediate shell observed), and
+  # the child leaves the pane's process group AND session with no controlling
+  # terminal. kill(-pgid) cannot reach it, and an empty pane group does not
+  # mean kimi's processes are gone.
+  tool_subprocesses_stay_in_process_group: false
+  tool_subprocesses_stay_in_session: false
+  verified: true
+  # MEASURED: SIGKILL to the pane's process group killed kimi-code
+  # (pane_dead_signal=9, empty status); the tool child SURVIVED and was
+  # reparented to init (ppid=1) — like Claude, unlike Codex.
+  group_kill_survivors: tool-children
+  group_kill_verified: true

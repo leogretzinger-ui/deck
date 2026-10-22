@@ -1,0 +1,149 @@
+/* Runtime gates share production markup with the deterministic preview. */
+.security-runtime .enroll-content { width: 380px; gap: 18px; background: var(--color-surface-card); border: 1px solid var(--color-border); border-radius: var(--radius-panel); padding: 30px 28px 26px; }
+.security-runtime .enroll-title { font-size: var(--type-title-3-size); line-height: var(--type-title-3-lh); letter-spacing: var(--type-title-3-ls); }
+.security-runtime .enroll-copy { font-size: var(--type-body-sm-size); line-height: 1.55; }
+.security-runtime .enroll-intro { gap: 6px; }
+.security-runtime .enroll-intro .enroll-copy { line-height: 1.5; }
+.security-runtime .enroll-button { align-self: stretch; }
+.security-runtime .enroll-actions .enroll-button { align-self: flex-start; }
+.security-runtime .enroll-brand-row { gap: 12px; }
+.security-brand-status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--type-label-sm-size); letter-spacing: var(--type-label-ls); }
+.security-running-dot { flex: none; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.security-runtime .security-card-400, .security-runtime .security-card-420, .security-runtime .security-card-440, .security-runtime .security-card-460 { padding: 28px 26px 24px; gap: 16px; }
+.security-runtime .security-card-400 { width: 400px; }
+.security-runtime .security-card-420 { width: 420px; }
+.security-runtime .security-card-440 { width: 440px; }
+.security-runtime .security-card-460 { width: 460px; }
+.security-identity { display: flex; align-items: center; gap: 9px; border-top: 1px solid var(--color-border); padding-top: 14px; }
+.security-identity > i { flex: none; width: 22px; height: 22px; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface-muted); }
+.security-identity > span { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: var(--type-micro-size); color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.security-text-link { display: inline; border: 0; padding: 0; background: transparent; color: var(--color-accent); font: inherit; cursor: pointer; }
+.security-identity .security-text-link { margin-left: auto; font-size: var(--type-caption-size); }
+.security-private-note { display: flex; gap: 10px; padding: 12px 13px; }
+.security-private-note > svg { flex: none; color: var(--color-text-tertiary); margin-top: 2px; }
+.security-browser-note { display: flex; flex-direction: column; gap: 7px; padding: 12px 13px; }
+.security-browser-note .enroll-copy { line-height: var(--type-body-lh); }
+.security-browser-note .enroll-mono { color: var(--color-text-primary); }
+.security-last-reached { display: flex; align-items: baseline; gap: 8px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); }
+.security-last-reached > span:last-child { color: var(--color-text-secondary); }
+.security-runtime[data-security-runtime="signed-out"] .enroll-content { width: 340px; padding: 32px 28px 26px; align-items: center; text-align: center; }
+.security-runtime[data-security-runtime="signed-out"] .enroll-logo { height: 26px; }
+.security-runtime[data-security-runtime="signed-out"] .enroll-button { gap: 10px; }
+.security-runtime[data-security-runtime="password"] .enroll-form { gap: 16px; }
+.security-progress { display: flex; flex-direction: column; gap: 11px; }
+.security-progress-row { display: flex; align-items: center; gap: 10px; color: var(--color-text-secondary); font-size: var(--type-body-sm-size); }
+.security-progress-row > span:first-child { display: inline-flex; flex: none; }
+.security-progress-row > span:nth-child(2) { flex: 1; }
+.security-progress-row small { font-size: var(--type-micro-size); color: var(--color-text-tertiary); }
+.security-progress-row .enroll-spinner { width: 14px; height: 14px; }
+.security-current { color: var(--color-text-primary); }
+.security-empty-circle { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--color-text-tertiary); }
+.security-progress-heading { display: flex; align-items: center; gap: 10px; }
+.security-progress-heading .enroll-title { line-height: var(--type-body-lh); }
+.security-runtime .security-lock-progress { width: 440px; padding: 22px 22px 20px; gap: 16px; }
+.security-failure-actions { display: flex; flex-direction: column; gap: 9px; }
+.security-mobile-brand, .security-recovery-mobile, .security-lock-mobile, .security-sheet-handle { display: none; }
+.security-with-backdrop::before { display: none; }
+.security-blank-workspace { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.security-blank-workspace > div:first-child { flex: none; height: 48px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-muted); opacity: .5; }
+.security-blank-workspace > div:last-child { display: flex; flex: 1; min-height: 0; opacity: .4; }
+.security-blank-workspace i { flex: none; width: 236px; border-right: 1px solid var(--color-border); background: var(--color-surface-muted); }
+.security-blank-workspace span { flex: 1; background: #10141b; }
+.security-scrim { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgb(9 12 17 / .66); }
+.security-scrim:has(.security-restarted) { background: rgb(9 12 17 / .72); }
+.security-runtime .security-lock-dialog { width: 480px; padding: 0; gap: 0; }
+.security-dialog-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--color-border); }
+.security-dialog-head > div { display: flex; flex-direction: column; gap: 3px; }
+.security-dialog-head .enroll-title { font-size: var(--type-title-3-size); }
+.security-dialog-head .enroll-copy { font-size: var(--type-body-sm-size); line-height: var(--type-body-lh); }
+.security-dialog-body { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; }
+.security-dialog-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px 18px; border-top: 1px solid var(--color-border); }
+.security-session-list { display: flex; flex-direction: column; }
+.security-session-row { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-bottom: 1px solid var(--color-border); font-size: var(--type-body-sm-size); }
+.security-session-row:last-child { border-bottom: 0; }
+.security-session-row > span:first-of-type { flex: 1; }
+.security-session-row > span.enroll-success, .security-session-row > span.enroll-error { display: inline-flex; flex: none; }
+.security-session-detail { font-size: var(--type-micro-size); color: var(--color-text-tertiary); }
+.security-session-detail .enroll-mono { font-size: inherit; }
+.security-runtime .security-plain { width: 520px; border: 0; background: transparent; border-radius: 0; padding: 0; }
+.security-plain .enroll-title { font-size: var(--type-title-2-size); line-height: var(--type-title-2-lh); letter-spacing: var(--type-title-2-ls); }
+.security-plain .enroll-intro { gap: 7px; }
+.security-plain .enroll-intro .enroll-copy { font-size: var(--type-body-size); line-height: var(--type-body-lh); }
+.security-recovery .enroll-actions { gap: 12px; }
+.security-recovery .enroll-recovery-input { min-height: 0; }
+.security-recovery-desktop { display: flex; flex-direction: column; gap: 6px; }
+.security-runtime .security-help { width: 760px; gap: 20px; }
+.security-help-columns { display: flex; gap: 16px; }
+.security-help-columns > .enroll-card { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.security-help-columns .enroll-copy { line-height: 1.5; }
+.security-help-heading { display: flex; align-items: center; gap: 9px; }
+.security-help-heading h2 { font-size: var(--type-body-size); font-weight: var(--weight-medium); color: var(--color-text-primary); }
+.security-help-divider { border-top: 1px solid var(--color-border); padding-top: 10px; }
+.security-help-columns .enroll-button { align-self: flex-start; }
+.security-lost .enroll-intro { gap: 8px; }
+.security-survives { display: flex; flex-direction: column; gap: 10px; }
+.security-survives .enroll-copy { line-height: 1.5; }
+.security-menu-action { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+.security-menu-action > span:last-child { font-size: var(--type-caption-size); color: var(--color-text-tertiary); font-weight: var(--weight-regular); }
+@media (max-width: 600px) {
+  .security-runtime { padding: 24px 20px; }
+  .security-runtime .enroll-content { width: 100%; padding: 0; border: 0; background: transparent; gap: 18px; }
+  .security-runtime .enroll-title { font-size: var(--type-title-2-size); line-height: var(--type-title-2-lh); letter-spacing: var(--type-title-2-ls); }
+  .security-runtime .enroll-logo { height: 20px; }
+  .security-runtime[data-security-runtime="locked"] .enroll-content { gap: 20px; }
+  .security-identity { padding-top: 16px; }
+  .security-identity > i { width: 24px; height: 24px; }
+  .security-text-link { min-height: 44px; }
+  .enroll-caption .security-text-link { min-height: 0; }
+  .security-mobile-brand { display: block; }
+  .security-runtime[data-security-runtime="unlock-failed"] .enroll-title + .enroll-copy { margin-top: -12px; }
+  .security-failure-actions { gap: 18px; }
+  .security-runtime .security-recovery { gap: 16px; }
+  .security-recovery .enroll-intro { gap: 6px; }
+  .security-recovery .enroll-intro .enroll-copy { font-size: var(--type-body-sm-size); line-height: 1.55; }
+  .security-recovery .enroll-actions { flex-direction: column; align-items: stretch; gap: 16px; }
+  .security-recovery .enroll-actions .enroll-button { align-self: stretch; }
+  .security-recovery .enroll-button-secondary { background: transparent; border-color: transparent; color: var(--color-text-secondary); }
+  .security-recovery .enroll-form { gap: 16px; }
+  .security-recovery .enroll-recovery-input { height: calc(var(--type-mono-size) * 1.6 * 4 + 26px); }
+  .security-recovery-desktop, .security-lock-desktop, .security-dialog-head { display: none; }
+  .security-recovery-mobile, .security-lock-mobile { display: block; }
+  .security-help-columns { flex-direction: column; }
+  .security-scrim:has(.security-lock-dialog) { align-items: flex-end; padding: 0; background: rgb(9 12 17 / .6); }
+  .security-with-backdrop:has(.security-lock-dialog) { background: #10141b; }
+  .security-with-backdrop:has(.security-lock-dialog) .security-blank-workspace { display: none; }
+  .security-runtime .security-lock-dialog { width: 100%; border-radius: 20px 20px 0 0; border-top: 1px solid var(--color-border); padding: 10px 20px 34px; gap: 14px; background: var(--color-surface-card); }
+  .security-sheet-handle { display: block; align-self: center; width: 36px; height: 4px; border-radius: 2px; background: var(--color-border-strong); }
+  .security-dialog-body, .security-dialog-foot { padding: 0; border: 0; }
+  .security-lock-mobile:has(.enroll-title) { display: flex; flex-direction: column; gap: 5px; }
+  .security-lock-mobile .enroll-title { font-size: var(--type-title-3-size); line-height: var(--type-title-3-lh); letter-spacing: var(--type-title-3-ls); }
+  .security-lock-mobile .enroll-copy { line-height: 1.5; }
+  .security-dialog-foot { flex-direction: column; gap: 14px; }
+  .security-session-row { padding: 11px 13px; }
+}
+@media (max-width: 600px) {
+  /* Keep inline help readable while extending its actual pointer hit region. */
+  .enroll-caption .security-text-link { position: relative; }
+  .enroll-caption .security-text-link::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 44px; min-width: 44px; transform: translateY(-50%); }
+}
+.security-runtime[data-security-runtime="signed-out"] .enroll-button { align-self: center; }
+.security-runtime[data-security-runtime="locked"] .enroll-copy { text-wrap: wrap; }
+.security-runtime .security-restarted .enroll-copy { text-wrap: pretty; }
+.security-dialog-head .enroll-title { letter-spacing: var(--type-button-ls); }
+.security-dialog-head .enroll-copy { margin-top: var(--space-1); }
+.security-lock-dialog { box-shadow: var(--ring-overlay); }
+.security-scrim:has(.security-lock-dialog) { backdrop-filter: var(--blur-scrim); }
+.security-with-backdrop:has(.security-restarted) .security-blank-workspace > div:last-child { opacity: 1; }
+.security-with-backdrop:has(.security-restarted) .security-blank-workspace span { background: var(--color-surface-sunken); }
+@media (max-width: 600px) {
+  .security-identity .security-text-link { min-height: 0; position: relative; }
+  .security-identity .security-text-link::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 44px; min-width: 44px; transform: translateY(-50%); }
+  .security-runtime[data-security-runtime="unlock-failed"] .enroll-status > svg { width: 14px; height: 14px; }
+  .security-lock-dialog { box-shadow: none; }
+  .security-scrim:has(.security-lock-dialog) { backdrop-filter: none; }
+}
+
+.security-runtime[data-security-runtime="unavailable"] .enroll-mono { color: var(--color-text-primary); }
+.security-private-note .enroll-copy { line-height: 1.5; }
+.security-brand-status { gap: 7px; }
+.security-runtime .enroll-button-small { gap: var(--space-1); }

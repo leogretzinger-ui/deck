@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 180 180" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Dark-Lockup" serif:id="Dark Lockup">
+        <rect id="BG-Dark" serif:id="BG Dark" x="0" y="0" width="180" height="180" style="fill:#0b0d10;"/>
+        <g id="Logo-Light" serif:id="Logo Light">
+            <circle cx="40.121" cy="38.081" r="2.04" style="fill:#fbfcfe;"/>
+            <circle cx="65.061" cy="38.081" r="2.04" style="fill:#fbfcfe;"/>
+            <circle cx="90" cy="38.081" r="2.04" style="fill:#fbfcfe;"/>
+            <circle cx="114.939" cy="38.081" r="2.04" style="fill:#fbfcfe;"/>
+            <circle cx="139.879" cy="38.081" r="2.04" style="fill:#fbfcfe;"/>
+            <circle cx="40.121" cy="63.02" r="3.061" style="fill:#fbfcfe;"/>
+            <circle cx="65.061" cy="63.02" r="3.061" style="fill:#fbfcfe;"/>
+            <circle cx="90" cy="63.02" r="3.061" style="fill:#fbfcfe;"/>
+            <circle cx="114.939" cy="63.02" r="3.061" style="fill:#fbfcfe;"/>
+            <circle cx="139.879" cy="63.02" r="3.061" style="fill:#fbfcfe;"/>
+            <circle cx="40.121" cy="87.96" r="4.081" style="fill:#fbfcfe;"/>
+            <circle cx="65.061" cy="87.96" r="4.081" style="fill:#fbfcfe;"/>
+            <circle cx="90" cy="87.96" r="4.081" style="fill:#fbfcfe;"/>
+            <circle cx="114.939" cy="87.96" r="4.081" style="fill:#fbfcfe;"/>
+            <circle cx="139.879" cy="87.96" r="4.081" style="fill:#fbfcfe;"/>
+            <circle cx="40.121" cy="112.899" r="5.101" style="fill:#fbfcfe;"/>
+            <circle cx="65.061" cy="112.899" r="5.101" style="fill:#fbfcfe;"/>
+            <circle cx="90" cy="112.899" r="5.101" style="fill:#fbfcfe;"/>
+            <circle cx="114.939" cy="112.899" r="5.101" style="fill:#fbfcfe;"/>
+            <circle cx="139.879" cy="112.899" r="5.101" style="fill:#fbfcfe;"/>
+            <circle cx="40.121" cy="137.838" r="6.121" style="fill:#fbfcfe;"/>
+            <circle cx="65.061" cy="137.838" r="6.121" style="fill:#fbfcfe;"/>
+            <circle cx="90" cy="137.838" r="6.121" style="fill:#fbfcfe;"/>
+            <circle cx="114.939" cy="137.838" r="6.121" style="fill:#fbfcfe;"/>
+            <circle cx="139.879" cy="137.838" r="6.121" style="fill:#fbfcfe;"/>
+        </g>
+    </g>
+</svg>

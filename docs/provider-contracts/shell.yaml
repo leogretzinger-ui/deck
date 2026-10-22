@@ -1,0 +1,66 @@
+# Shell (bash) — Phase 0 behavioural contract
+#
+# The shell provider is identity-none BY CONTRACT: there is no
+# identity to assign, retrieve, or resume, and this file records none. What
+# is measured here is the terminal surface — injection, stop signals, and
+# containment — because those are the same bar every provider clears.
+
+provider: shell
+version_tested: "5.2.15"
+measured_on: "2026-08-04"
+
+executable:
+  launch_path: "/bin/bash"
+  # GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)
+  proc_exe: "/usr/bin/bash"
+  proc_exe_matches_launch_path: true
+  # Native binary: /proc/exe matching is sufficient evidence.
+  usable_runtime_executable_evidence: true
+
+identity:
+  contract: none-by-contract
+  # No native session ID exists, none is assigned at launch, none is
+  # captured afterwards. Resume is an explicit recorded refusal
+  # (ErrNotResumable), never an approximation like "the last shell here".
+  new_session_args: []
+  resume_args: refuse
+  exact_resume_verified: not-applicable
+
+injection:
+  # MEASURED in a private tmux pane (bash --noprofile --norc, tmux 3.6a):
+  # text arrives literally; Enter submitted as a separate key runs the line.
+  bracket_paste: delivers-verbatim
+  submit_sequence: "Enter as its own key submits"
+  # MEASURED: a bracketed paste carrying an embedded newline lands in the
+  # readline edit buffer as multiple lines and does NOT execute; the later
+  # Enter runs the buffered lines in order.
+  multiline: buffered-until-enter
+  # MEASURED: input typed while `sleep 3` ran in the foreground executed
+  # after the command finished — the tty buffers it; nothing is lost.
+  active_turn_input: tty-buffered-queue
+  active_turn_verified: true
+
+modal_prompts:
+  # A shell has no modal surface; nothing discards input.
+  input_during_modal: no-modal-surface
+interrupt:
+  key: "Ctrl-C SIGINTs the foreground job, as in any terminal"
+exit:
+  # MEASURED: an interactive bash IGNORES SIGTERM (manager stop deadline
+  # expired with no exit). SIGHUP is the hangup path a shell exits on; the
+  # descriptor's graceful signal is SIGHUP.
+  sigterm_status: ignored
+  sighup_status: exits
+containment:
+  # The pane process IS the payload: every command the user runs is a
+  # child of the shell, inside its own job process group under the pane's
+  # session. kill(-pgid of pane) reaches the shell; job groups the shell
+  # started in the foreground die with their session leader on SIGHUP/SIGKILL
+  # of the pane group — but a command the user backgrounds survives by
+  # design (it is their shell; the contract promises no containment beyond
+  # the pane's own process tree).
+  tool_subprocesses_stay_in_process_group: job-groups
+  tool_subprocesses_stay_in_session: true
+  verified: false
+  group_kill_survivors: backgrounded-jobs-by-design
+  group_kill_verified: false

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for new Deck preview DNS registrations
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=30s
+Unit=preview-dns.service
+
+[Install]
+WantedBy=timers.target

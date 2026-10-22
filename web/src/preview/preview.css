@@ -1,0 +1,155 @@
+/* Forced hover for the preview's deterministic captures: the
+   workspace carries a data-preview-hover marker so a capture can reach a
+   row's hover presentation from a bare URL instead of a real pointer. The
+   first project row and the selected session are the resting hover targets;
+   row-controls reveals the project rows' trailing + / ⋯ controls (the
+   "controls appear on hover when collapsed" state). */
+[data-preview-hover="project"] [data-project-list] > [data-project-row]:first-child [data-project-toggle] {
+  background: var(--color-wash-hover);
+}
+[data-preview-hover="session"] [data-session][aria-selected="true"] .session-menu-trigger {
+  opacity: 1;
+  pointer-events: auto;
+}
+[data-preview-hover="session"] [data-session][aria-selected="true"] .session-evidence {
+  opacity: 0;
+}
+[data-preview-hover="row-controls"] [data-project-row] [data-project-actions] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Every phone screen sits inside a device mock: a 393x852 frame
+   with a 1px bezel, a 44px corner radius, a 54px status strip and a 35px home
+   band, sitting 12px below the figure's top edge. The app draws none of it —
+   on device those bands are the OS's. The frame reserves their geometry so the
+   app's content lands at the reference's origin and the gate compares like
+   with like.
+
+   The reservation is geometric, not painted. The status strip and home band
+   are masked whole. The bezel is reserved by insetting the app one pixel and
+   masking the two 1px side rails, which lie outside the app box; its corner
+   curve crosses into the app rectangle, and those ~27 pixels per state are
+   deliberately left unmasked and score as mismatch — 0.00227% of the scored
+   area. Painting the bezel instead put device pixels inside the clip that no
+   mask owns correctly: a rectangle cannot follow the curve, and an anchored
+   ring both leaks antialiased border paint outside itself and covers pixels
+   the app repaints. Being charged a hair for device chrome is the safe side of
+   that ambiguity; being credited for it is not. */
+[data-preview-frame="phone"] body {
+  margin: 0;
+  background: var(--color-surface);
+}
+[data-phone-frame] {
+  position: relative;
+  width: 393px;
+  height: 864px;
+  background: var(--color-surface);
+  overflow: hidden;
+  /* The 393x852 figure sits inside a 1px bezel at a 44px radius.
+     The bezel belongs to the device frame, so the app is inset by it and the
+     frame does not paint it. Painting it here would put device pixels inside
+     the clipped region, where no mask can own them correctly: a rectangle
+     cannot follow the 44px curve, and an anchored ring resolves a
+     centre-contained band while Chromium's antialiased border paint spills
+     outside it AND shares pixels with app paint at the bottom tails. Not
+     painting removes the ambiguity — there are no device pixels to attribute.
+     The workspace root carries a transform that makes it the containing block
+     for fixed descendants, so overlays still resolve against the app box. */
+}
+[data-preview-frame="phone"] #app {
+  position: absolute;
+  left: 1px;
+  top: 67px;
+  width: 391px;
+  height: 762px;
+}
+/* frame=phone-screen: the reference is the 393x852 device screen itself,
+   so the status strip starts at the top edge, not 12px below it. */
+[data-preview-figure="screen"] [data-phone-frame] {
+  height: 852px;
+}
+[data-preview-figure="screen"][data-preview-frame="phone"] #app {
+  top: 55px;
+}
+/* The workspace root is h-screen, and inside the frame the screen is still
+   864px — so it would lay out against the viewport and be cropped at the
+   frame's edge rather than fitting it. Bottom-anchored chrome, panels and
+   inset:0 overlays all resolve against this block, so a crop puts them off
+   the captured frame while the top of the screen still lines up: the
+   geometry would look right and be wrong. Give the root the frame's own
+   height instead. */
+[data-preview-frame="phone"] [data-workspace] {
+  height: 100%;
+  width: 100%;
+  /* The modal and popover hosts are position:fixed, which resolves against
+     the viewport — so a sheet would run to the viewport's bottom and put its
+     last 35px inside the OS band this capture masks. A transform makes this
+     element the containing block for fixed descendants, so overlays resolve
+     against the app's own box exactly as they do on a real phone, where the
+     viewport IS the app. */
+  transform: translate(0);
+}
+
+
+/* The Projects header menu is a menubar: opening it focuses its first row.
+   A pointer-opened row is focused but not :focus-visible, so no ring
+   appears; a row focused from script always matches :focus-visible, because
+   the modality heuristic only trusts real input. Nothing the fixture can do
+   reaches the pointer state — blurring is undone by the menu's focusout net,
+   focus({ focusVisible: false }) is ignored, and a synthetic click on the
+   trigger is untrusted. The live app is unaffected: a real click paints no
+   ring. So the ring is an artefact of how a URL-driven capture reaches the
+   state, and it is suppressed here for the same reason this file forces hover
+   states — the fixture has to depict a gesture it cannot perform.
+
+   Scoped to the forced state and that popover only: a genuine keyboard open
+   anywhere else must keep its ring, which is real presentation the app owes a
+   keyboard user. */
+html[data-preview-state="menu-projects"] [data-projects-menu-popover] .menuitem:focus-visible {
+  box-shadow: none;
+  background: transparent;
+}
+
+/* The workspace layout uses 100vh, but the phone fixture constrains #app to
+   762px. Force the workspace root to fill the frame so the bottom dock stays
+   inside the captured app content instead of being clipped by the overflow. */
+[data-preview-frame="phone"] [data-workspace] {
+  height: 100%;
+}
+
+/* A focused field's caret blinks, and Playwright's animation freeze does not
+   reach it — it is the browser's own, not a CSS animation — so every capture
+   catches it at a random phase and the determinism self-check rejects the run.
+   The reference shows a static block cursor rather than a live caret, so hiding the
+   native one loses nothing the reference shows. Capture scaffolding only. */
+[data-preview-frame="phone"] textarea,
+[data-preview-frame="phone"] input {
+  caret-color: transparent;
+}
+/* The accepted security canvas has a simple bezel, without phone OS bands.
+   It is capture framing only; production fills the real viewport. */
+[data-security-preview="true"] .enrollment {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+}
+@media (max-width: 600px) {
+  [data-security-preview="true"] .enrollment { border-radius: 26px; }
+}
+/* Clip the security canvas bezel; production remains free to scroll. */
+[data-security-preview="true"] .enrollment { overflow: hidden; }
+
+/* The gate's capture frames a clipped element in whole device pixels and
+   refuses a frame whose fractional edges round short, while a dialog sized by
+   text line boxes lands on fractional heights. Rounding the auto height up to
+   the next whole pixel keeps the box the reference frames (the reference
+   import rounds its own frame up the same way) without moving any content.
+   Capture scaffolding only. */
+[data-assets-dialog],
+[data-panels-menu] {
+  height: calc-size(auto, round(up, size, 1px));
+}
+/* The same for the Assets trigger, whose width follows its label. */
+[data-titlebar-assets] {
+  width: calc-size(auto, round(up, size, 1px));
+}

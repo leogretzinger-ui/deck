@@ -1,0 +1,6 @@
+# Opt-in for a locally built licensed image; never use for public publication.
+services:
+  app:
+    build:
+      additional_contexts:
+        licensed-fonts: ${NOISEDECK_LICENSED_FONTS_DIR:?Set the external licensed font directory}

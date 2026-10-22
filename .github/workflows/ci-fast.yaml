@@ -1,0 +1,803 @@
+name: Fast checks
+
+on:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fast-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TMUX_VERSION: 3.6a
+  TMUX_SHA256: b6d8d9c76585db8ef5fa00d4931902fa4b8cbe8166f528f44fc403961a3f3759
+  GOLANGCI_LINT_VERSION: v2.6.2
+
+jobs:
+  scope:
+    permissions:
+      contents: read
+      actions: read
+    # Private fork code must never execute on a persistent home runner.
+    if: vars.NOISEDECK_SELF_HOSTED_CI != 'true' || !github.event.repository.private || github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.select.outputs.mode }}
+      jobs: ${{ steps.select.outputs.jobs }}
+      probe_shards: ${{ steps.select.outputs.probe_shards }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Test CI selection
+        run: python3 -B -m unittest discover -s .github/scripts -p 'test_*.py'
+
+      - name: Select checks from the PR diff
+        id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B .github/scripts/ci_scope.py
+
+  documentation:
+    needs: scope
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Check public archive contents and Markdown links
+        run: python3 -B .github/scripts/test_metrics.py run --suite documentation --output "$RUNNER_TEMP/test-metrics/documentation.json" -- go test -count=1 ./deploy/export/
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-documentation-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/documentation.json
+          retention-days: 3
+
+  frontend:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'frontend')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify clean checkout
+        run: test -z "$(git status --porcelain)"
+
+      - name: Install pinned Go for formatting
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Install pinned pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.18.0
+          run_install: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26.5.0
+
+      - name: Check Go formatting
+        run: test -z "$(gofmt -l .)"
+
+      - name: Test and build frontend
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm typecheck
+          pnpm test
+          node --test tools/probe-shard.test.mjs
+          pnpm build
+          node tools/font-build-probe.mjs
+
+      - name: Verify font build-context cache isolation
+        run: node web/tools/font-docker-probe.mjs
+
+      - name: Verify tests left the checkout clean
+        run: test -z "$(git status --porcelain)"
+
+  probes:
+    needs: scope
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.scope.outputs.probe_shards || '[1,2,3,"gateway","previews"]') }}
+    # The browser probes in web/tools assert DOM behaviour the unit suite
+    # cannot see. Backend probes own separate runners so their Go builds and
+    # servers do not serialize behind a UI shard. tools/browser.mjs launches
+    # the pinned local Chromium when no sidecar is named.
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'probes')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 11.18.0
+          run_install: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26.5.0
+
+      - name: Install frontend dependencies and build
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Cache Playwright Chromium
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.arch }}-${{ hashFiles('web/pnpm-lock.yaml') }}
+
+      # A hung apt mirror once ate the job's whole budget; the step gets its
+      # own timeout and one retry so mirror weather fails fast and recovers.
+      - name: Install Playwright Chromium
+        working-directory: web
+        timeout-minutes: 8
+        run: |
+          pnpm exec playwright install --with-deps chromium             || pnpm exec playwright install --with-deps chromium
+
+      - name: Run the browser probes
+        if: matrix.shard == 1 || matrix.shard == 2 || matrix.shard == 3
+        working-directory: web
+        env:
+          NOISEDECK_PROBE_SHARD: ${{ matrix.shard }}/3
+        run: node tools/run-probes.mjs
+
+      - name: Install pinned Go for backend browser probes
+        if: matrix.shard == 'gateway' || matrix.shard == 'previews'
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore backend browser Go build and module caches
+        if: runner.environment != 'self-hosted' && (matrix.shard == 'gateway' || matrix.shard == 'previews')
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-browser-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}-${{ matrix.shard }}-${{ github.sha }}
+          restore-keys: |
+            deck-browser-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}-${{ matrix.shard }}-
+
+      - name: Test workspace browser cryptography against the Go gateway
+        if: matrix.shard == 'gateway'
+        timeout-minutes: 10
+        run: node web/tools/security-go-probe.mjs
+
+      - name: Test plain workspace onboarding against the Go gateway
+        if: matrix.shard == 'gateway'
+        timeout-minutes: 10
+        run: node web/tools/onboarding-go-probe.mjs
+
+      - name: Test private project previews through HTTPS ingress
+        if: matrix.shard == 'previews'
+        working-directory: web
+        timeout-minutes: 10
+        run: |
+          tmux -V
+          pnpm test:project-preview
+          pnpm test:project-preview:managed
+
+  lint:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'lint')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Check reachable Go vulnerabilities
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          govulncheck ./...
+
+      - name: Restore pinned linter binary
+        id: lint_cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ runner.temp }}/deck-lint
+          key: golangci-lint-${{ env.GOLANGCI_LINT_VERSION }}-go-1.26.10-${{ runner.arch }}
+
+      - name: Build pinned Go linter and reject new debt
+        env:
+          GOMAXPROCS: "4"
+        run: |
+          if test "${GITHUB_EVENT_NAME}" = pull_request; then
+            lint_base="origin/${GITHUB_BASE_REF}"
+          elif test "${GITHUB_EVENT_NAME}" = workflow_dispatch && test "${GITHUB_REF}" != refs/heads/main; then
+            lint_base=origin/main
+          else
+            lint_base=HEAD^
+            # The mirror's first snapshot commit has no parent, and an
+            # invalid revision would fail the lint step outright. Diffing
+            # HEAD against itself reports no new debt, which is correct
+            # for a commit that only republishes reviewed main.
+            git rev-parse -q --verify "${lint_base}" >/dev/null 2>&1 || lint_base=HEAD
+          fi
+          if test ! -x "${RUNNER_TEMP}/deck-lint/golangci-lint"; then
+            make lint-install TOOLS_BIN="${RUNNER_TEMP}/deck-lint"
+          fi
+          "${RUNNER_TEMP}/deck-lint/golangci-lint" version | grep -F "golangci-lint has version ${GOLANGCI_LINT_VERSION#v}"
+          "${RUNNER_TEMP}/deck-lint/golangci-lint" run --new-from-rev "${lint_base}"
+
+  go-serialized:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'go-serialized')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      # The tmux-backed suite is timing-sensitive against the runner image's
+      # tmux, so every run installs the pinned build. The compiled binary is
+      # cached so only the first run of a version pays for apt and compile;
+      # without tmux these tests skip green, so the install must fail loudly.
+      - name: Restore cached pinned tmux
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ runner.temp }}/tmux-${{ env.TMUX_VERSION }}-dist
+          key: tmux-${{ env.TMUX_VERSION }}-linux-${{ runner.arch }}
+
+      - name: Install tested tmux
+        run: |
+          dist="${RUNNER_TEMP}/tmux-${TMUX_VERSION}-dist"
+          if test -x "${dist}/usr/local/bin/tmux"; then
+            sudo install -m 0755 "${dist}/usr/local/bin/tmux" /usr/local/bin/tmux
+          else
+            sudo apt-get update
+            sudo apt-get install --yes build-essential libevent-dev libncurses-dev pkg-config
+            archive="${RUNNER_TEMP}/tmux-${TMUX_VERSION}.tar.gz"
+            source_dir="${RUNNER_TEMP}/tmux-${TMUX_VERSION}-src"
+            curl --fail --location --silent --show-error \
+              "https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz" \
+              --output "${archive}"
+            echo "${TMUX_SHA256}  ${archive}" | sha256sum --check --strict
+            tar --extract --gzip --file "${archive}" --directory "${RUNNER_TEMP}"
+            mv "${RUNNER_TEMP}/tmux-${TMUX_VERSION}" "${source_dir}"
+            cd "${source_dir}"
+            ./configure --prefix=/usr/local
+            make --jobs 4
+            install -d "${dist}/usr/local/bin"
+            make DESTDIR="${dist}" install
+            sudo make install
+          fi
+          test "$(tmux -V)" = "tmux ${TMUX_VERSION}"
+
+      - name: Run serialized Go packages
+        run: |
+          # tmux-backed and wall-clock-sensitive packages own fixed server
+          # sockets and sub-second timing budgets.
+          GOMAXPROCS=1 python3 -B .github/scripts/test_metrics.py run --suite go-serialized --output "$RUNNER_TEMP/test-metrics/go-serialized.json" -- go test -count=1 -p 1 \
+            ./internal/session/... \
+            ./internal/terminal/... \
+            ./internal/tmux/... \
+            ./internal/acceptance/... \
+            ./internal/reconciler/... \
+            ./internal/tasks/...
+          test -z "$(git status --porcelain)"
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-go-serialized-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/go-serialized.json
+          retention-days: 3
+
+  go-parallel:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'go-parallel')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Check Go formatting
+        run: test -z "$(gofmt -l .)"
+
+      # golangci-lint already runs the govet analyzer over the whole module
+      # in the lint job; a standalone go vet pass here would only repeat it.
+      - name: Test and build parallel Go packages
+        run: |
+          mapfile -t parallel_packages < <(
+            go list ./... | grep -vE '/(deploy|internal/(session|terminal|tmux|acceptance|reconciler|tasks))(/|$)'
+          )
+          python3 -B .github/scripts/test_metrics.py run --suite go-parallel --output "$RUNNER_TEMP/test-metrics/go-parallel.json" -- go test -count=1 -p 4 "${parallel_packages[@]}"
+          go build -p 4 ./cmd/noisedeck ./cmd/noisedeck-provision
+          test -z "$(git status --porcelain)"
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-go-parallel-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/go-parallel.json
+          retention-days: 3
+
+  experiment-enabled:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'experiment-enabled')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Run experiment packages with the unconfined flag enabled
+        run: |
+          # GitHub runners have no provider subscription credentials and must
+          # never receive any; these packages use fake descriptors only.
+          NOISEDECK_EXPERIMENTS_UNCONFINED_CAPACITY_ROUTING=true python3 -B .github/scripts/test_metrics.py run --suite experiment-enabled --output "$RUNNER_TEMP/test-metrics/experiment-enabled.json" -- go test -count=1 ./internal/experiment/... ./cmd/noisedeck/...
+          test -z "$(git status --porcelain)"
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-experiment-enabled-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/experiment-enabled.json
+          retention-days: 3
+
+  jail-probe:
+    needs: scope
+    # The reviewer jail's boundary, proved on every change with canary
+    # credentials and the real pinned Codex and container: the
+    # hostile probe runs from inside the jail and must find nothing, and
+    # the verdict channel must work.
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'jail-probe')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26.5.0
+
+      - name: Install the pinned Codex with no lifecycle script
+        run: |
+          install -d "${RUNNER_TEMP}/codex-prefix"
+          npm install --global --ignore-scripts --prefix "${RUNNER_TEMP}/codex-prefix" "@openai/codex@$(sed -n 's/^ARG CODEX_VERSION=//p' Dockerfile | head -1)"
+          test -x "${RUNNER_TEMP}/codex-prefix/bin/codex"
+          CGO_ENABLED=0 go build -o "${RUNNER_TEMP}/noisedeck-harness-bump" ./cmd/noisedeck-harness-bump
+          go mod download
+
+      - name: Run the hostile probe inside the real jail with canary credentials
+        env:
+          # Canaries stand where the real credentials would; the probe must
+          # see none of them from inside.
+          GH_TOKEN: canary-not-a-token
+          CIHEAL_READ_TOKEN: canary-not-a-read-token
+          NOISE_REVIEW_PRIVATE_KEY: canary-not-a-key
+          HARNESS_BUMP_TOKEN: canary-not-a-token
+          JAIL_IMAGE: golang:1.26.10-bookworm@sha256:ee3901c61e423732605a51f1b8157c849ec01194ea0a274213b5202b2c11e7bf
+          JAIL_MODEL: canary-model
+        run: |
+          export JAIL_NODE="$(dirname "$(dirname "$(command -v node)")")"
+          export JAIL_CODEX="${RUNNER_TEMP}/codex-prefix"
+          export JAIL_GO="$(go env GOROOT)"
+          export JAIL_GOMOD="$(go env GOMODCACHE)"
+          export JAIL_BUMP="${RUNNER_TEMP}/noisedeck-harness-bump"
+          export JAIL_TOOL=/bin/false JAIL_REPO="${GITHUB_REPOSITORY}" JAIL_PR=0 JAIL_WORK="${PWD}"
+          # The socket lives alone in its directory; the broker's evidence
+          # lives outside every jail mount, where only the host writes.
+          install -d -m 0700 "${RUNNER_TEMP}/broker" "${RUNNER_TEMP}/evidence"
+          env -i PATH="${PATH}" HOME="${HOME}" OPENAI_API_KEY=sk-canary-000000000000000000000000 \
+            "${JAIL_BUMP}" broker -model "${JAIL_MODEL}" -listen "unix:${RUNNER_TEMP}/broker/broker.sock" -stats-file "${RUNNER_TEMP}/evidence/stats.json" >/dev/null &
+          broker_pid=$!
+          trap 'kill "${broker_pid}" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 50); do [ -S "${RUNNER_TEMP}/broker/broker.sock" ] && break; sleep 0.1; done
+          extra="$(tr '\0' '\n' <"/proc/${broker_pid}/environ" | grep -Ev '^(PATH|HOME|OPENAI_API_KEY)=' || true)"
+          test -z "${extra}"
+          export JAIL_SOCKET="${RUNNER_TEMP}/broker/broker.sock" JAIL_BROKER="http://127.0.0.1:8080/v1"
+          scripts/harness-bump/review-jail.sh --hostile
+          # And the real pinned Codex starts inside the jail and reaches the
+          # broker with a request the broker admits, and the broker reaches
+          # the API, which refuses the canary key: positive evidence from
+          # the broker's own record, not the absence of an error. The exit
+          # is 3 because no verdict could be recorded.
+          before="$(jq -r '.admitted // 0' "${RUNNER_TEMP}/evidence/stats.json" 2>/dev/null || echo 0)"
+          export JAIL_DIFF="${RUNNER_TEMP}/jail.diff"
+          printf 'canary diff\n' >"${JAIL_DIFF}"
+          export JAIL_HEAD=1111111111111111111111111111111111111111 JAIL_BASE=2222222222222222222222222222222222222222
+          export JAIL_PR=1
+          set +e
+          printf 'say hi\n## Diff\n\n```diff\ncanary diff\n```\n' | scripts/harness-bump/review-jail.sh >"${RUNNER_TEMP}/jail.out" 2>&1
+          rc=$?
+          set -e
+          cat "${RUNNER_TEMP}/jail.out"
+          jq . "${RUNNER_TEMP}/evidence/stats.json"
+          test "${rc}" -eq 3
+          grep -q "the reviewer exited" "${RUNNER_TEMP}/jail.out"
+          admitted="$(jq -r .admitted "${RUNNER_TEMP}/evidence/stats.json")"
+          test "${admitted}" -gt "${before}"
+          test "$(jq -r .forwarded "${RUNNER_TEMP}/evidence/stats.json")" -ge 1
+          test "$(jq -r .last_upstream_status "${RUNNER_TEMP}/evidence/stats.json")" -eq 401
+          test -z "$(git status --porcelain)"
+
+      - name: Probe the subscription jail without a real login
+        env:
+          GH_TOKEN: canary-not-a-token
+          CIHEAL_READ_TOKEN: canary-not-a-read-token
+          NOISE_REVIEW_PRIVATE_KEY: canary-not-a-key
+          JAIL_IMAGE: golang:1.26.10-bookworm@sha256:ee3901c61e423732605a51f1b8157c849ec01194ea0a274213b5202b2c11e7bf
+          JAIL_MODEL: canary-model
+        run: |
+          export JAIL_NODE="$(dirname "$(dirname "$(command -v node)")")"
+          export JAIL_CODEX="${RUNNER_TEMP}/codex-prefix" JAIL_GO="$(go env GOROOT)" JAIL_GOMOD="$(go env GOMODCACHE)"
+          export JAIL_BUMP="${RUNNER_TEMP}/noisedeck-harness-bump"
+          export JAIL_TOOL=/bin/false JAIL_REPO="${GITHUB_REPOSITORY}" JAIL_PR=0 JAIL_WORK="${PWD}"
+          export JAIL_AUTH_DIR="${RUNNER_TEMP}/subscription-canary"
+          install -d -m 0700 "${JAIL_AUTH_DIR}" "${RUNNER_TEMP}/subscription-proxy"
+          printf '%s\n' '{"auth_mode":"chatgpt","tokens":{"access_token":"canary","refresh_token":"canary"}}' >"${JAIL_AUTH_DIR}/auth.json"
+          chmod 600 "${JAIL_AUTH_DIR}/auth.json"
+          export JAIL_SOCKET="${RUNNER_TEMP}/subscription-proxy/proxy.sock" JAIL_BROKER=http://127.0.0.1:8080/v1
+          env -i PATH="${PATH}" "${JAIL_BUMP}" review-proxy -socket "${JAIL_SOCKET}" &
+          proxy_pid=$!
+          trap 'kill "${proxy_pid}" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 50); do [ -S "${JAIL_SOCKET}" ] && break; sleep 0.1; done
+          scripts/harness-bump/review-jail.sh --hostile
+          export JAIL_PROBE_ID="subscription-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          scripts/harness-bump/review-jail.sh --interrupt-probe &
+          probe_pid=$!
+          for _ in $(seq 1 100); do
+            inventory="$(docker ps -q --filter "label=noise.review.probe=${JAIL_PROBE_ID}")"
+            [ -n "${inventory}" ] && break
+            sleep 0.1
+          done
+          inventory="$(docker ps -q --filter "label=noise.review.probe=${JAIL_PROBE_ID}")"
+          test -n "${inventory}"
+          kill -TERM "${probe_pid}"
+          rc=0
+          wait "${probe_pid}" || rc=$?
+          test "${rc}" -eq 143
+          inventory="$(docker ps -aq --filter "label=noise.review.probe=${JAIL_PROBE_ID}")"
+          test -z "${inventory}"
+          test -z "$(git status --porcelain)"
+
+  deploy-suite:
+    needs: scope
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'deploy-suite')
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    env:
+      # The double-build reproducibility proof costs ~100s of in-container
+      # compilation; the slow acceptance workflow re-certifies it on every
+      # main push and twice daily.
+      NOISEDECK_CI_FAST: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Install the a2a client's one dependency
+        # PyNaCl on the system interpreter, as the image installs it: the
+        # host-key and sealed-chat tests refuse to run without it.
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends python3-nacl
+
+      - name: Run deploy package tests
+        run: |
+          GOMAXPROCS=4 python3 -B .github/scripts/test_metrics.py run --suite deploy-suite --output "$RUNNER_TEMP/test-metrics/deploy-suite.json" -- go test -count=1 -p 1 ./deploy/...
+          test -z "$(git status --porcelain)"
+
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-deploy-suite-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/deploy-suite.json
+          retention-days: 3
+
+  source-export:
+    needs: scope
+    if: contains(fromJSON(needs.scope.outputs.jobs || '[]'), 'source-export')
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [parallel, serialized, deploy]
+    runs-on: ${{ vars.NOISEDECK_SELF_HOSTED_CI == 'true' && github.event.repository.private && fromJSON('["self-hosted","Linux","deck-ci-private"]') || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    env:
+      NOISEDECK_CI_FAST: "1"
+      TMPDIR: /tmp
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Restore Go build and module caches
+        if: runner.environment != 'self-hosted'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: deck-go-${{ runner.arch }}-1.26.10-${{ hashFiles('go.sum') }}
+          restore-keys: deck-go-${{ runner.arch }}-1.26.10-
+
+      - name: Restore cached pinned tmux
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ runner.temp }}/tmux-${{ env.TMUX_VERSION }}-dist
+          key: tmux-${{ env.TMUX_VERSION }}-linux-${{ runner.arch }}
+
+      - name: Install tested tmux
+        run: |
+          dist="${RUNNER_TEMP}/tmux-${TMUX_VERSION}-dist"
+          if test -x "${dist}/usr/local/bin/tmux"; then
+            sudo install -m 0755 "${dist}/usr/local/bin/tmux" /usr/local/bin/tmux
+          else
+            sudo apt-get update
+            sudo apt-get install --yes build-essential libevent-dev libncurses-dev pkg-config
+            archive="${RUNNER_TEMP}/tmux-${TMUX_VERSION}.tar.gz"
+            source_dir="${RUNNER_TEMP}/tmux-${TMUX_VERSION}-src"
+            curl --fail --location --silent --show-error \
+              "https://github.com/tmux/tmux/releases/download/${TMUX_VERSION}/tmux-${TMUX_VERSION}.tar.gz" \
+              --output "${archive}"
+            echo "${TMUX_SHA256}  ${archive}" | sha256sum --check --strict
+            tar --extract --gzip --file "${archive}" --directory "${RUNNER_TEMP}"
+            mv "${RUNNER_TEMP}/tmux-${TMUX_VERSION}" "${source_dir}"
+            cd "${source_dir}"
+            ./configure --prefix=/usr/local
+            make --jobs 4
+            install -d "${dist}/usr/local/bin"
+            make DESTDIR="${dist}" install
+            sudo make install
+          fi
+          test "$(tmux -V)" = "tmux ${TMUX_VERSION}"
+
+      - name: Install export test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends python3-nacl
+
+      - name: Extract the curated source archive
+        run: |
+          export_dir="$(mktemp -d "${RUNNER_TEMP}/deck-export.XXXXXX")"
+          git archive HEAD | tar --extract --directory "${export_dir}"
+          echo "EXPORT_DIR=${export_dir}" >> "${GITHUB_ENV}"
+
+      - name: Build and vet the extracted source
+        working-directory: ${{ env.EXPORT_DIR }}
+        run: |
+          go build ./...
+          go vet ./...
+
+      - name: Test the extracted source
+        working-directory: ${{ env.EXPORT_DIR }}
+        env:
+          EXPORT_SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          packages=$(go list ./...)
+          selected=()
+          while IFS= read -r package; do
+            case "$package" in
+              */deploy|*/deploy/*) suite=deploy ;;
+              */internal/session|*/internal/session/*|*/internal/terminal|*/internal/terminal/*|*/internal/tmux|*/internal/tmux/*|*/internal/acceptance|*/internal/acceptance/*|*/internal/reconciler|*/internal/reconciler/*|*/internal/tasks|*/internal/tasks/*) suite=serialized ;;
+              *) suite=parallel ;;
+            esac
+            if test "$suite" = "$EXPORT_SUITE"; then selected+=("$package"); fi
+          done <<< "$packages"
+          test "${#selected[@]}" -gt 0
+          case "$EXPORT_SUITE" in
+            serialized) GOMAXPROCS=1 python3 -B "$GITHUB_WORKSPACE/.github/scripts/test_metrics.py" run --suite "source-export-$EXPORT_SUITE" --output "$RUNNER_TEMP/test-metrics/source-export-$EXPORT_SUITE.json" -- go test -count=1 -p 1 "${selected[@]}" ;;
+            deploy) GOMAXPROCS=4 python3 -B "$GITHUB_WORKSPACE/.github/scripts/test_metrics.py" run --suite "source-export-$EXPORT_SUITE" --output "$RUNNER_TEMP/test-metrics/source-export-$EXPORT_SUITE.json" -- go test -count=1 -p 1 "${selected[@]}" ;;
+            parallel) GOMAXPROCS=4 python3 -B "$GITHUB_WORKSPACE/.github/scripts/test_metrics.py" run --suite "source-export-$EXPORT_SUITE" --output "$RUNNER_TEMP/test-metrics/source-export-$EXPORT_SUITE.json" -- go test -count=1 -p 4 "${selected[@]}" ;;
+            *) exit 1 ;;
+          esac
+
+      - name: Save test metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-metrics-source-export-${{ matrix.suite }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-metrics/source-export-${{ matrix.suite }}.json
+          retention-days: 3
+
+  fast-checks:
+    if: always()
+    needs: [scope, documentation, frontend, probes, lint, go-serialized, go-parallel, deploy-suite, experiment-enabled, jail-probe, source-export]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Certify fast checks
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          SELECTED_JOBS: ${{ needs.scope.outputs.jobs }}
+          PROBE_SHARDS: ${{ needs.scope.outputs.probe_shards }}
+          SCOPE_MODE: ${{ needs.scope.outputs.mode }}
+          EVENT_NAME: ${{ github.event_name }}
+          TRUSTED_CHANGE: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          def require(condition, message):
+              if not condition:
+                  raise SystemExit(message)
+          needs = json.loads(os.environ['NEEDS_JSON'])
+          require(needs['scope']['result'] == 'success', 'CI scope did not pass')
+          jobs = json.loads(os.environ['SELECTED_JOBS'])
+          require(isinstance(jobs, list) and all(isinstance(j, str) for j in jobs), 'Invalid CI plan')
+          expected = set(jobs)
+          suites = set(needs) - {'scope'}
+          require(len(jobs) == len(expected) and expected <= suites and 'documentation' in expected, 'Invalid selected suites')
+          mode = os.environ['SCOPE_MODE']
+          trusted = os.environ['TRUSTED_CHANGE']
+          shards = json.loads(os.environ['PROBE_SHARDS'])
+          full_shards = [1, 2, 3, 'gateway', 'previews']
+          require(isinstance(shards, list) and bool(shards)
+                  and all(type(s) in (int, str) and s in full_shards for s in shards)
+                  and len(shards) == len(set(shards)), 'Invalid browser lanes')
+          require(mode in ('full', 'selective') and trusted in ('true', 'false'), 'Missing scope context')
+          if mode == 'full' or os.environ['EVENT_NAME'] not in ('pull_request', 'merge_group') or trusted == 'false':
+              require(expected == suites, 'This event requires the full CI plan')
+              require(shards == full_shards, 'This event requires all browser lanes')
+          if trusted == 'false':
+              expected = {'documentation', 'source-export'}
+          for name in sorted(suites):
+              result = needs[name]['result']
+              wanted = 'success' if name in expected else 'skipped'
+              print(f'{name}: {result} (expected {wanted})')
+              require(result == wanted, f'{name}: expected {wanted}, got {result}')
+          PY

@@ -1,0 +1,370 @@
+# Codex CLI — Phase 0 behavioural contract
+#
+# Every provider-facing value below was measured against the real CLI in a
+# private tmux namespace; nothing is inferred from Claude. The opt-in,
+# executable black-box evidence lives under
+# scripts/provider-spike/conformance/. Terminal observation belongs to that
+# test harness only: Deck runtime consumes this static, version-pinned
+# descriptor and must not parse provider presentation to infer identity or
+# state.
+
+provider: codex
+version_tested: "0.145.0"
+measured_on: "2026-08-02"
+
+evidence:
+  command: "make provider-spike-codex"
+  harness: "scripts/provider-spike/conformance"
+  launch_argv: ["/usr/local/bin/codex"]
+  fixture:
+    model: "gpt-5.6-sol"
+    reasoning_effort: low
+    service_tier: fast
+    approval_policy: never
+    sandbox_mode: danger-full-access
+    check_for_update_on_startup: false
+    project_trust: provisioned-before-measurement
+    hook_trust: provisioned-before-measurement
+  private_tmux_namespace: true
+  in_memory_hook_sink: true
+  exact_process_cleanup: true
+  cleanup_identity: linux-boot-id-plus-pid-start-ticks
+  cleanup_failure_policy: retain-uncertified-current-boot-run
+  provider_home: validated-linux-tmpfs
+
+runtime_compatibility_probe:
+  # These are upgrade-time syntax checks, not a launch-time help gate.
+  # --no-daemon and --no-alt-screen were verified with the pinned 0.162.1
+  # CLI; older external executables must support the same declared flags to
+  # use this descriptor.
+  commands:
+    - args: ["--help"]
+      required_flags: ["--no-daemon", "--no-alt-screen", "--dangerously-bypass-approvals-and-sandbox"]
+    - args: ["resume", "--help"]
+      required_flags: ["--no-daemon", "--no-alt-screen", "--dangerously-bypass-approvals-and-sandbox"]
+      required_usage_tokens: ["[SESSION_ID]"]
+  scope: command-line-syntax-only
+  does_not_remeasure: [exact-resume, injection, modal-handling, containment]
+
+native_receive_probe:
+  # The SessionStart hook announces the thread id and `codex queue`
+  # delivers into the running session; the probe drives the real TUI in a
+  # private tmux socket against a synthetic mailbox and a loopback model.
+  script: "probe_a2a_codex.py"
+  network: none
+  timeout_s: 600
+
+executable:
+  launch_path: "/usr/local/bin/codex"
+  # A symlink to a node entrypoint, so /proc/<pid>/exe reports the node
+  # interpreter rather than this path. Same caveat as Claude, different cause.
+  resolved_at_launch: "/usr/local/lib/node_modules/@openai/codex/bin/codex.js"
+  # MEASURED separately from the symlink target — they are different facts.
+  proc_exe: "/usr/local/bin/node"
+  # node script: /proc/exe is the INTERPRETER, identical to kimi and to every other node process — necessary but NOT sufficient
+  # MEASURED: cmdline does NOT contain the resolved target above.
+  proc_cmdline: "node /usr/local/bin/codex"
+  proc_exe_matches_launch_path: false
+  # No runtime executable evidence identifies this provider. Identity
+  # rests on the tmux pane identity/generation markers we write.
+  usable_runtime_executable_evidence: false
+
+identity:
+  contract: retrieved-by-hook
+  # Codex allocates its own id and will not accept one. It reports the id
+  # through SessionStart and Stop hooks whose structured JSON contains
+  # session_id. A Deck-owned adapter retains only session_id, cwd, event, and
+  # source in process
+  # memory and wrote no additional identity file. Codex necessarily kept its
+  # own resumable native state inside the mode-0700 tmpfs home during the run;
+  # that provider-owned state was never logged or committed and normal
+  # post-run cleanup removed it.
+  new_session_args: []
+  resume_args: ["resume", "$NATIVE_ID"]
+  id_format: uuid
+  hook:
+    config_path: "~/.codex/hooks.json"
+    config_shape: nested-json-arrays
+    events: ["SessionStart", "Stop"]
+    session_id_field: "session_id"
+    # Provisioning (the container image/bootstrap that seeds provider configs)
+    # installs this hook; Agent
+    # Console never writes the user's provider config. It must verify the
+    # hook before every launch/resume and refuse with a remediation error when
+    # it is missing or malformed. See internal/provider/doc.go.
+    install_owner: provisioning
+    # A newly installed hook opens Codex's native trust modal. Provisioning
+    # must establish that trust before Deck launches a session;
+    # Deck is forbidden to answer the modal itself.
+    native_trust_owner: provisioning
+    native_trust_required_before_launch: true
+    console_role: verify-and-refuse
+    # TestCodexHookTrustPersistence verifies the trust-store shape against real
+    # Codex 0.145.0. The exact compositions and hashes below were remeasured
+    # against the pinned 0.147.0 executable without re-claiming the rest of
+    # this file's injection or containment evidence. The a2a group's two
+    # hashes were measured against the pinned 0.155.1 executable, which also
+    # reproduced all five 0.147.0 values unchanged on the same pass, so the
+    # trusted_hash preimage is per hook entry, not per composition. The current
+    # deck-only identity entries were accepted separately by native 0.162.1
+    # on Linux arm64 (Docker on macOS) and Linux amd64, matching the overlay
+    # identity pair.
+    # This narrow trust measurement does not re-claim full CLI conformance.
+    # answering the trust modal makes Codex rewrite its own config.toml,
+    # appending a per-hook block keyed by absolute hooks.json path, event,
+    # and group/hook indices:
+    #   [hooks.state."<abs hooks.json path>:session_start:<group>:<hook>"]
+    #   trusted_hash = "sha256:<hex>"
+    # A fresh process in the same home then reaches ready with no modal.
+    # The sqlite state DBs written at the same time do NOT carry trust:
+    # seeding them alone still raises the modal. trusted_hash is not the
+    # sha256 of the hooks.json file bytes, and its exact preimage is
+    # unmeasured (command string and JSON entry/group/event encodings
+    # excluded). Headless provisioning is measured sufficient: install
+    # hooks.json at a fixed path and seed the matching [hooks.state] block
+    # with the path rebound — a seeded home reached ready with no modal.
+    # Since provisioning authors hooks.json itself, it can learn the block
+    # once from one interactive provisioning pass at the production path
+    # and ship it verbatim alongside the byte-identical hooks.json.
+    native_trust_store: "config.toml [hooks.state]"
+    native_trust_keys:
+      - "<abs hooks.json path>:session_start:<group>:<hook>"
+      - "<abs hooks.json path>:stop:<group>:<hook>"
+    native_trust_hash_preimage: unmeasured
+    headless_trust_provisioning: measured-sufficient
+    native_trust_measurement:
+      version: "0.147.0"
+      measured_on: "2026-08-15"
+      ready_without_hook_review_modal: true
+      compositions:
+        - name: deck-only
+          exact_bytes: cmd/noisedeck-provision/assets/codex-hooks.json
+          version: "0.162.1"
+          measured_on: "2026-10-12"
+          measured_platforms: [linux-arm64-on-macos, linux-amd64]
+          hooks_file_sha256: "78199ecc5032753e353218e31a2a6d8d2fb7daba72220790e4a7b5af7ab08c37"
+          evidence: native-cli-accepted-trust-blocks-with-unchanged-hook-bytes
+          # The old identity command's pair must not be seeded beside this
+          # asset. No other composition was requalified in this measurement.
+          targets:
+            - key_suffix: "session_start:0:0"
+              trusted_hash: "sha256:1c9347558100c3944c4811f2395489124b2ef14f8e7c752af83774ceb941f6e9"
+            - key_suffix: "stop:0:0"
+              trusted_hash: "sha256:73957a3fd7d0507af5c9168350e26925dea8384830c96217f2c045d87f548b63"
+        - name: deck-plus-mempalace-v2
+          exact_bytes: cmd/noisedeck-provision/assets/codex-hooks-mempalace-v2.json
+          targets:
+            - key_suffix: "session_start:0:0"
+              trusted_hash: "sha256:1c9347558100c3944c4811f2395489124b2ef14f8e7c752af83774ceb941f6e9"
+            - key_suffix: "session_start:1:0"
+              trusted_hash: "sha256:c168f94fc0b11d6a73551192239d9d0d3d351a8672a63f8c07ebd089f3ee8302"
+            - key_suffix: "stop:0:0"
+              trusted_hash: "sha256:73957a3fd7d0507af5c9168350e26925dea8384830c96217f2c045d87f548b63"
+            - key_suffix: "stop:1:0"
+              trusted_hash: "sha256:44edd7944111d810d55e38c8a55bd4db3252165fa296e806c90cfbd370e36a5f"
+            - key_suffix: "pre_compact:0:0"
+              trusted_hash: "sha256:dae151c7574dfb1ca7c569c92978700321cb6c85dcb9890cd99faca541076865"
+          # The five hashes above were reproduced unchanged by the 0.155.1
+          # pass below, on the composition that adds the a2a group: the
+          # trusted_hash preimage is per hook entry, not per composition.
+        - name: deck-plus-mempalace
+          exact_bytes: cmd/noisedeck-provision/assets/codex-hooks-mempalace.json
+          version: "0.155.1"
+          measured_on: "2026-10-01"
+          targets:
+            - key_suffix: "session_start:2:0"
+              trusted_hash: "sha256:e71e2b3e3145dbac81ac1340228af2406125b6f3b5d7e37a3f4cff057d60aef7"
+            - key_suffix: "stop:2:0"
+              trusted_hash: "sha256:339f4ef6cd2e2a03264ac7e47dbceb4783c385b5e64a0b1bf3c325d686208f8e"
+      upgrade_contract:
+        eligibility: exact-released-bytes-only
+        altered_or_unknown_configuration: preserve-bytes-and-refuse-launch
+        optional_overlay_change: rerun-provisioning-before-recovery
+  # MEASURED TIMING CONSTRAINT: no SessionStart event was observed during a
+  # ten-second idle window after a fully provisioned new process became ready.
+  # The first observed event arrived after the first real user submission and
+  # before that turn's reply. Identity is exact, but it was not observed at
+  # process launch. Deck must account for this measured first-input window
+  # without injecting a synthetic prompt or claiming an id exists earlier.
+  available_at_process_launch: false
+  pre_input_observation_seconds: 10
+  first_event_observed_after: first-user-submission
+  pre_input_idle_event_count: 0
+  first_event_before_first_reply: true
+  # Stop is emitted after a completed turn and re-attests the current native
+  # ID. This is the automatic rotation channel when native /resume selects a
+  # different thread within the same live Codex process generation.
+  stop_reconfirms_current_native_id: true
+  stop_adapter_source: current
+  exact_resume_verified: true
+  cold_redeploy_resume_measurement:
+    version: "0.147.0"
+    measured_on: "2026-08-15"
+    same_control_row: true
+    backend_restarted: true
+    tmux_server_destroyed: true
+    argv_contains_adjacent_resume_and_native_id: true
+    native_id_preserved: true
+    successor_committed_once: true
+  # Verified in the same tmux pane after the original CLI exited: respawn used
+  # the exact native id, produced a new pid and start-time generation, emitted
+  # a second hook with source=resume and the SAME native id, and preserved
+  # conversation history.
+  resume_hook_source: resume
+  # Native 0.162.1 queues the resume SessionStart hook until the first user
+  # submission. A live exact-resume generation therefore keeps its pending
+  # fenced grant after process commit; a pre-input timeout cannot revoke it.
+  # This source/timing contract does not renew the historical evidence above.
+  session_isolation_measurement:
+    version: "0.162.1"
+    measured_platforms: [linux-arm64-on-macos, linux-amd64]
+    launch_argv: ["/usr/local/bin/codex", "--no-daemon", "--no-alt-screen"]
+    resume_argv: ["/usr/local/bin/codex", "--no-daemon", "--no-alt-screen", "resume", "$NATIVE_ID"]
+    # --no-alt-screen added 2026-10-14, linux-amd64: inline rendering keeps
+    # the transcript in tmux pane history (alternate_on=0, history grew by
+    # the reply; scrolled-off lines recoverable by capture). In the alternate
+    # screen the pane history stayed empty under identical output, so
+    # scrolled-off transcript was unreachable and uncopyable from Deck's
+    # browser terminal. SessionStart/Stop identity (startup and resume, same
+    # id), exact resume with this flag order, and the native queue receive
+    # (probe_a2a_codex.py with its launch line patched to this argv) were
+    # re-measured PASS under the inline argv. The arm64 pass and the
+    # serialized-session facts above were measured on the argv without
+    # --no-alt-screen.
+    native_features_unchanged: true
+    native_code_mode_host_enabled: true
+    serialized_new_sessions_have_distinct_hook_identities: true
+    earlier_session_identity_unchanged_after_later_turn: true
+    native_queue_receive_verified_on: linux-amd64
+    native_queue_receiver_same_process_and_generation: true
+    native_queue_turn_emits_accepted_stop_hook: true
+    scope: launch-hook-environment-isolation-and-native-queue
+    # Exact-resume argv was measured, but the unpatched Deck receiver lacked
+    # the resume launch grant. Corrected post-resume callback delivery still
+    # requires an actual candidate runtime test, not this source declaration.
+  same_native_id_on_resume: true
+  respawn_same_pane_new_process_generation: true
+  history_continuity_verified: true
+  # An exact unknown id failed with status 1 and emitted no SessionStart hook;
+  # it did not silently create a fresh conversation.
+  unknown_id_fails_loudly: true
+  unknown_id_exit_status: 1
+  unknown_id_emits_session_start: false
+
+injection:
+  bracket_paste: true
+  submit_sequence: "Enter"
+  multiline: true
+  # Both literal input and bracketed paste reached the composer. A bracketed
+  # two-line body remained there without submitting until a separate Enter;
+  # literal embedded newlines were also retained until Enter.
+  literal_input_verified: true
+  multiline_verified: true
+  # Input submitted during an active tool turn was queued by Codex, then
+  # processed after that tool completed. Its test-owned append sentinel held
+  # exactly one line after a later idle barrier turn. One queued item was
+  # measured, so this does not claim ordering among multiple queued items.
+  active_turn_input: queued-by-cli
+  active_turn_exactly_once: true
+  active_turn_verified: true
+
+modal_prompts:
+  # Measured 2026-09-06 on 0.153.4: a new working directory stops the launch
+  # at "Do you trust the contents of this directory?" (default "Yes,
+  # continue"), and --dangerously-bypass-approvals-and-sandbox does NOT skip
+  # it. The answer is a [projects.'<cwd>'] table in CODEX_HOME/config.toml
+  # carrying trust_level = 'trusted'; seeding it before the launch removed the
+  # modal. Deck READS this record for its per-project harness-readiness
+  # diagnostic and never writes it; no launch path consults it.
+  # This is the WORKSPACE trust decision, unrelated to the per-hook trust
+  # hashes above.
+  startup_trust_prompt: true
+  startup_trust_record: "CODEX_HOME/config.toml [projects.'<cwd>'].trust_level"
+  startup_trust_record_verified: true
+  startup_trust_bypass_flag: none
+  # The decision is INHERITED: a subdirectory of a trusted git repository
+  # launched with no modal and no entry of its own. 0.153.4's config resolves
+  # the active project by normalized cwd key and then falls back to the
+  # repository root, so an exact-key miss is not evidence of a modal.
+  startup_trust_inherited_by_subdirectories: true
+  # A linked worktree carries its main checkout's decision: a worktree of a
+  # trusted repository, created OUTSIDE that checkout, launched with no modal.
+  startup_trust_inherited_by_linked_worktrees: true
+  # An explicit refusal is a decision, not an unanswered prompt: a project
+  # recorded trust_level = 'untrusted' started without asking. Reading that as
+  # a missing answer would report a gate codex does not have.
+  startup_trust_refusal_reprompts: false
+  # Bracketed input sent while the native /permissions modal was open was
+  # silently discarded. A test-owned command/reply witness neither executed
+  # nor appeared after Escape plus a later stable recovery turn. A second
+  # probe sent the full bracketed-paste + Enter sequence: Enter confirmed the
+  # current modal choice, while the pasted /model command did not survive to
+  # open a later picker or remain in the composer. Although 0.145.0 repainted
+  # an idle-looking composer, it discarded the next paste until an explicit
+  # Escape recovery; the test records that requirement instead of inferring
+  # readiness from presentation.
+  measured_modal: "/permissions"
+  input_during_modal: silently-discarded
+  input_during_modal_verified: true
+
+interrupt:
+  # Escape cancels the conversation turn and leaves the same CLI process
+  # usable. A tool already running in Codex's independently managed background
+  # terminal continues to its end sentinel; the canceled turn's reply remained
+  # absent across a later barrier turn. This key is not a containment boundary.
+  key: "Escape"
+  cancels_conversation_turn: true
+  kills_process: false
+  managed_background_terminal_continues: true
+  verified: true
+
+exit:
+  # Ctrl-D at an idle composer exits normally.
+  graceful_keyboard_path: Ctrl-D-at-idle
+  graceful_keyboard_status: 0
+  graceful_keyboard_verified: true
+  # Codex handles SIGTERM and exits 0 itself, so tmux reports an exit status
+  # with an empty pane_dead_signal rather than signal 15.
+  sigterm_status: 0
+  sigterm_reported_as: exit-status-not-signal
+  sigterm_verified: true
+  # Respawning the same pane after exit starts a new pid/start-time generation;
+  # exact resume through that respawn is recorded under identity above.
+  same_pane_respawn_verified: true
+
+containment:
+  # Measured with the interactive TUI as the pane process.
+  # Launch argv: codex --dangerously-bypass-approvals-and-sandbox — on this
+  # host the bwrap sandbox cannot work at all (kernel 4.4 lacks the
+  # namespaces it needs), so bypass is the configuration this platform would
+  # actually run. Driving one foreground
+  # `python3 -c 'import time; time.sleep(180)'` produced:
+  #
+  #   node(pane 3422)           pgid=3422 sid=3422 tty=tmux-pty
+  #     codex(3430)             pgid=3422 sid=3422 tty=tmux-pty
+  #       codex-code-mode(4985) pgid=4985 sid=3422 tty=tmux-pty
+  #       python3(4998)         pgid=4998 sid=4998 tty=none
+  #
+  # The tool child leaves the pane's process group AND session and holds no
+  # controlling terminal; a codex-code-mode helper also leaves the group. So
+  # kill(-pgid) cannot reach a running tool child, and an empty pane group
+  # does not mean codex's processes are gone — the same shape as Claude.
+  # (Codex ran the "foreground" command as one of its managed background
+  # terminals; that is its execution model, recorded as observed.)
+  tool_subprocesses_stay_in_process_group: false
+  tool_subprocesses_stay_in_session: false
+  verified: true
+  # MEASURED TWICE: SIGKILL to the pane's process group killed node+codex
+  # (pane_dead_signal=9, empty status), and within 2 seconds every observed
+  # descendant was gone too — including the escaped tool child, which the
+  # group signal cannot have reached and which held no controlling terminal,
+  # so PTY hangup cannot explain it. Kernel parent-death signalling
+  # (PR_SET_PDEATHSIG) configured by codex is the consistent explanation;
+  # that is INFERENCE, not measurement — /proc does not expose it.
+  #
+  # Codex reaping its own children is codex's behaviour, not a boundary this
+  # product provides. Nothing may rely on it: a future codex could stop doing
+  # it, and it does not generalise — Claude's and Kimi's tool children
+  # SURVIVE the same kill.
+  group_kill_survivors: none-observed
+  group_kill_verified: true

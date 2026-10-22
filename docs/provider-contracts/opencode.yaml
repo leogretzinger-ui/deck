@@ -1,0 +1,239 @@
+# opencode CLI — Phase 0 behavioural contract
+#
+# Every provider-facing value below was measured against the real 1.18.4 CLI
+# in a private tmux namespace on host kernel 4.4.302+; nothing is inferred from
+# another provider. The reproducible
+# procedure lives under scripts/provider-spike/opencode/. Terminal
+# observation belongs to that spike only: Deck runtime consumes
+# this static, version-pinned descriptor and must not parse provider
+# presentation to infer identity or state.
+
+provider: opencode
+version_tested: "1.18.4"
+measured_on: "2026-08-05"
+
+evidence:
+  command: "scripts/provider-spike/opencode/README.md (manual procedure)"
+  harness: "scripts/provider-spike/opencode"
+  launch_argv: ["/usr/local/bin/opencode"]
+  # `opencode --version` prints exactly "1.18.4", exit 0, under env -i with
+  # no config present — stable and scriptable.
+  fixture:
+    model: "opencode-go/kimi-k2.6"
+    # opencode-go/deepseek-v4-flash REFUSED ("only available hosted in
+    # China… explicit opt in"); opencode/deepseek-v4-flash-free hung.
+    autoupdate: false
+    # OpenCode's documented system theme preserves terminal defaults and ANSI
+    # colors, so the TUI follows Deck's xterm palette instead of painting the
+    # fixed default opencode theme.
+    theme: system
+    permission: '{"*": "allow"}'
+    # Model, autoupdate, and permission are pinned in the provisioning-owned
+    # opencode.json of the isolated config home, keeping launch argv bare.
+    plugin: "noisedeck-session-hook.js in the config home's plugins/ dir"
+  private_tmux_namespace: true
+  # XDG_CONFIG_HOME/XDG_DATA_HOME/XDG_CACHE_HOME/XDG_STATE_HOME and TMPDIR
+  # are all honoured (measured via `opencode debug paths`), so opencode's
+  # global state isolates cleanly without touching the user's
+  # ~/.config/opencode or ~/.local/share/opencode.
+  env_isolation: xdg-dirs-plus-tmpdir
+  # Model credentials: a copy of the user's auth.json lived only on a
+  # /dev/shm tmpfs data home for the duration of the spike; destroyed after.
+  provider_home: isolated-xdg-plus-linux-tmpfs
+
+runtime_compatibility_probe:
+  command: ["--help"]
+  required_flags: ["-s", "--auto"]
+  scope: command-line-syntax-only
+  does_not_remeasure: [exact-resume, injection, modal-handling, containment]
+
+native_receive_probe:
+  # The plugin prompts an idle session through the session server API; the
+  # probe drives a real serve process against a synthetic mailbox. Outbound
+  # network because opencode installs its plugin SDK into the config dir at
+  # bootstrap before any session exists.
+  script: "probe_a2a_receive.py --harness opencode"
+  network: outbound
+  timeout_s: 420
+
+executable:
+  launch_path: "/usr/local/bin/opencode"
+  # A symlink to a COMPILED Bun binary (ELF), not a node script.
+  resolved_at_launch: "/usr/local/lib/node_modules/opencode-ai/bin/opencode.exe"
+  # MEASURED twice (TUI pane process and `debug wait`): /proc/<pid>/exe is
+  # exactly the resolved symlink target — the same file as the launch path.
+  proc_exe: "/usr/local/lib/node_modules/opencode-ai/bin/opencode.exe"
+  # MEASURED: cmdline shows the SYMLINK path, same caveat as codex.
+  proc_cmdline: "/usr/local/bin/opencode"
+  proc_exe_matches_launch_path: true
+  # Unlike the node-script providers, /proc/exe really identifies this
+  # binary. Caveats: the path is unversioned (an upgrade replaces the same
+  # file) and every opencode process on the host shares it — real evidence,
+  # but still only one member of the identity tuple.
+  usable_runtime_executable_evidence: true
+
+identity:
+  contract: retrieved-by-plugin-event
+  # opencode has no hook config like codex/kimi; it has a documented PLUGIN
+  # system (js/ts files in ~/.config/opencode/plugins/) with an event bus.
+  # A plugin subscribing to the session.created event receives a structured
+  # object whose properties.info.id is the native session id. The spike
+  # plugin POSTed {session_id, cwd, source} to a per-launch one-shot
+  # endpoint from NOISEDECK_SESSION_HOOK_URL/NOISEDECK_SESSION_HOOK_TOKEN in the
+  # environment — the noisedeck-provider-hook contract — and the sink received:
+  #   {"hook_event_name":"SessionStart",
+  #    "session_id":"ses_032d1af39ffejke3TwnEL00DxZ",
+  #    "cwd":"<test wd>","source":"startup"}
+  new_session_args: []
+  resume_args: ["-s", "$NATIVE_ID"]
+  # NOT a UUID: "ses_" + 26 base62 chars (e.g. ses_032d1af39ffejke3TwnEL00DxZ).
+  # Store and replay verbatim; do not parse.
+  id_format: prefixed-base62
+  hook:
+    # The mechanism is a plugin file, not a config entry: any .js/.ts file
+    # in this directory is loaded at startup.
+    config_path: "~/.config/opencode/plugins/"
+    config_shape: plugin-file
+    event: "session.created"
+    session_id_field: "properties.info.id"
+    # As with Codex and Kimi, provisioning installs the plugin; Deck never
+    # writes the user's provider config and must verify the plugin before
+    # every launch/resume, refusing with a remediation error when it is missing
+    # or malformed.
+    install_owner: provisioning
+    console_role: verify-and-refuse
+    # MEASURED: NO native trust modal. opencode loaded the plugin silently
+    # on every launch (~8 fresh launches), unlike codex's trusted_hash
+    # modal. Nothing for provisioning to pre-answer — but nothing stops a
+    # wiped plugins dir either, so verify-and-refuse is the only guard.
+    native_trust_required_before_launch: false
+    # `--pure` runs opencode WITHOUT external plugins — it silently disables
+    # this entire capture mechanism while the session otherwise works.
+    # Launch/resume argv must therefore never include --pure; the
+    # verify-and-refuse check cannot detect its absence from outside.
+    pure_flag_disables_capture: true
+    # Delivery is AT LEAST ONCE: within one long-lived TUI process the spike
+    # observed repeated plugin.added bursts (~hourly, no restart), i.e.
+    # opencode reloads plugins in place, and each load re-subscribes the
+    # event handler. A receiver must dedupe on session_id; capture must be
+    # idempotent by design.
+    delivery: at-least-once
+  # MEASURED TIMING CONSTRAINT: the session is created LAZILY — no session
+  # id exists at process launch at all. Zero session.created events during
+  # a measured ten-second idle window after the TUI became ready (three
+  # fresh launches; one launch left idle over twenty hours also produced
+  # none). The first event arrived 0.4-0.6s after the first user submission
+  # and before that turn's reply. Same late-identity shape as codex: Deck
+  # must represent the pending-id window honestly and may not inject a
+  # synthetic prompt.
+  available_at_process_launch: false
+  pre_input_observation_seconds: 10
+  first_event_observed_after: first-user-submission
+  pre_input_idle_event_count: 0
+  first_event_before_first_reply: true
+  # MEASURED: exact resume emits NO session.created event and no hook POST —
+  # only plugin.loaded. Unlike codex (which re-fires with source=resume),
+  # the plugin channel informs NEW sessions only. That is sufficient: a
+  # resume launch already knows the exact id it is resuming.
+  resume_emits_hook: false
+  exact_resume_verified: true
+  # Verified in the same tmux pane after SIGKILL to the pane's process group
+  # (pane_dead_signal=9): respawn with `-s $NATIVE_ID` produced a new pid
+  # generation, showed the prior conversation history, and continued
+  # coherently (recalled the distinctive token from before the kill).
+  respawn_same_pane_new_process_generation: true
+  history_continuity_verified: true
+  # An unknown well-formed id failed loudly: `opencode run -s ses_000…`
+  # exited 1 with "Session not found"; the TUI exited status 1 (pane dead,
+  # status 1). No session.created, no silent fresh conversation.
+  unknown_id_fails_loudly: true
+  unknown_id_exit_status: 1
+  unknown_id_emits_session_start: false
+  # `-c` continues the MOST RECENT session for the working directory
+  # (measured: picked up the previous session's history). Recency, not exact
+  # identity — never use it for resume.
+  continue_flag_is_recency_not_identity: true
+  # Presentation fact, NOT a mechanism: the TUI's exit screen prints
+  # "Continue  opencode -s <id>". Scraping it is forbidden; recorded so the
+  # user-facing resume command is known to match the native flag.
+  exit_screen_prints_resume_command: true
+
+injection:
+  bracket_paste: true
+  submit_sequence: "Enter"
+  multiline: true
+  # A bracketed two-line paste (tmux paste-buffer -p) landed intact in the
+  # composer and stayed there unsubmitted until a separate Enter, which sent
+  # it as one message. Literal single-line input via send-keys -l plus Enter
+  # submitted repeatedly.
+  literal_input_verified: true
+  multiline_verified: true
+  # Input typed and submitted during an active tool turn was held by the
+  # TUI, which renders an explicit " QUEUED" marker on it, then processed
+  # after the running tool completed — exactly one reply after a later idle
+  # barrier. One queued item measured; no ordering claim among several.
+  active_turn_input: queued-by-cli
+  active_turn_exactly_once: true
+  active_turn_verified: true
+
+modal_prompts:
+  # With the ctrl+p command palette open, typed input AND a bracketed paste
+  # went into the palette's filter field ("No results found") — never into
+  # the composer; Enter acted on the palette, not the session. Same loss
+  # class as codex's silent discard: an injection aimed at the session does
+  # not reach it, with no error anywhere. Escape closed the palette with a
+  # clean composer and a normal recovery turn followed.
+  measured_modal: "ctrl+p command palette"
+  input_during_modal: captured-by-modal-not-delivered
+  input_during_modal_verified: true
+
+interrupt:
+  # Escape requires TWO presses in quick succession: the first only arms
+  # ("esc again to interrupt") and the arming lapses — two presses minutes
+  # apart did NOT cancel, a quick double-press did. The cancelled turn left
+  # the same CLI process usable. This key is not a containment boundary.
+  key: "Escape"
+  requires_double_press: true
+  cancels_conversation_turn: true
+  kills_process: false
+  verified: true
+
+exit:
+  # A single Ctrl-C at an idle composer exits 0. Ctrl-D at idle also exits 0.
+  graceful_keyboard_path: Ctrl-C-at-idle
+  graceful_keyboard_status: 0
+  graceful_keyboard_verified: true
+  # opencode handles SIGTERM and exits 0 itself, so tmux reports an exit
+  # status with an empty pane_dead_signal rather than signal 15 — same shape
+  # as codex.
+  sigterm_status: 0
+  sigterm_reported_as: exit-status-not-signal
+  sigterm_verified: true
+  same_pane_respawn_verified: true
+
+containment:
+  # Measured with the interactive TUI as the pane process, bare argv
+  # `opencode` with the fixture config above. Driving one foreground
+  # `python3 -c 'import time; time.sleep(180)'` produced:
+  #
+  #   opencode(6515) pgid=6515 sid=6515 tty=tmux-pty
+  #     python3(7816) pgid=7816 sid=7816 tty=0
+  #
+  # In THIS measurement — the model-driven bash tool running a foreground
+  # command — the tool child was spawned DIRECTLY by opencode (no
+  # intermediate shell in the tree above) and leaves the pane's process
+  # group AND session with no controlling terminal. kill(-pgid) cannot reach
+  # it, and an empty pane group does not mean opencode's processes are gone.
+  # Scope note: this is the model-driven tool path only. The reviewer
+  # measured a DIFFERENT path — an API-driven shell (POST /session/{id}/shell)
+  # — and observed a `bash -l -c` wrapper (sourcing ~/.bashrc) around the
+  # command there. Spawn topology is per-path; do not generalise either
+  # observation to the other path.
+  tool_subprocesses_stay_in_process_group: false
+  tool_subprocesses_stay_in_session: false
+  verified: true
+  # MEASURED: SIGKILL to the pane's process group killed opencode
+  # (pane_dead_signal=9, empty status); the tool child SURVIVED and was
+  # reparented to init (ppid=1) — like Claude and Kimi, unlike Codex.
+  group_kill_survivors: tool-children
+  group_kill_verified: true

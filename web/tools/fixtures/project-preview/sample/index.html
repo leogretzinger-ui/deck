@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- The harness's sample Vite application. The harness copies this template
+     into the scratch run once per preview target; vite.config.mjs reads the
+     PREVIEW_SAMPLE_* environment variables for the per-instance host, port
+     and name. The markup is intentionally plain — what matters to the
+     harness is that every element below is served, proxied and hot-updated
+     through the real preview gateway. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sample app</title>
+  </head>
+  <body>
+    <main>
+      <h1 data-sample-name>loading</h1>
+      <img data-sample-image src="/dot.png" alt="A single dot" width="32" height="32" />
+      <nav><a data-sample-link href="/nested/deep">Nested route</a></nav>
+      <p data-sample-nested></p>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

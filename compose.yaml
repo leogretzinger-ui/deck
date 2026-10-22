@@ -1,0 +1,123 @@
+name: deck
+
+services:
+  app:
+    image: deck:${NOISEDECK_IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        # Image tags identify outputs; VERSION identifies the source build.
+        # Keeping them separable lets one release build full, slim, and
+        # derived variants without invalidating every shared runtime layer.
+        VERSION: ${NOISEDECK_BUILD_VERSION:-${NOISEDECK_IMAGE_TAG:-local}}
+        NOISEDECK_RUNTIME_UID: ${NOISEDECK_RUNTIME_UID:-1026}
+        NOISEDECK_RUNTIME_GID: ${NOISEDECK_RUNTIME_GID:-100}
+        # Font choice belongs to the installation (see docs/fonts.md).
+        NOISEDECK_FONTS: ${NOISEDECK_FONTS:-auto}
+        NOISE_TASKS_REPO: ${NOISE_TASKS_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/tasks.git}
+        NOISE_SDLC_REPO: ${NOISE_SDLC_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/sdlc.git}
+        NOISE_VISUAL_DIFF_REPO: ${NOISE_VISUAL_DIFF_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/visual-diff.git}
+    user: "${NOISEDECK_RUNTIME_UID:-1026}:${NOISEDECK_RUNTIME_GID:-100}"
+    environment:
+      HOME: /home/agent
+      NOISEDECK_SERVER_BIND: 0.0.0.0:8837
+      # The browser-facing origin is deployment configuration, never derived
+      # from forwarded headers. A zero-config launch is loopback-only, under
+      # both names a person types for it — an allowlist of 127.0.0.1 alone
+      # refuses every write from http://localhost with "origin not allowed".
+      # Non-loopback deployments set the public origin. No trailing slash —
+      # the config loader rejects one.
+      NOISEDECK_SERVER_ALLOWED_ORIGINS: ${NOISEDECK_PUBLIC_ORIGIN:-http://127.0.0.1:${NOISEDECK_HOST_PORT:-18082},http://localhost:${NOISEDECK_HOST_PORT:-18082}}
+      NOISEDECK_AUTH_MODE: ${NOISEDECK_AUTH_MODE:-password}
+      NOISEDECK_AUTH_GOOGLE_CLIENT_ID: ${GOOGLE_OIDC_CLIENT_ID:-}
+      NOISEDECK_AUTH_GOOGLE_CLIENT_SECRET: ${GOOGLE_OIDC_CLIENT_SECRET:-}
+      NOISEDECK_AUTH_GOOGLE_REDIRECT_URL: ${NOISEDECK_PUBLIC_ORIGIN:-http://127.0.0.1:${NOISEDECK_HOST_PORT:-18082}}/auth/callback
+      NOISEDECK_AUTH_GOOGLE_ALLOWED_EMAIL: ${GOOGLE_OIDC_ALLOWED_EMAIL:-}
+      NOISEDECK_AUTH_SESSION_SECRET: ${NOISEDECK_AUTH_SESSION_SECRET:-}
+      NOISEDECK_DATABASE_PATH: /data/noisedeck.db
+      NOISEDECK_DATABASE_LOCK_PATH: /data/noisedeck.lock
+      NOISEDECK_TMUX_SOCKET_PATH: /run/noisedeck/tmux.sock
+      NOISEDECK_TMUX_SESSION_PREFIX: noisedeck-docker-
+      NOISEDECK_PROJECTS_ALLOWED_ROOTS: /workspace
+      # Hosted project previews need separate HTTPS ingress; loopback installs
+      # use compose.previews.yaml. Neither publishes dev-server ports.
+      NOISEDECK_PROJECT_PREVIEWS_BIND: ${NOISEDECK_PROJECT_PREVIEWS_BIND:-}
+      NOISEDECK_PROJECT_PREVIEWS_BASE_DOMAIN: ${NOISEDECK_PROJECT_PREVIEWS_BASE_DOMAIN:-}
+      NOISEDECK_PROJECT_PREVIEWS_HOSTNAME_PREFIX: ${NOISEDECK_PROJECT_PREVIEWS_HOSTNAME_PREFIX:-}
+      NOISEDECK_PROJECT_PREVIEWS_PORT_MIN: ${NOISEDECK_PROJECT_PREVIEWS_PORT_MIN:-0}
+      NOISEDECK_PROJECT_PREVIEWS_PORT_MAX: ${NOISEDECK_PROJECT_PREVIEWS_PORT_MAX:-0}
+      NOISEDECK_PROJECT_PREVIEWS_METADATA_SOCKET: ${NOISEDECK_PROJECT_PREVIEWS_METADATA_SOCKET:-}
+      NOISEDECK_PROJECT_PREVIEWS_DECK_ORIGIN: ${NOISEDECK_PROJECT_PREVIEWS_DECK_ORIGIN:-}
+      NOISEDECK_PROJECT_PREVIEWS_UNCONFINED: ${NOISEDECK_PROJECT_PREVIEWS_UNCONFINED:-false}
+      NOISEDECK_PROJECT_PREVIEWS_TARGETS: ${NOISEDECK_PROJECT_PREVIEWS_TARGETS:-[]}
+      NOISEDECK_TASKMASTER_EXECUTABLE: /usr/local/bin/noise
+      # Generation (noise tasks generate) uses the Anthropic API when this is
+      # non-empty; left empty it falls back to the bundled authenticated
+      # claude CLI, so generation works without a key.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # No provider executable is pinned here. Deck ships in more than one
+      # image, and each resolves its harnesses from PATH at startup, so the
+      # console offers what its image actually contains. A pinned path would
+      # register a harness the slim image does not install. Hook config
+      # paths stay: they are configuration, not discovery.
+      NOISEDECK_PROVIDERS_KILO_HOOK_CONFIG: /home/agent/.config/kilo/plugin/noisedeck-provider-hook.js
+      NOISEDECK_PROVIDERS_OPENCODE_HOOK_CONFIG: /home/agent/.config/opencode/plugins/noisedeck-provider-hook.js
+      NOISEDECK_LOGGING_FORMAT: console
+      # Private, content-free hook stages in each launch's TMPDIR; off normally.
+      NOISEDECK_HOOK_DIAGNOSTICS: ${NOISEDECK_HOOK_DIAGNOSTICS:-false}
+      NOISEDECK_DEPLOYMENT_HOST_SHA256: ${NOISEDECK_DEPLOYMENT_HOST_SHA256:-}
+      # Unconfined capacity-routing experiment switch. Default-off;
+      # only the exact strings true/false survive production verification,
+      # and true is an explicit UNCONFINED opt-in that makes no confinement
+      # claim.
+      NOISEDECK_EXPERIMENTS_UNCONFINED_CAPACITY_ROUTING: ${NOISEDECK_EXPERIMENTS_UNCONFINED_CAPACITY_ROUTING:-false}
+      # Dev-preview experiment switch. Default-off. On, the backend proxies
+      # /__dev/ to a Vite dev server you start BY HAND INSIDE THIS
+      # CONTAINER — the upstream is the container's own loopback, so a dev
+      # server on the Docker host is not reachable and the route answers 502.
+      NOISEDECK_EXPERIMENTS_DEV_PREVIEW: ${NOISEDECK_EXPERIMENTS_DEV_PREVIEW:-false}
+    ports:
+      - "127.0.0.1:${NOISEDECK_HOST_PORT:-18082}:8837"
+    volumes:
+      - deck-data:/data
+      - deck-home:/home/agent
+      # Projects root: the bound host directory IS /workspace in
+      # the container, and projects live directly beneath it. The picker
+      # surfaces only immediate non-dot subdirectories of this mount.
+      - type: bind
+        source: ${NOISEDECK_PROJECTS_HOST_PATH:-.}
+        target: /workspace
+      # gh credentials: the host's gh config is shared so
+      # sessions inherit your GitHub auth; writes (token
+      # refresh, gh auth login inside a session) persist back to it.
+      # /home/agent is already a named volume, so container-local gh
+      # auth also survives redeploys when no bind is configured.
+      - type: bind
+        source: ${NOISEDECK_GH_CONFIG_HOST_PATH:-~/.config/gh}
+        target: /home/agent/.config/gh
+      - type: bind
+        source: ${NOISEDECK_HOST_ID_PATH:-/etc/machine-id}
+        target: /run/noisedeck-host-machine-id
+        read_only: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,size=${NOISEDECK_TMPFS_SIZE:-2g},uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100}
+      - /run/noisedeck:rw,noexec,nosuid,nodev,size=16m,uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100},mode=0700
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noisedeck-auth-mode-healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+volumes:
+  deck-data:
+  deck-home:

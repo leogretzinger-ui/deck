@@ -1,0 +1,12 @@
+interface:
+  display_name: "MemPalace Logstream"
+  short_description: "Publish privacy-bounded agent progress"
+  default_prompt: "Use $mempalace-logstream to publish bounded progress for this work."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "mempalace"
+      description: "MemPalace 3.7 Logstream coordination tools"
+      transport: "streamable_http"
+      url: "http://127.0.0.1:8765/mcp"

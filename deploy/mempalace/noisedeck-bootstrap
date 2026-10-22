@@ -1,0 +1,258 @@
+#!/bin/sh
+set -u
+
+# External mode never starts a local writer, including when the tunnel fails.
+case "${NOISEDECK_RELAY_MODE:-local}" in
+  local) ;;
+  external)
+    if [ -z "${NOISEDECK_RELAY_TOKEN:-}" ]; then
+      echo "noisedeck-bootstrap: external relay requires a bearer token" >&2
+      exit 78
+    fi
+    ;;
+  *) echo "noisedeck-bootstrap: invalid relay mode" >&2; exit 78 ;;
+esac
+
+if ! /usr/local/bin/noisedeck-deployment-host-guard; then
+  exit 78
+fi
+
+# Encrypted state. The gate reads the same
+# configuration serve will, so every way of requiring encrypted state, an
+# environment value in any spelling or the YAML key, holds provisioning,
+# MemPalace, the courier and every CLI until the host report is present
+# and every store verifies. When nothing requires it the command returns
+# at once after logging the classification.
+if ! /usr/local/bin/noise deck sealed-check -gate "$@"; then
+  echo "noisedeck-bootstrap: encrypted state is required and the check refused; nothing was started" >&2
+  exit 78
+fi
+
+if ! /usr/local/bin/noisedeck-provision; then
+  echo "noisedeck-bootstrap: provider provisioning failed; affected provider launches will refuse with remediation" >&2
+fi
+
+if ! /opt/mempalace/venv/bin/python /usr/local/lib/noisedeck/configure-mempalace.py; then
+  echo "noisedeck-bootstrap: MemPalace provider integration failed" >&2
+fi
+
+# Deck skills ship in the image and the home volume outlives it, so every
+# start refreshes them in each harness, with or without the memory overlay.
+if ! /usr/bin/python3 /usr/local/lib/noisedeck/install_skills.py; then
+  echo "noisedeck-bootstrap: Deck skill installation failed" >&2
+fi
+
+# Composition changes Codex's native hook-trust tuple. Re-run the structured
+# provisioner after MemPalace has written its exact groups so the measured
+# combined registration is upgraded and trusted before recovery starts.
+if ! /usr/local/bin/noisedeck-provision; then
+  echo "noisedeck-bootstrap: composed provider provisioning failed; affected provider launches will refuse with remediation" >&2
+fi
+
+# MemPalace 3.10.0 keeps a fresh install's configuration under ~/.config
+# unless ~/.mempalace already holds a config.json. The store is mounted at
+# ~/.mempalace, so the servers are told so, and a config.json is written
+# there once so that every later command, agent shells included, resolves
+# the same directory and the same palace.
+export MEMPALACE_CONFIG_DIR=/home/agent/.mempalace
+if [ ! -f /home/agent/.mempalace/config.json ]; then
+  printf '{"palace_path": "/home/agent/.mempalace/palace"}\n' >/home/agent/.mempalace/config.json
+fi
+
+# This loop is the private palace's sole writer. Provider lifecycle hooks
+# enqueue requests for this HTTP process; do not add another storage owner
+# beside it. The private palace never syncs: it has no peers.json, and its
+# sync loop is disabled so a peers.json that appeared by mistake would still
+# move nothing.
+(
+  while true; do
+    MEMPALACE_SYNC_INTERVAL=0 /opt/mempalace/venv/bin/mempalace-mcp \
+      --palace /home/agent/.mempalace/palace \
+      --transport http --host 127.0.0.1 --port 8765 \
+      >>/home/agent/.mempalace/mcp.log 2>&1
+    printf '%s\n' "noisedeck-bootstrap: MemPalace MCP exited; restarting" \
+      >>/home/agent/.mempalace/mcp.log
+    sleep 1
+  done
+) &
+
+# The relay palace: a second server over a palace that holds stream a2a and
+# nothing else. It is the only palace that ever has peers, and every a2a
+# client on this host, the courier and the console's ledger subprocess
+# included, is pointed at it through A2A_MCP_URL. With NOISEDECK_RELAY_TOKEN
+# set the server requires that bearer on every request and the local clients
+# present it; the peer writes the same value into its peers.json. A published
+# port reaches the container's network interface, not its loopback, so the
+# relay listens on the container network exactly when it has a token to
+# require, and stays on loopback, unreachable from outside, without one.
+if [ "${NOISEDECK_RELAY_MODE:-local}" = local ]; then
+mkdir -p /home/agent/.mempalace/relay
+relay_host=127.0.0.1
+if [ -n "${NOISEDECK_RELAY_TOKEN:-}" ]; then
+  relay_host=0.0.0.0
+fi
+(
+  while true; do
+    MEMPALACE_SYNC_INTERVAL="${NOISEDECK_RELAY_SYNC_INTERVAL:-2}" \
+      MEMPALACE_MCP_HTTP_TOKEN="${NOISEDECK_RELAY_TOKEN:-}" \
+      /opt/mempalace/venv/bin/mempalace-mcp \
+      --palace /home/agent/.mempalace/relay \
+      --transport http --host "$relay_host" --port 8766 \
+      >>/home/agent/.mempalace/relay-mcp.log 2>&1
+    printf '%s\n' "noisedeck-bootstrap: relay MemPalace MCP exited; restarting" \
+      >>/home/agent/.mempalace/relay-mcp.log
+    sleep 1
+  done
+) &
+fi
+export A2A_MCP_URL=http://127.0.0.1:8766/mcp
+export A2A_MCP_TOKEN="${NOISEDECK_RELAY_TOKEN:-}"
+
+if [ "${NOISEDECK_RELAY_MODE:-local}" = external ]; then
+  # Probe authentication even when key migration already has its receipt.
+  # No response bodies or bearer values belong in startup diagnostics.
+  if ! /usr/bin/python3 - <<'PY'
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+opener = urllib.request.build_opener(NoRedirect())
+payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+    "protocolVersion": "2024-11-05", "capabilities": {},
+    "clientInfo": {"name": "deck-relay-preflight", "version": "1"}}}).encode()
+# An app restart detaches the old tunnel namespace until SSH keepalives
+# expire. Allow that reconnection without repeatedly restarting the app.
+deadline = time.monotonic() + 90
+ready = False
+while time.monotonic() < deadline:
+    try:
+        request = urllib.request.Request(os.environ["A2A_MCP_URL"], data=payload, headers={
+            "Content-Type": "application/json", "Accept": "application/json, text/event-stream",
+            "Authorization": "Bearer " + os.environ["A2A_MCP_TOKEN"]})
+        with opener.open(request, timeout=2) as response:
+            result = json.load(response)
+        if result.get("result", {}).get("serverInfo", {}).get("version") == "3.10.0":
+            anonymous = urllib.request.Request(os.environ["A2A_MCP_URL"], data=payload,
+                                               headers={"Content-Type": "application/json"})
+            try:
+                with opener.open(anonymous, timeout=2):
+                    pass
+            except urllib.error.HTTPError as error:
+                if error.code in (401, 403):
+                    ready = True
+                    break
+    except (OSError, ValueError):
+        pass
+    time.sleep(1)
+if not ready:
+    raise SystemExit("external relay authentication/version probe failed; no local fallback")
+PY
+  then
+    exit 78
+  fi
+fi
+
+mkdir -p /home/agent/.a2a
+# Sanitized harness environments do not inherit the bootstrap's bearer.
+# Provision only the local a2a credential, never other service secrets.
+if ! /usr/bin/python3 - <<'PY'
+import os
+import tempfile
+from pathlib import Path
+
+directory = Path.home() / ".a2a"
+if directory.is_symlink() or directory.stat().st_uid != os.geteuid():
+    raise SystemExit("relay credential directory must belong to the runtime user")
+directory.chmod(0o700)
+fd, temporary = tempfile.mkstemp(prefix=".relay-token-", dir=directory)
+try:
+    with os.fdopen(fd, "w") as output:
+        output.write(os.environ.get("A2A_MCP_TOKEN", ""))
+    os.replace(temporary, directory / "relay-token")
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+PY
+then
+  echo "noisedeck-bootstrap: local relay credential provisioning failed" >&2
+  exit 78
+fi
+# Every chat body is sealed, local ones to this host's own key, so the key
+# exists before any agent's first turn. init refuses to overwrite one.
+# init takes the pre-sealing history record and writes the key in one
+# step; a relay that has not answered yet leaves no key, so it is retried.
+init_tries=0
+until [ -f /home/agent/.a2a/host-key ] || /usr/bin/python3 /usr/local/bin/a2a key init >>/home/agent/.a2a/courier.log 2>&1; do
+  init_tries=$((init_tries + 1))
+  if [ "$init_tries" -ge 60 ]; then
+    echo "noisedeck-bootstrap: the relay palace did not answer in 60 s; no host key could be made with its history record, so this Deck does not start. Fix the relay and start again" >&2
+    exit 1
+  fi
+  sleep 1
+done
+# A key made before bodies were sealed has no record of its history; take
+# it now, before any new relay traffic, so earlier chats stay readable.
+# The relay above is still coming up, so the record is retried until the
+# relay answers; only a relay that answered can say the history is empty.
+migrate_tries=0
+until /usr/bin/python3 /usr/local/bin/a2a key migrate >>/home/agent/.a2a/courier.log 2>&1; do
+  migrate_tries=$((migrate_tries + 1))
+  if [ "$migrate_tries" -ge 60 ]; then
+    # Fail closed: without the record nothing seals from this host, and a
+    # record taken after sealed traffic would trust relay timestamps.
+    echo "noisedeck-bootstrap: the relay palace did not answer in 60 s; the pre-sealing chat history is not recorded, so this Deck does not start. Fix the relay and start again" >&2
+    exit 1
+  fi
+  sleep 1
+done
+(
+  while true; do
+    /usr/bin/python3 /usr/local/bin/a2a courier >>/home/agent/.a2a/courier.log 2>&1
+    sleep 5
+  done
+) &
+# Task lifecycle residue: stale runs, merged-and-forgotten worktrees and
+# branches. The engine's hygiene report is read-only by design, so this
+# loop applies the policy in scripts/task-hygiene.sh to every initialized
+# task family under the workspace, once per interval. The first pass waits
+# a full interval so a fresh Deck's agents are not swept mid-claim.
+mkdir -p /home/agent/.noisedeck
+(
+  interval=${NOISEDECK_TASK_HYGIENE_INTERVAL:-21600}
+  # A bad value must not turn the sweep into a tight loop.
+  case "$interval" in
+    *[!0-9]*|"") interval=21600 ;;
+    *) case "$interval" in *[1-9]*) ;; *) interval=21600 ;; esac ;;
+  esac
+  while true; do
+    sleep "$interval"
+    /usr/local/bin/noisedeck-task-hygiene --apply --all "${NOISEDECK_TASK_HYGIENE_ROOT:-/workspace}" \
+      >>/home/agent/.noisedeck/task-hygiene.log 2>&1 || true
+  done
+) &
+(
+  # Reviewer model refresh: when a pinned reviewer model is no longer the
+  # newest in its own vendor-and-tier family, open one like-for-like offer
+  # PR. Runs here, not in CI, because the claude probe needs the local
+  # catalog the workspace CLI carries. Like the hygiene loop, the first
+  # pass waits a full interval and a bad interval value must not tighten
+  # the loop.
+  interval=${NOISEDECK_MODEL_OFFER_INTERVAL:-86400}
+  case "$interval" in
+    *[!0-9]*|"") interval=86400 ;;
+    *) case "$interval" in *[1-9]*) ;; *) interval=86400 ;; esac ;;
+  esac
+  repo=${NOISEDECK_MODEL_OFFER_REPO:-/workspace/deck}
+  while true; do
+    sleep "$interval"
+    /usr/local/bin/noisedeck-model-offer --repo "$repo" \
+      >>/home/agent/.noisedeck/model-offer.log 2>&1 || true
+  done
+) &
+exec /usr/local/bin/noise deck serve "$@"

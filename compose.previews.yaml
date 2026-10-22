@@ -1,0 +1,27 @@
+# Private project previews for a loopback install.
+#
+#   docker compose -f compose.yaml -f compose.previews.yaml up -d
+#
+# Distinct loopback addresses keep app cookies separate from Deck and each
+# other.
+# Linux only by default; macOS needs lo0 aliases for every slot address.
+# Colima also needs the selected-profile forwarding prerequisite and real Mac
+# ingress checks; aliases alone are insufficient. Keep these exact
+# host-loopback publications.
+services:
+  app:
+    environment:
+      NOISEDECK_PROJECT_PREVIEWS_LOOPBACK: "true"
+      NOISEDECK_PROJECT_PREVIEWS_UNCONFINED: ${NOISEDECK_PROJECT_PREVIEWS_UNCONFINED:-true}
+      NOISEDECK_PROJECT_PREVIEWS_BIND: ${NOISEDECK_PROJECT_PREVIEWS_BIND:-0.0.0.0:8840}
+      NOISEDECK_PROJECT_PREVIEWS_PORT_MIN: ${NOISEDECK_PROJECT_PREVIEWS_PORT_MIN:-15000}
+      NOISEDECK_PROJECT_PREVIEWS_PORT_MAX: ${NOISEDECK_PROJECT_PREVIEWS_PORT_MAX:-15007}
+    ports:
+      - "127.0.0.2:8840:8840"
+      - "127.0.0.3:8840:8840"
+      - "127.0.0.4:8840:8840"
+      - "127.0.0.5:8840:8840"
+      - "127.0.0.6:8840:8840"
+      - "127.0.0.7:8840:8840"
+      - "127.0.0.8:8840:8840"
+      - "127.0.0.9:8840:8840"

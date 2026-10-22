@@ -1,0 +1,90 @@
+#!/bin/sh
+# noisedeck-deployment-host-guard — fail closed unless this is the authorized host.
+# An explicit fingerprint is authoritative. Without one, the first boot binds
+# the durable data volume to the mounted machine identity with a private,
+# create-once receipt; moving that volume to another host is then refused.
+set -eu
+
+expected=${NOISEDECK_DEPLOYMENT_HOST_SHA256:-}
+identity_file=${NOISEDECK_DEPLOYMENT_HOST_ID_FILE:-/run/noisedeck-host-machine-id}
+receipt=${NOISEDECK_DEPLOYMENT_HOST_RECEIPT:-/data/deployment-host.sha256}
+
+if [ ! -f "$identity_file" ] || [ ! -r "$identity_file" ]; then
+  echo "noisedeck-deployment-host-guard: authorized host identity is not a readable regular file" >&2
+  exit 78
+fi
+
+if ! actual=$(sha256sum "$identity_file"); then
+  echo "noisedeck-deployment-host-guard: authorized host identity could not be hashed" >&2
+  exit 78
+fi
+actual=${actual%% *}
+
+if [ -z "$expected" ]; then
+  if [ ! -e "$receipt" ]; then
+    receipt_dir=${receipt%/*}
+    [ "$receipt_dir" != "$receipt" ] || receipt_dir=.
+    if [ ! -d "$receipt_dir" ] || [ ! -w "$receipt_dir" ]; then
+      echo "noisedeck-deployment-host-guard: host authorization receipt directory is not writable" >&2
+      exit 78
+    fi
+    umask 077
+    if ! receipt_tmp=$(mktemp "${receipt}.tmp.XXXXXX"); then
+      echo "noisedeck-deployment-host-guard: host authorization receipt could not be created" >&2
+      exit 78
+    fi
+    trap 'rm -f "$receipt_tmp"' EXIT HUP INT TERM
+    if ! printf '%s\n' "$actual" >"$receipt_tmp" ||
+       ! chmod 0600 "$receipt_tmp" ||
+       ! sync -f "$receipt_tmp"; then
+      echo "noisedeck-deployment-host-guard: host authorization receipt could not be persisted" >&2
+      exit 78
+    fi
+    # link is an atomic create-if-absent. A concurrent first boot either wins
+    # this exact receipt or validates the winner below; it never overwrites.
+    if ln "$receipt_tmp" "$receipt" 2>/dev/null; then
+      rm -f "$receipt_tmp"
+      trap - EXIT HUP INT TERM
+      if ! sync -f "$receipt_dir"; then
+        echo "noisedeck-deployment-host-guard: host authorization receipt directory could not be synced" >&2
+        exit 78
+      fi
+    fi
+  fi
+  if [ -L "$receipt" ] || [ ! -f "$receipt" ] || [ ! -r "$receipt" ]; then
+    echo "noisedeck-deployment-host-guard: host authorization receipt is not a readable regular file" >&2
+    exit 78
+  fi
+  # The boot that wins the receipt links its staged copy into place and only
+  # then unlinks the staging name, so a concurrent boot can observe two links
+  # for the width of that unlink. Wait that transient out; a receipt still
+  # aliased afterwards is a genuine hard link and is refused below.
+  links=$(stat -c %h "$receipt")
+  waited=0
+  while [ "$links" -ne 1 ] && [ "$waited" -lt 50 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+    links=$(stat -c %h "$receipt")
+  done
+
+  if [ "$(stat -c %a "$receipt")" != 600 ] ||
+     [ "$(stat -c %u "$receipt")" -ne "$(id -u)" ] ||
+     [ "$links" -ne 1 ] ||
+     [ "$(wc -c <"$receipt")" -ne 65 ]; then
+    echo "noisedeck-deployment-host-guard: host authorization receipt is malformed or not private" >&2
+    exit 78
+  fi
+  expected=$(cat "$receipt")
+  if ! printf '%s\n' "$expected" | grep -Eq '^[0-9a-f]{64}$'; then
+    echo "noisedeck-deployment-host-guard: host authorization receipt is malformed" >&2
+    exit 78
+  fi
+elif ! printf '%s\n' "$expected" | grep -Eq '^[0-9a-f]{64}$'; then
+  echo "noisedeck-deployment-host-guard: NOISEDECK_DEPLOYMENT_HOST_SHA256 must be exactly 64 lowercase hexadecimal characters" >&2
+  exit 78
+fi
+
+if [ "$actual" != "$expected" ]; then
+  echo "noisedeck-deployment-host-guard: refusing to start on an unauthorized host" >&2
+  exit 78
+fi

@@ -1,0 +1,27 @@
+.git
+.review
+.tasks/tasks
+build
+run
+web/dist
+web/node_modules
+internal/server/webassets/dist
+*.db
+*.db-shm
+*.db-wal
+.env
+deploy/compose.env
+
+# Design material, worktrees, and generated visual-diff captures are local
+# working files; only the tracked .visual-diff/visual-diff.json contract ships.
+/*.zip
+/docs/design-import
+/.worktrees
+.visual-diff/*
+!.visual-diff/visual-diff.json
+
+# Licensed fonts are supplied outside the source tree at build time.
+web/public/fonts/*.woff2
+web/public/fonts/*.woff
+web/public/fonts/*.otf
+web/public/fonts/*.ttf

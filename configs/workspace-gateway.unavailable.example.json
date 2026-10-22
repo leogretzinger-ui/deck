@@ -1,0 +1,28 @@
+{
+  "bind": "127.0.0.1:18443",
+  "origin": "https://workspace.example.test",
+  "google_client_id": "example-client-id.apps.googleusercontent.com",
+  "allowed_email": "owner@example.test",
+  "encryption_policy": "unavailable",
+  "native": {
+    "InstanceID": "workspace01",
+    "OwnerUID": 1000,
+    "ControlDir": "/srv/workspace01/control",
+    "RuntimeDir": "/run/user/1000",
+    "WorkspaceGateway": true
+  },
+  "plain": {
+    "InstanceID": "workspace01",
+    "OwnerUID": 1000,
+    "StateRoot": "/srv/workspace01/plain",
+    "ControlDir": "/srv/workspace01/control",
+    "HomeDir": "/home/workspace01",
+    "RuntimeDir": "/run/user/1000",
+    "PodmanPath": "/usr/bin/podman",
+    "ComposePath": "/opt/deck/deploy/plain-compose.sh",
+    "ComposeEnvFile": "/srv/workspace01/plain.env",
+    "ComposeProject": "workspace01-plain",
+    "AppContainer": "workspace01-plain-app-1",
+    "PublicOrigin": "https://workspace.example.test"
+  }
+}

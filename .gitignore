@@ -1,0 +1,75 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+
+# Dependency directories. No trailing slash: the slash restricts the
+# pattern to directories, and this host has no pnpm, so verifying the
+# frontend means symlinking web/node_modules from another checkout — which
+# a directory-only pattern lets `git add -A` commit as a dangling link.
+node_modules
+
+# Environment variables
+.env
+deploy/compose.env
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS specific
+.DS_Store
+
+# Cross-model review scratch (diffs, prompts, verdicts)
+.review/
+.conformance/
+
+# Build output
+build/
+__pycache__/
+*.pyc
+
+# Runtime state — never commit control databases or tmux sockets
+*.db
+*.db-wal
+*.db-shm
+run/
+
+# Personal and agent working notes — deliberately NOT in the repo.
+# Session state, environment gotchas, and handoff context go stale fast and
+# are not product documentation. Ground truth is the code and
+# docs/provider-contracts/.
+/handoff.md
+
+# Design material stays out of the repo: raw export drops, the handoff
+# archive, and the imported reference tree are local working files.
+/*.zip
+/docs/design-import/
+/noisedeck-provision
+@eaDir/
+
+# Retained project-layout migration receipt and sentinel (local only; 0600)
+/.noise-tasks-migration.json
+.tasks/.noise-tasks-migration-root
+
+# local git worktrees
+.worktrees/
+/screenshot.png
+
+# Keep the visual comparison contract; generated references and captures stay local.
+.visual-diff/*
+!.visual-diff/visual-diff.json
+
+# Licensed fonts are supplied outside the source tree at build time.
+web/public/fonts/*.woff2
+web/public/fonts/*.woff
+web/public/fonts/*.otf
+web/public/fonts/*.ttf

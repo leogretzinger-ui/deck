@@ -1,0 +1,9 @@
+/* The marker the harness's HMR check flips: a property no other rule sets,
+   on a selector that always exists, so a changed computed value can only
+   have come from the harness's own edit. The harness rewrites the
+   rgb(...) value in its scratch copy — never any Deck source. */
+body {
+  border: 6px solid rgb(11, 22, 33);
+  font-family: system-ui, sans-serif;
+  margin: 2rem;
+}

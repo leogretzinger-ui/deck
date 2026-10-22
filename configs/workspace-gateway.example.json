@@ -1,0 +1,23 @@
+{
+  "bind": "127.0.0.1:18443",
+  "origin": "https://workspace.example.test",
+  "google_client_id": "example-client-id.apps.googleusercontent.com",
+  "allowed_email": "owner@example.test",
+  "native": {
+    "InstanceID": "workspace01",
+    "OwnerUID": 1000,
+    "CipherDir": "/srv/workspace01/cipher",
+    "MountPoint": "/srv/workspace01/open",
+    "ControlDir": "/srv/workspace01/control",
+    "HomeDir": "/home/workspace01",
+    "RuntimeDir": "/run/user/1000",
+    "GocryptfsPath": "/usr/bin/gocryptfs",
+    "FusermountPath": "/usr/bin/fusermount3",
+    "PodmanPath": "/usr/bin/podman",
+    "SealedComposePath": "/opt/deck/deploy/sealed-compose.sh",
+    "ComposeEnvFile": "/srv/workspace01/compose.env",
+    "ComposeProject": "workspace01",
+    "AppContainer": "workspace01-app-1",
+    "WorkspaceGateway": true
+  }
+}

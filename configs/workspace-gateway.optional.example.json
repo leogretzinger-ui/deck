@@ -1,0 +1,38 @@
+{
+  "bind": "127.0.0.1:18443",
+  "origin": "https://workspace.example.test",
+  "google_client_id": "example-client-id.apps.googleusercontent.com",
+  "allowed_email": "owner@example.test",
+  "encryption_policy": "optional",
+  "native": {
+    "InstanceID": "workspace01",
+    "OwnerUID": 1000,
+    "CipherDir": "/srv/workspace01/cipher",
+    "MountPoint": "/srv/workspace01/open",
+    "ControlDir": "/srv/workspace01/control",
+    "HomeDir": "/home/workspace01",
+    "RuntimeDir": "/run/user/1000",
+    "GocryptfsPath": "/usr/bin/gocryptfs",
+    "FusermountPath": "/usr/bin/fusermount3",
+    "PodmanPath": "/usr/bin/podman",
+    "SealedComposePath": "/opt/deck/deploy/sealed-compose.sh",
+    "ComposeEnvFile": "/srv/workspace01/sealed.env",
+    "ComposeProject": "workspace01-encrypted",
+    "AppContainer": "workspace01-encrypted-app-1",
+    "WorkspaceGateway": true
+  },
+  "plain": {
+    "InstanceID": "workspace01",
+    "OwnerUID": 1000,
+    "StateRoot": "/srv/workspace01/plain",
+    "ControlDir": "/srv/workspace01/control",
+    "HomeDir": "/home/workspace01",
+    "RuntimeDir": "/run/user/1000",
+    "PodmanPath": "/usr/bin/podman",
+    "ComposePath": "/opt/deck/deploy/plain-compose.sh",
+    "ComposeEnvFile": "/srv/workspace01/plain.env",
+    "ComposeProject": "workspace01-plain",
+    "AppContainer": "workspace01-plain-app-1",
+    "PublicOrigin": "https://workspace.example.test"
+  }
+}

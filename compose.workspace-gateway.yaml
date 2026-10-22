@@ -1,0 +1,13 @@
+# Applied only by the host workspace gateway through sealed-compose.sh.
+# No workload or relay port may bypass the independent browser grant.
+services:
+  app:
+    ports: !reset []
+    environment:
+      NOISEDECK_SERVER_BIND: ""
+      NOISEDECK_SERVER_UNIX_SOCKET: /data/gateway/backend.sock
+      NOISEDECK_SERVER_GATEWAY_UID: ${NOISEDECK_RUNTIME_UID:-1026}
+      NOISEDECK_AUTH_MODE: oidc
+      NOISEDECK_SERVER_ALLOWED_ORIGINS: ${NOISEDECK_PUBLIC_ORIGIN:?set the fixed HTTPS gateway origin}
+      NOISEDECK_PROJECT_PREVIEWS_BIND: ""
+      NOISEDECK_EXPERIMENTS_UNCONFINED_CAPACITY_ROUTING: "false"

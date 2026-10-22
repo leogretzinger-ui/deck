@@ -1,0 +1,70 @@
+# The agent-browser bundle: a browser as a service, for anything in the
+# console that needs to render a page — the screenshot and smoke harnesses
+# in web/tools, review agents verifying a visual change, and sessions whose
+# work involves looking at a page.
+#
+#   docker compose -f compose.yaml -f compose.browser.yaml up -d
+#
+# It is an overlay because most deployments do not need it. Chromium and its
+# system libraries are ~370MB that the base image would otherwise carry for
+# capability many operators never use, and keeping it out here is what lets
+# the browser be updated by pulling one image instead of rebuilding the app.
+#
+# A sidecar works for a browser specifically because a browser is reachable
+# over a protocol. Tools an agent EXECS cannot be supplied this way — a
+# sidecar has its own filesystem and PID namespace, so a binary there is not
+# on this container's PATH. Chromium is driven over CDP, so it can live
+# anywhere the client can open a socket.
+services:
+  chromium:
+    # The tag MUST match the resolved playwright version in web/pnpm-lock.yaml.
+    # The browser build target copies that frozen package installation into
+    # the digest-pinned upstream image. Playwright refuses
+    # to connect across a client/server mismatch, so a drifted tag is a
+    # connect error at the moment someone needs a screenshot. Bump both
+    # in the same commit; deploy/compose_test.go enforces it.
+    image: noise-browser:1.62.1
+    build:
+      context: .
+      target: browser
+      args:
+        NOISE_TASKS_REPO: ${NOISE_TASKS_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/tasks.git}
+        NOISE_SDLC_REPO: ${NOISE_SDLC_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/sdlc.git}
+        NOISE_VISUAL_DIFF_REPO: ${NOISE_VISUAL_DIFF_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/visual-diff.git}
+    # The repo-owned entrypoint uses Playwright's public launchServer API and
+    # the frozen package copied into the image. It neither depends on a
+    # version-specific CLI command nor fetches code at container startup.
+    command: [node, /opt/noise-browser/server.mjs]
+    # Share the app's network namespace so loopback means the same thing in
+    # both containers. The harnesses serve their pages on 127.0.0.1 and
+    # navigate there; without this the browser would resolve that to its own
+    # loopback and every page load would fail. It also keeps the Playwright
+    # server off the compose network entirely — it is reachable only from
+    # inside this namespace, never from another container or the host.
+    network_mode: "service:app"
+    depends_on:
+      - app
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - type: bind
+        source: ./deploy/sidecar-resolv.conf
+        target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: false
+          selinux: z
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,size=512m
+    restart: unless-stopped
+
+  app:
+    environment:
+      # How anything in the app container finds the browser. Unset, the
+      # harnesses fall back to launching locally, so a workstation with its
+      # own browsers needs no overlay.
+      NOISE_BROWSER_WS: ws://127.0.0.1:3000/

@@ -1,0 +1,57 @@
+# Command Code — provider contract
+#
+# CLI syntax was inspected against the real 1.21.0 package. The
+# structured SessionStart shape and configuration are documented by Command
+# Code. Authenticated terminal behaviour still requires the release gate.
+
+provider: command-code
+version_tested: "1.21.0"
+measured_on: "2026-08-13"
+
+runtime_compatibility:
+  command: ["--no-auto-update", "--help"]
+  required_flags: ["--session", "--yolo", "--skip-onboarding", "--no-auto-update"]
+
+executable:
+  launch_path: "/usr/local/bin/command-code"
+  launch_target: "/usr/local/lib/node_modules/command-code/dist/index.mjs"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/command-code"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+
+identity:
+  contract: retrieved-by-hook
+  event: SessionStart
+  field: session_id
+  id_format: canonical-uuid
+  timing: process-launch
+  new_session_args: ["--no-auto-update", "--skip-onboarding"]
+  resume_args: ["--no-auto-update", "--skip-onboarding", "--session", "$FULL_NATIVE_ID"]
+  prefix_resume_rejected_by_deck: true
+  exact_resume_verified: false
+
+session_storage:
+  root: "~/.commandcode"
+  contents_read_by_deck: false
+
+injection:
+  bracket_paste: true
+  submit_sequence: "Enter"
+  multiline: true
+  active_turn_input: queued-by-cli
+  active_turn_verified: false
+  modal_input_verified: false
+  verified: false
+
+modal_prompts:
+  startup_trust_prompt: true
+  trust_flag: "--trust"
+  onboarding_suppression: "--skip-onboarding"
+
+exit:
+  sigterm_exits: unmeasured
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: unmeasured

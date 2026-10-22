@@ -1,0 +1,9 @@
+# Shared-host addition to compose.sealed.yaml, applied by deploy/sealed-compose.sh
+# only on that profile: a keep-id user namespace under rootless Podman, so the
+# invoking user, who mounted the gocryptfs state root, is the container's
+# runtime uid on the host and every bind is validated and opened as that user.
+# Docker accepts no such user namespace mode, which is why this lives apart
+# from the overlay the own-host profile runs under Docker.
+services:
+  app:
+    userns_mode: "keep-id:uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100}"

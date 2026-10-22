@@ -1,0 +1,5222 @@
+@import "tailwindcss";
+@import "./enrollment.css";
+@import "./security-runtime.css";
+@import "./harness-login.css";
+
+/* Deck design tokens.
+   Values are the design system's cobalt palette (reference material,
+   not spec). Hex lives ONLY in this file; components use utilities. */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Resolve the body scale on each element so framed phones inherit their
+   local ramp and typeface trims instead of the desktop root's values. */
+@theme inline {
+  --text-body-sm: calc(var(--type-body-sm-size) * var(--face-ui-size, 1));
+  --text-body-sm--line-height: calc(var(--type-body-sm-lh) * var(--face-ui-leading, 1));
+}
+
+@theme {
+  /* ---- raw ramps (light, the reference's warm paper) ---- */
+  --color-paper: #FDFCFA;
+  --color-paper-card: #FFFFFF;
+  --color-paper-muted: #F7F7F7;
+  --color-paper-sunken: #EEECE8;
+  --color-ink-900: #251805;
+  --color-ink-950: #150E02;
+  --color-ink-700: #5A4A33;
+  --color-ink-500: #756958;
+  --color-line-200: #D8D4CC;
+  --color-line-300: #C4BFB4;
+
+  --color-accent-500: #1E4FD8;
+  --color-accent-600: #1A46BE;
+  --color-accent-700: #15379B;
+  --color-accent-050: #E6EDFB;
+
+  --color-signal-500: #E8572A;
+  --color-signal-600: #D14820;
+  --color-signal-700: #B44626;
+  --color-signal-050: #FAE9E4;
+
+  --color-green-600: #1E7A46;
+  --color-amber-600: #B0760B;
+  --color-amber-700: #916006;
+  --color-red-600: #C22F2F;
+
+  /* ---- semantic aliases (light default) ---- */
+  --color-surface: var(--color-paper);
+  --color-surface-muted: var(--color-paper-muted);
+  --color-surface-sunken: var(--color-paper-sunken);
+  --color-surface-card: var(--color-paper-card);
+  --color-surface-overlay: var(--color-paper-card);
+  --color-scrim: rgba(60, 48, 32, 0.42);
+
+  --color-text-primary: var(--color-ink-900);
+  --color-text-secondary: var(--color-ink-700);
+  --color-text-tertiary: var(--color-ink-500);
+  --color-text-inverse: var(--color-paper);
+  --color-text-link: var(--color-accent-500);
+  --color-text-on-accent: #FFFFFF;
+  /* Text on a filled evidence chip. Not white: white on signal orange
+     fails AA; this deep warm ink clears it in both themes (reference
+     colors.css). Fixed, like evidence itself. */
+  --color-text-on-evidence: #2B0A00;
+
+  --color-border: var(--color-line-200);
+  --color-border-strong: var(--color-line-300);
+  /* Focus never wears blue: no blue halo or outline, anywhere, ever. The
+     focus border is the strong neutral. */
+  --color-border-focus: var(--color-border-strong);
+
+  /* accent = interactive */
+  --color-accent: var(--color-accent-500);
+  --color-accent-hover: var(--color-accent-600);
+  --color-accent-pressed: var(--color-accent-700);
+  --color-accent-tint: var(--color-accent-050);
+  --color-accent-border: #BFD0F6;
+  --color-accent-on-tint: var(--color-accent-500);
+
+  /* evidence = came from a source; never decoration */
+  --color-evidence: var(--color-signal-500);
+  --color-evidence-hover: var(--color-signal-600);
+  --color-evidence-tint: var(--color-signal-050);
+  --color-evidence-border: #F6C9B7;
+  --color-evidence-on-tint: var(--color-signal-700);
+
+  --color-success: var(--color-green-600);
+  --color-success-tint: #E4F1E7;
+  --color-success-on-tint: var(--color-green-600);
+  --color-warning: var(--color-amber-600);
+  --color-warning-tint: #F5ECDF;
+  --color-warning-on-tint: var(--color-amber-700);
+  --color-error: var(--color-red-600);
+  --color-error-tint: #FAE8E6;
+  --color-error-on-tint: var(--color-red-600);
+  --color-text-on-error: #FFFFFF;
+
+  --color-wash-hover: rgba(14, 27, 44, 0.045);
+  --color-wash-pressed: rgba(14, 27, 44, 0.085);
+  --color-wash-selected: var(--color-accent-050);
+
+  /* ---- type voices ---- */
+  /* Keep system fallbacks here; @fonts supplies webfonts and re-states the tokens.
+     Exported builds must not depend on licensed family names.
+     term.ts reads --font-mono so the terminal uses the same mono stack. */
+  --font-ui: -apple-system, "Segoe UI", sans-serif;
+  --font-display: -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* The UI scale is stated through the face trims below, so a typeface
+     swap moves the whole scale from one place. The literals are the ramp
+     the licensed cut was tuned to; at the identity trims they compute to
+     exactly themselves, so the default face renders unchanged. */
+  --text-body: calc(15px * var(--face-ui-size, 1));
+  --text-body--line-height: calc(1.55 * var(--face-ui-leading, 1));
+  --text-caption: calc(12px * var(--face-ui-size, 1));
+  --text-caption--line-height: calc(1.4 * var(--face-ui-leading, 1));
+  --text-micro: calc(11px * var(--face-ui-size, 1));
+  --text-micro--line-height: calc(1.3 * var(--face-ui-leading, 1));
+  --text-title-3: calc(17px * var(--face-ui-size, 1));
+  --text-title-3--line-height: calc(1.34 * var(--face-ui-leading, 1));
+  --text-title-2: calc(22px * var(--face-ui-size, 1));
+  --text-title-2--line-height: calc(1.28 * var(--face-ui-leading, 1));
+
+  /* Each step's tracking is a face trim too: a substitute face whose
+     glyphs set narrower or wider than the licensed cut's gives the
+     advance back per step, since the deficit is not the same at 11px as
+     at 15px. Unset, every step tracks as the licensed cut did. */
+  --text-body--letter-spacing: var(--face-ui-tracking-body, normal);
+  --text-body-sm--letter-spacing: var(--face-ui-tracking-body-sm, normal);
+  --text-caption--letter-spacing: var(--face-ui-tracking-caption, normal);
+  --text-micro--letter-spacing: var(--face-ui-tracking-micro, normal);
+  --text-title-3--letter-spacing: var(--face-ui-tracking-title-3, normal);
+  --text-title-2--letter-spacing: var(--face-ui-tracking-title-2, normal);
+
+  /* ---- radius by role ---- */
+  --radius-mark: 6px;
+  --radius-control-sm: 8px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-panel: 20px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* ---- elevation: no shadows; hairlines only ---- */
+  --shadow-none: none;
+
+  /* ---- compact-density controls (the workspace chrome) ---- */
+  --spacing: 0.25rem; /* Tailwind default = the reference 4px grid */
+
+  /* ---- terminal pane (follows the workspace theme) and workspace
+     layout measures ---- */
+  --color-terminal-bg: #EEECE8;
+  --color-terminal-fg: #251805;
+  --color-terminal-muted: #918472;
+  --color-terminal-evidence: #C15F3C;
+  --color-terminal-evidence-border: #D8C8B4;
+
+  /* ---- terminal-native MVP workspace: the Claude Design
+     artifact frame, sidebar 272px, terminal fills the rest. Hex lives
+     only here; components use utilities. ---- */
+  --sidebar-w: 272px;
+  --control-h-badge: 18px;
+
+  /* The light console (the reference's light mode): warm cream paper,
+     warm dark ink. Dark flips these below. */
+  --color-console-bg: #EEECE8;
+  --color-console-fg: #251805;
+  --color-console-dim: #918472;
+  --color-console-accent: #C15F3C;
+
+  /* Light chrome: warm paper sidebar, its field surface, and the
+     pale-blue selected-row wash. */
+  --color-sidebar-surface: #FDFCFA;
+  --color-field: #F7F7F7;
+  --color-field-hover: #F0EDE6;
+  --color-field-border: #E0DCD2;
+
+  /* Session indicators the artifact draws directly: running is its
+     flame orange, alive/healthy teal, starting/needs-oversight amber. */
+  --color-run: #C15F3C;
+  --color-alive: #0E8A6B;
+  --color-oversight: #D9A441;
+
+  /* Harness identity marks. Eleven hues - seven taken from the consumer
+     palette, four added in its largest gaps - worn by ten harnesses, and
+     sapphire stays unassigned: sapphire and indigo are the tightest pair
+     in the set (0.055 apart), so giving sapphire to a second switchable
+     harness would put it next to kimi's indigo. shell is not here at all:
+     it is not a harness identity, so it takes the raw neutral declared
+     below. A mark answers "which one", never "what state" - so claude and
+     codex no longer borrow --color-run and --color-alive, which mean
+     running and healthy elsewhere. One value serves both grounds.
+     Contrast floors computed over all eleven marks: 3.88:1 on the app
+     surface (worst mark indigo) and 3.10:1 on white (worst mark gold).
+     Tiles carry colour and never letters, so the hue is the whole
+     identity and those floors are separation figures, not a legibility
+     requirement. */
+  --color-mark-crimson: #D03543;
+  --color-mark-vermilion: #C8563C;
+  --color-mark-gold: #C1872E;
+  --color-mark-lime: #849313;
+  --color-mark-emerald: #2F8F64;
+  --color-mark-teal: #008E8A;
+  --color-mark-cerulean: #2287A8;
+  --color-mark-sapphire: #4A72C4;
+  --color-mark-indigo: #6D64C8;
+  --color-mark-violet: #9559BA;
+  --color-mark-orchid: #B4519B;
+
+  --color-provider-claude: var(--color-mark-vermilion);
+  --color-provider-codex: var(--color-mark-emerald);
+  /* Cursor wears another off-system hue: the only free warm family is the
+     yellow between gold and lime, 0.215 in OKLab from its nearest, gold,
+     against the 0.055 the closest two marks sit apart. */
+  --color-provider-cursor: #D9D94F;
+  /* Grok wears another off-system hue: a deep slate-violet darker than any
+     mark, 0.126 in OKLab from its nearest, the shell neutral, and 0.156
+     from the nearest mark, indigo, against the 0.055 the closest two marks
+     sit apart. */
+  --color-provider-grok: #453F83;
+  --color-provider-kimi: var(--color-mark-indigo);
+  --color-provider-cline: var(--color-mark-crimson);
+  --color-provider-devin: var(--color-mark-violet);
+  --color-provider-kilo: var(--color-mark-gold);
+  /* The project tag wheel intentionally stays at eleven values. MiMo is the
+     twelfth harness mark and owns this provider-only mauve. */
+  --color-provider-mimo: #B66BC2;
+  --color-provider-omp: var(--color-mark-lime);
+  --color-provider-opencode: var(--color-mark-cerulean);
+  --color-provider-pi: var(--color-mark-orchid);
+  /* qwen wears an off-system hue, not a --color-mark-* token: the eleven
+     marks are spoken for - ten worn, sapphire reserved beside kimi's
+     indigo - and the design system has not authored a twelfth. This
+     azure sits in the cerulean-sapphire gap, 0.080 in OKLab from its
+     nearest, reserved sapphire, against the 0.055 the closest two marks
+     sit apart. */
+  --color-provider-qwen: #2D8FDD;
+  /* Qoder wears another off-system hue: a green in the lime-emerald gap,
+     0.101 in OKLab from its nearest, omp's lime, against the 0.055 the
+     closest two marks sit apart — and inside the mark family's own
+     lightness and chroma envelope (L 0.664 against 0.561-0.666, C 0.190
+     against 0.100-0.191), so it reads as one of them rather than beside
+     them. */
+  --color-provider-qoder: #28B040;
+  /* shell is deliberately outside the mark family: the terminal is not a
+     harness identity, so it takes this raw neutral rather than a
+     --color-mark-* token. */
+  --color-provider-shell: #5A6472;
+  --color-provider-command-code: var(--color-mark-teal);
+
+  --workspace-center: 796px;
+  --workspace-frame-h: 880px;
+  --titlebar-h: 72px;
+}
+
+/* Design-system token restatement — from the reference bundle.
+   Every value resolves to a token; hex lives only here. */
+
+@theme {
+  /* ---- space ramp (4px grid) ---- */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --gutter: var(--space-6);
+  --page-max: 1200px;
+  --reading-max: 720px;
+  --touch-min: 44px;
+  --bp-sm: 600px;
+  --bp-md: 900px;
+  --bp-lg: 1200px;
+
+  /* ---- density: standard (default) ---- */
+  --control-h-sm: 28px;
+  --control-h-md: 36px;
+  --control-h-lg: 44px;
+  --control-px: 14px;
+  --field-px: 14px;
+  --field-py: 9px;
+  --chrome-h: 48px;
+  --card-pad: 20px;
+  --row-py: 10px;
+  --row-px: 10px;
+  --row-icon-gap: 10px;
+  --stack-gap: var(--space-4);
+  --section-gap: var(--space-12);
+
+  /* ---- type voices (Blueprint typography) ---- */
+  /* Family and feature set come from the fonts sheet, like the three
+     stacks in @theme above. */
+  --font-prose: Georgia, "Times New Roman", serif;
+  --font-features: normal;
+
+  --weight-ultralight: 100;
+  --weight-thin: 200;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --type-caps: all-small-caps;
+  --caps-nudge: 0.115em;
+  --object-mid-nudge: 0.109em;
+
+  --type-display-1-size: 64px; --type-display-1-lh: 1.06; --type-display-1-ls: 0.008em;
+  --type-display-2-size: 48px; --type-display-2-lh: 1.10; --type-display-2-ls: 0.012em;
+  --type-display-3-size: 36px; --type-display-3-lh: 1.16; --type-display-3-ls: 0.016em;
+
+  --type-title-1-size: 28px; --type-title-1-lh: 1.22; --type-title-1-ls: 0.030em;
+  --type-title-2-size: 22px; --type-title-2-lh: 1.28; --type-title-2-ls: 0.038em;
+  --type-title-3-size: 17px; --type-title-3-lh: 1.34; --type-title-3-ls: 0.045em;
+
+  --type-body-size: 15px; --type-body-lh: 1.55;
+  --type-body-sm-size: 13px; --type-body-sm-lh: 1.5; --type-body-sm-ls: 0em;
+  --type-caption-size: 12px; --type-caption-lh: 1.4; --type-caption-ls: 0.002em;
+  --type-micro-size: 11px; --type-micro-lh: 1.3; --type-micro-ls: 0.07em;
+
+  --type-label-sm-size: 11px;
+  --type-label-size: 13px;
+  --type-label-ls: 0.055em;
+
+  --type-button-size: 14px;
+  --type-button-ls: 0.004em;
+
+  --type-control-sm-size: 13px;
+  --type-control-size: 15px;
+
+  /* Mono is a register, not a style. Size it with the x-height ceiling:
+     min(var(--type-mono-size), calc(<local size> * var(--type-mono-xh-ratio))). */
+  --type-mono-size: 14.5px;
+  --type-mono-lh: 1.45;
+  --type-mono-weight: 700;
+  --type-mono-tracking: -0.01em;
+  --type-mono-cursive-weight: 400;
+  --type-mono-xh-ratio: 1.0526;
+
+  --type-prose-lead-size: 22px; --type-prose-lead-lh: 1.5;
+  --type-prose-size: 19px; --type-prose-lh: 1.62;
+  --type-prose-sm-size: 16px; --type-prose-sm-lh: 1.6;
+  --prose-measure: 68ch;
+
+  /* ---- elevation: depth is hairlines and rings, never shadows ---- */
+  --hairline: 1px solid var(--color-border);
+  --hairline-strong: 1px solid var(--color-border-strong);
+  --ring: 0 0 0 1px var(--color-border);
+  --ring-accent: 0 0 0 1px var(--color-accent-border);
+  --ring-overlay: 0 0 0 1px var(--color-border-strong);
+  --elev-flat: var(--color-surface);
+  --elev-raised: var(--color-surface-card);
+  --elev-overlay: var(--color-surface-overlay);
+  --blur-scrim: blur(2px);
+  --blur-bar: saturate(180%) blur(14px);
+  --focus-ring: 0 0 0 1px var(--color-accent);
+  --selection-bg: var(--color-accent-tint);
+
+  /* ---- motion: quick, flat, no bounce ---- */
+  --dur-instant: 80ms;
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --dur-page: 360ms;
+  --dur-notice: 600ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-control: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  --press-scale: 0.985;
+
+}
+
+/* Dark theme: the semantic aliases flip; the cobalt dark ramp per the
+   reference token file. The terminal follows the theme in v2. */
+[data-theme="dark"] {
+  --elev-flat: var(--color-surface);
+  --elev-raised: var(--color-surface-card);
+  --elev-overlay: var(--color-surface-overlay);
+  --focus-ring: 0 0 0 1px var(--color-accent);
+  --selection-bg: var(--color-accent-tint);
+  /* Composite tokens re-resolve on the scope that relocals --border. */
+  --hairline: 1px solid var(--color-border);
+  --hairline-strong: 1px solid var(--color-border-strong);
+  --ring: 0 0 0 1px var(--color-border);
+  --ring-accent: 0 0 0 1px var(--color-accent-border);
+  --ring-overlay: 0 0 0 1px var(--color-border-strong);
+
+  /* The artifact's near-black terminal and warm dim text. */
+  --color-terminal-bg: #0D0D0D;
+  --color-terminal-fg: #DDDDDD;
+  --color-terminal-muted: #5E6878;
+  --color-terminal-evidence: #E0764E;
+  --color-terminal-evidence-border: #59331F;
+  --color-console-bg: #0A1522;
+  --color-console-fg: #E4E1D8;
+  --color-console-dim: #8A93A3;
+  --color-console-accent: #E0764E;
+
+  /* The artifact's cobalt sidebar surface (dark paper), its field
+     surface, and its selected-row wash. */
+  --color-sidebar-surface: #0E1B2C;
+  --color-field: #16263A;
+  --color-field-hover: #1A2C42;
+  --color-field-border: #26374D;
+
+  --color-paper: #0E1B2C;
+  --color-paper-muted: #16263A;
+  --color-paper-sunken: #0A1522;
+  --color-ink-900: #E8EDF4;
+  --color-ink-700: #9AA8BC;
+  --color-ink-500: #6B7A8F;
+  --color-line-200: #26374D;
+  --color-line-300: #33475F;
+
+  --color-accent-500: #5B7FE8;
+  --color-accent-600: #7290EC;
+  --color-accent-700: #4968D6;
+  --color-accent-050: #222C46;
+
+  --color-signal-500: #F07A52;
+  --color-signal-600: #F38D6A;
+  --color-signal-050: #42241A;
+
+  --color-surface-card: var(--color-paper-muted);
+  --color-surface-overlay: #1A2C42;
+  --color-scrim: rgba(5, 10, 18, 0.6);
+  /* colors.css [data-theme="dark"]: remaining dark semantic tokens. */
+  --color-surface-inverse: var(--color-paper-sunken);
+  --color-signal-border: #59331F;
+  --color-decor-orange: #D19062;
+  --color-decor-orange-tint: #402613;
+  --color-decor-orange-on-tint: #D19062;
+  --color-signal-on-tint: var(--color-signal-500);
+
+  /* Semantic aliases must be re-declared here, not only in @theme. A
+     custom property holding `var(--ramp)` resolves at :root, so the
+     RESOLVED light value is what descendants inherit; re-defining just
+     the ramp variable in [data-theme="dark"] cannot change an alias that
+     was already computed. Without these lines every alias (text-primary,
+     text-secondary, text-tertiary, surface, border, accent, evidence,
+     wash-selected) renders with light-theme values on the dark frame. */
+  --color-surface: var(--color-paper);
+  --color-surface-muted: var(--color-paper-muted);
+  --color-surface-sunken: var(--color-paper-sunken);
+  --color-text-primary: var(--color-ink-900);
+  --color-text-secondary: var(--color-ink-700);
+  --color-text-tertiary: var(--color-ink-500);
+  --color-text-inverse: var(--color-ink-900);
+  --color-text-link: var(--color-accent-500);
+  --color-border: var(--color-line-200);
+  --color-border-strong: var(--color-line-300);
+  /* Focus never wears blue: no blue halo or outline, anywhere, ever. The
+     focus border is the strong neutral. */
+  --color-border-focus: var(--color-border-strong);
+  --color-accent: var(--color-accent-500);
+  --color-accent-hover: var(--color-accent-600);
+  --color-accent-pressed: var(--color-accent-700);
+  --color-accent-tint: var(--color-accent-050);
+  --color-evidence: var(--color-signal-500);
+  --color-evidence-hover: var(--color-signal-600);
+  --color-evidence-tint: var(--color-signal-050);
+  --color-wash-selected: var(--color-accent-050);
+
+  --color-text-on-accent: #0A1522;
+  --color-text-on-error: #0A1522;
+
+  --color-accent-border: #2F4680;
+  --color-accent-on-tint: var(--color-accent-600);
+  --color-evidence-border: var(--color-signal-border);
+  --color-evidence-on-tint: var(--color-signal-on-tint);
+
+  --color-success: #4FB27C;
+  --color-success-tint: #153423;
+  --color-success-on-tint: #4FB27C;
+  --color-warning: #D9A441;
+  --color-warning-tint: #3A2A0C;
+  --color-warning-on-tint: #D9A441;
+  --color-error: #E4736F;
+  --color-error-tint: #432221;
+  --color-error-on-tint: #E4736F;
+
+  --color-wash-hover: rgba(232, 237, 244, 0.06);
+  --color-wash-pressed: rgba(232, 237, 244, 0.11);
+
+  /* Marks are one value on both grounds; see the @theme block. */
+  --color-provider-claude: var(--color-mark-vermilion);
+  --color-provider-codex: var(--color-mark-emerald);
+  --color-provider-cursor: #D9D94F;
+  --color-provider-grok: #453F83;
+  --color-provider-kimi: var(--color-mark-indigo);
+  --color-provider-cline: var(--color-mark-crimson);
+  --color-provider-devin: var(--color-mark-violet);
+  --color-provider-kilo: var(--color-mark-gold);
+  --color-provider-mimo: #B66BC2;
+  --color-provider-omp: var(--color-mark-lime);
+  --color-provider-opencode: var(--color-mark-cerulean);
+  --color-provider-pi: var(--color-mark-orchid);
+  --color-provider-qwen: #2D8FDD;
+  --color-provider-qoder: #28B040;
+  --color-provider-shell: #5A6472;
+  --color-provider-command-code: var(--color-mark-teal);
+}
+
+/* colors.css [data-surface="ink"]: the brand-ink ground is a third dark
+   surface and theme-independent. It paints the ground and relocalizes the
+   surface, text, border, accent, signal and wash ramps as literals (not
+   var() to theme ramps), so every component works inside it unchanged. */
+[data-surface="ink"] {
+  background: var(--color-surface-brand-ink);
+  color: #FBFCFE;
+  --color-surface-brand-ink: #0B0D10;
+  --color-surface: #0B0D10;
+  --color-surface-muted: #12151A;
+  --color-surface-sunken: #07090B;
+  --color-surface-card: rgba(251,252,254,.055);
+  --color-surface-overlay: #141820;
+  --color-surface-inverse: #FBFCFE;
+  --color-scrim: rgba(3,5,8,.66);
+
+  --color-text-primary: #FBFCFE;
+  --color-text-secondary: rgba(251,252,254,.72);
+  --color-text-tertiary: rgba(251,252,254,.55);
+  --color-text-inverse: #0E1B2C;
+  --color-text-link: #7C9BF0;
+  --color-text-on-accent: #0A1522;
+  --color-text-on-error: #0A1522;
+
+  --color-border: rgba(251,252,254,.14);
+  --color-border-strong: rgba(251,252,254,.26);
+  --color-border-focus: var(--color-border-strong);
+
+  --color-accent: #5B7FE8;
+  --color-accent-hover: #7290EC;
+  --color-accent-pressed: #4968D6;
+  --color-accent-tint: rgba(91,127,232,.16);
+  --color-accent-border: rgba(91,127,232,.42);
+
+  --color-signal: #F07A52;
+  --color-signal-hover: #F38D6A;
+  --color-signal-tint: rgba(240,122,82,.14);
+  --color-signal-border: rgba(240,122,82,.4);
+  /* var() to a same-scope literal stays theme-independent; the evidence
+     aliases are restated here so they don't inherit paper values. */
+  --color-evidence: var(--color-signal);
+  --color-evidence-hover: var(--color-signal-hover);
+  --color-evidence-tint: var(--color-signal-tint);
+  --color-evidence-border: var(--color-signal-border);
+
+  --color-decor-orange: #D19062;
+  --color-decor-orange-tint: rgba(209,144,98,.14);
+  --color-decor-orange-on-tint: #D19062;
+
+  --color-success: #4FB27C;
+  --color-success-tint: rgba(79,178,124,.14);
+  --color-warning: #D9A441;
+  --color-warning-tint: rgba(217,164,65,.14);
+  --color-error: #E4736F;
+  --color-error-tint: rgba(228,115,111,.14);
+
+  /* on-tint over the alpha washes on ink */
+  --color-accent-on-tint: #7290EC;
+  --color-signal-on-tint: #F07A52;
+  --color-evidence-on-tint: var(--color-signal-on-tint);
+  --color-success-on-tint: #4FB27C;
+  --color-warning-on-tint: #D9A441;
+  --color-error-on-tint: #E4736F;
+
+  --color-wash-hover: rgba(251,252,254,.06);
+  --color-wash-pressed: rgba(251,252,254,.11);
+  --color-wash-selected: rgba(91,127,232,.18);
+  --focus-ring: 0 0 0 1px #5B7FE8;
+  --selection-bg: rgba(91,127,232,.3);
+
+  /* elevation.css: composites re-declare so they re-resolve against the
+     ink-local border values instead of freezing on the outer theme. */
+  --hairline: 1px solid var(--color-border);
+  --hairline-strong: 1px solid var(--color-border-strong);
+  --ring: 0 0 0 1px var(--color-border);
+  --ring-accent: 0 0 0 1px var(--color-accent-border);
+  --ring-overlay: 0 0 0 1px var(--color-border-strong);
+
+  --grid-line: rgba(251,252,254,.07);
+  --grid-size: 32px;
+}
+
+/* Density scopes retune control heights and row interiors only; the raw
+   space ramp never moves. */
+[data-density="compact"] {
+  --control-h-sm: 24px;
+  --control-h-md: 30px;
+  --control-h-lg: 38px;
+  --control-px: 10px;
+  --field-px: 10px;
+  --field-py: 6px;
+  --chrome-h: 40px;
+  --card-pad: 14px;
+  --row-py: 6px;
+  --row-px: 8px;
+  --row-icon-gap: 8px;
+  --stack-gap: var(--space-3);
+  --section-gap: var(--space-8);
+}
+
+[data-density="comfortable"] {
+  --control-h-sm: 32px;
+  --control-h-md: 42px;
+  --control-h-lg: 52px;
+  --control-px: 18px;
+  --field-px: 18px;
+  --field-py: 12px;
+  --chrome-h: 56px;
+  --card-pad: 28px;
+  --row-py: 14px;
+  --row-px: 14px;
+  --row-icon-gap: 12px;
+  --stack-gap: var(--space-6);
+  --section-gap: var(--space-16);
+}
+
+/* Narrow scope: the phone steps chrome up to a touch target while the
+   workspace keeps the same token names. */
+@media (max-width: 600px) {
+  :root {
+    --gutter: var(--space-4);
+    --control-h-md: 40px;
+    --control-h-lg: 48px;
+    --card-pad: 16px;
+    --chrome-h: 56px;
+  }
+}
+[data-viewport="narrow"] {
+  --gutter: var(--space-4);
+  --control-h-md: 40px;
+  --control-h-lg: 48px;
+  --card-pad: 16px;
+  --chrome-h: 56px;
+}
+
+/* Laptop — the display, title and prose voices step down; body chrome is
+   already at its floor. */
+@media (max-width: 1800px) {
+  :root {
+    --type-display-1-size: 52px;
+    --type-display-2-size: 40px;
+    --type-display-3-size: 30px;
+    --type-title-1-size: 24px;
+    --type-title-2-size: 20px;
+    --type-title-3-size: 16px;
+    --type-prose-lead-size: 20px;
+    --type-prose-size: 17px;
+    --type-prose-lh: 1.6;
+    --type-prose-sm-size: 15px;
+  }
+}
+
+/* Phone — body steps up while display steps down. */
+@media (max-width: 600px) {
+  :root {
+    --type-display-1-size: 40px;
+    --type-display-2-size: 34px;
+    --type-display-3-size: 27px;
+    --type-prose-lead-size: 19px;
+    --type-body-size: 16px;
+    --type-body-sm-size: 15px;
+    --type-control-size: 16px;
+  }
+}
+[data-viewport="narrow"] {
+  --type-display-1-size: 40px;
+  --type-display-2-size: 34px;
+  --type-display-3-size: 27px;
+  --type-prose-lead-size: 19px;
+  --type-body-size: 16px;
+  --type-body-sm-size: 15px;
+  --type-control-size: 16px;
+}
+
+/* Operator Mono metrics scope: Operator Mono SSm is the mono face app-wide
+   (--font-mono above), so all five Dank compensations come off here and the
+   untuned original stands. The scope carries the metrics only, so dropping
+   the attribute reverts to Blueprint's Dank-tuned metrics in one edit. */
+[data-mono="operator"] {
+  --type-mono-size: 13px;
+  --type-mono-lh: 1.62;
+  --type-mono-weight: 400;
+  --type-mono-tracking: 0em;
+  --type-mono-xh-ratio: 1;
+}
+
+/* Face scopes: a typeface and the trims it needs, stated together, so a swap
+   is selecting a face rather than retuning the scale. The ramp in @theme is
+   the licensed cut's own tuning, so that face needs no scope — an absent
+   data-face is the licensed cut at the identity trims.
+
+   A candidate declares only what it needs: --face-ui-size and
+   --face-ui-leading multiply the scale above. Letter-spacing is NOT part of
+   this layer — the app tracks from --type-*-ls through tracking-() utilities,
+   a different token family this does not wrap.
+
+   Trims belong to the TYPEFACE, never to a slot: nothing here names a family
+   per element, and no rule outside this block moves when the face changes. A
+   candidate that declares no trims is unmeasured and renders at the licensed
+   cut's metrics. */
+:root[data-face="inter"] {
+  --font-ui: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Inter", -apple-system, "Segoe UI", sans-serif;
+}
+
+:root[data-face="public-sans"] {
+  --font-ui: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+}
+
+:root[data-face="work-sans"] {
+  --font-ui: "Work Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Work Sans", -apple-system, "Segoe UI", sans-serif;
+}
+
+:root[data-face="figtree"] {
+  --font-ui: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Figtree", -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Terminal locals: emulator geometry and ANSI chrome live on the terminal
+   element only. Nothing outside the emulator reads them. */
+[data-region="terminal"] {
+  --t-bg: #0A1522;
+  --t-fg: #E4E1D8;
+  --t-dim: #8A93A3;
+  --t-faint: #5E6878;
+  --t-rule: #2A313B;
+  --t-accent: #E0764E;
+  --t-panel-border: #3A414D;
+  --t-input-bg: #353A45;
+  --t-warn: #D7D74A;
+  --t-magenta: #E255A1;
+  --t-cyan: #56C8D8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-page: 0ms;
+    --dur-notice: 0ms;
+    --press-scale: 1;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  [data-theme="dark"] {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-surface text-text-primary font-ui text-body antialiased;
+    font-feature-settings: var(--font-features);
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--color-text-primary);
+  }
+  :where(h1, h2, h3, h4, h5, h6) {
+    margin: 0;
+  }
+  :where(p) {
+    margin: 0;
+  }
+  :where(button, input, select, textarea) {
+    font: inherit;
+  }
+  :where(button, [role="button"], summary, a[href]):where(:not(:disabled, [aria-disabled="true"])) {
+    cursor: pointer;
+  }
+  /* No focus ring, ever: keyboard focus takes the same
+     wash the pointer's hover does, and no element may fall through to the
+     UA's halo. :where() keeps the rules at zero specificity and @layer
+     base keeps them under the utility layer, so a control that declares
+     its own focus treatment always wins. */
+  /* Bare :focus-visible, not :where(): Tailwind's preflight re-arms
+     Firefox's halo via :-moz-focusring at (0,1,0) in this same layer, and
+     only an equal-specificity later rule wins there. */
+  :focus-visible {
+    outline: none;
+  }
+  :where(button, [role="button"], a[href], summary, [tabindex="0"],
+      input[type="checkbox"], input[type="radio"]):focus-visible {
+    background: var(--color-wash-hover);
+  }
+  /* Fields speak focus through their border, the .input treatment: a ring
+     around a bordered box reads as a second border. Chromium gives text
+     fields and selects :focus-visible on mouse focus too, so a ring here
+     would halo every click into a field. */
+  :where(select, textarea,
+      input:not([type="checkbox"]):not([type="radio"])):focus-visible {
+    outline: none;
+    border-color: var(--color-border-focus);
+  }
+  /* The label voice: small caps, open tracking — panel titles, badges,
+     metadata. Utilities: .font-label */
+}
+
+/* The mono voice as a utility: the face AND its metrics. A mono surface set
+   only through font-family would inherit the interface face's tracking and
+   word-spacing, which a substitute mono face tuned with its own tracking
+   (free.css) then renders narrow. At the licensed cut both are identity. */
+@utility font-mono {
+  font-family: var(--font-mono);
+  /* Through Tailwind's own tracking variable as well, so a text-* utility on
+     the same element (which reads --tw-tracking first) keeps the mono
+     tracking instead of replacing it with its step's. */
+  --tw-tracking: var(--type-mono-tracking);
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+}
+
+@utility font-label {
+  font-variant-caps: all-small-caps;
+  letter-spacing: var(--type-label-ls);
+  font-weight: 500;
+}
+
+/* The section label above a list (DS .bp-eyebrow): micro size, medium, and
+   uppercased by the treatment rather than by the copy, so the authored text
+   stays sentence case for screen readers and probes. */
+@utility eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--type-micro-size);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--type-micro-ls);
+  text-transform: uppercase;
+}
+
+/* The card priority marker: only this one micro label is uppercased
+   and its line box is left normal, so it does not inherit the micro token's
+   1.3 ratio. The authored text stays lowercase for screen readers and probes. */
+@utility priority-label {
+  font-size: var(--type-label-sm-size);
+  letter-spacing: var(--type-label-ls);
+  text-transform: uppercase;
+  font-weight: 500;
+  line-height: normal;
+}
+
+/* The title voice for pane-level empty states: the DS
+   title-3 treatment — small caps at title size, medium weight, open
+   tracking. Small caps is a treatment, never copy casing: the authored
+   string stays sentence case, so all-small-caps renders it, not
+   text-transform, and a probe must read font-variant-caps. */
+@utility font-title-caps {
+  font-variant-caps: var(--type-caps);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--type-title-3-ls);
+}
+
+/* The accent caret is carried per field — the provider filter, both
+   git-identity fields, and the directory picker's create row — through
+   Tailwind's caret-accent, synthesized from --color-accent.
+
+   Per field rather than on .input, because .input does not map to that
+   set: it misses the three hand-rolled fields and reaches the task board's
+   search, which keeps the default. The chromeless rename is default too,
+   deliberately. caret-probe.mjs holds both halves. */
+
+
+/* Form values never inherit the label voice's all-small-caps treatment. */
+@utility font-input {
+  font-variant-caps: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Chrome bar family: one class serves all four
+   bars — the sidebar header, the session header, the panel headers, and
+   the info bar. Geometry lives here; call sites add only their gap and
+   padding, never a title size. Plain classes so the modifier ordering is
+   deterministic source order, not utility-sort order. */
+.chrome {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: var(--chrome-h);
+  background: var(--color-surface);
+  border-bottom: var(--hairline);
+}
+
+/* The sidebar header shows no hairline — the sidebar's own right seam is the
+   rule, and a second line under the wordmark reads as a stray mark. The
+   border still occupies its box: both chrome bars are the same --chrome-h,
+   and under border-box a hairline on one of them shrinks that bar's content
+   box, so align-items:center would settle the two bars' contents on lines a
+   half-pixel apart. Transparent keeps the box maths identical to the main
+   header's real hairline. */
+.chrome-flush {
+  border-bottom: 1px solid transparent;
+}
+
+/* The info bar (reference `--bottom`): flipped to a top hairline at the
+   fixed 26px strip height, so it never follows --chrome-h density. */
+.chrome-bottom {
+  height: 26px;
+  padding: 0 var(--space-4);
+  border-bottom: 0;
+  border-top: var(--hairline);
+}
+
+/* Panel titles: 13px medium from the class, so Tasks and Files can never
+   disagree about size at the call site. */
+.chrome-title {
+  font-size: var(--type-body-sm-size);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Info-bar status voice: caption size. The bar only renders hover and
+   focus hints, so the only mode is hint and the only text color is
+   --text-secondary; --text-tertiary is decorative-only at this size and
+   is never used here. The mode is the one attribute the info bar writes. */
+.chrome-status {
+  font-size: var(--type-caption-size);
+}
+
+.chrome-status[data-mode="hint"] {
+  color: var(--color-text-secondary);
+}
+
+/* The news tier: what the active session's agent is
+   doing in a chat, at rest, in the same voice as a hint. Hover and focus
+   hints still win while they last. */
+.chrome-status[data-mode="news"] {
+  color: var(--color-text-secondary);
+}
+
+/* The Chats trigger goes accent while a live chat holds messages you
+   have not seen (unseen = accent, no count). */
+[data-live-chats][data-unseen="true"] [data-panel-trigger-visual],
+[data-titlebar-chats][data-unseen="true"] [data-panel-trigger-visual] {
+  color: var(--color-accent);
+}
+
+/* The Assets trigger goes accent while files agents wrote since the panel
+   was last open are waiting; its badge carries the count. */
+[data-live-assets]:not([data-assets-new="0"]) [data-panel-trigger-visual],
+[data-titlebar-assets]:not([data-assets-new="0"]) [data-panel-trigger-visual] {
+  color: var(--color-accent);
+}
+
+/* The Panels button's count: the small solid badge, over the 44px
+   button's top right corner. Digits are interface voice. */
+.assets-panels-badge {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 18px;
+  padding: 0 6px calc(2 * var(--caps-nudge));
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-ui);
+  font-size: var(--type-label-sm-size);
+  font-weight: var(--weight-medium);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.assets-panels-badge[hidden] { display: none; }
+
+/* The field family: the wrap is a relative flex so
+   an overlaid lead glyph can sit inside the input's own padding — the
+   input, not the wrap, is the bordered control on the card surface. Plain
+   classes like the chrome family, so part order is deterministic. */
+.inputwrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputwrap-lead {
+  position: absolute;
+  left: var(--field-px);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  height: var(--control-h-md);
+  padding: 0 var(--field-px);
+  font-size: var(--type-control-size);
+  color: var(--color-text-primary);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  transition: var(--transition-control), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-text-tertiary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+/* A field with the accent caret speaks focus through the caret: on focus its border drops to the hairline, quieter than
+   rest. Every other field keeps the strong focus border, the only focus
+   state a field without a caret can show. */
+.input.caret-accent:focus {
+  border-color: var(--color-border);
+}
+
+.input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--color-surface-muted);
+}
+
+/* --lead clears the overlaid glyph; --sm takes the 28px control row. */
+.input-lead {
+  padding-left: calc(var(--field-px) + 23px);
+}
+
+.input-sm {
+  height: var(--control-h-sm);
+  font-size: var(--type-control-sm-size);
+  border-radius: var(--radius-control-sm);
+}
+
+/* Mobile keeps every text control at 16px: iOS zooms the page when a
+   focused control's font is smaller, and the auto-focused picker filter
+   would zoom on every open. The floor is specific to phones.
+   Unlayered and after the size variants, so it outranks them. */
+@media (width < 48rem) {
+  .input {
+    font-size: 16px;
+  }
+  /* The dialogs' selects and editable fields ride the same floor: iOS
+     zooms on focusing any smaller control, and the Open project route's
+     identity selects sat under it. A readonly field raises no keyboard
+     and needs no floor. */
+  .dialog select,
+  .dialog textarea,
+  .dialog input:not([readonly]):not([type="checkbox"]):not([type="radio"]) {
+    font-size: 16px;
+  }
+}
+
+/* Design-system pill tabs: a single rounded container with the selected
+   tab as a pill inside it. The container wash lets the active surface-card
+   pill read as raised; the labels stay sentence case in the markup so probes
+   can still find them by name. */
+.tabs-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The pill tab uses the label voice: 13px all-small-caps with open
+     tracking. The 11px micro token would shrink the small-caps glyphs below
+     a readable minimum, so this rule keeps the 13px label size.
+     Asymmetric padding (4.505px + a 16px normal line box + 7.495px) gives a
+     28px pill, which keeps the group at 34px and optically centres the label.
+     A symmetric value leaves the label sitting visibly high. */
+  padding: 4.505px 14px 7.495px;
+  line-height: normal;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--type-label-size);
+  font-variant-caps: all-small-caps;
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--type-label-ls);
+  color: var(--color-text-secondary);
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tab:focus-visible {
+  outline: none;
+  background: var(--color-wash-hover);
+  color: var(--color-text-primary);
+}
+
+.tab-selected {
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+}
+
+/* The "Show info bar" preference's off state: the strip leaves the layout
+   entirely so the content row owns the full height. */
+[data-region="info-bar"][data-shown="false"] {
+  display: none;
+}
+
+/* Mobile has no info bar: the strip is a
+   hover/focus explanation channel and there is no hover on a phone, so
+   the 26px returns to the content row under the same narrow scope the
+   terminal's soft keys and padding use. */
+@media (width < 48rem) {
+  [data-region="info-bar"] {
+    display: none;
+  }
+}
+
+@utility hairline {
+  border: 1px solid var(--color-border);
+}
+
+@utility hairline-strong {
+  border: 1px solid var(--color-border-strong);
+}
+
+/* The ground behind an image with transparent pixels, and only behind
+   one: opaque images sit on the flat sunken ground, so the pattern says
+   something about the file. */
+@utility checkerboard {
+  background: repeating-conic-gradient(var(--color-surface-muted) 0% 25%, var(--color-surface-card) 0% 50%) 0 0 / 12px 12px;
+}
+
+/* Row action glyphs (rename, stop, ⋯). 13px, not 11: at 11 the glyphs
+   read visibly smaller than the reference's.
+   The spinner/glyph swap stays aligned because both centre in equal
+   24px boxes — the alignment is structural, not tied to this value. */
+@utility icon-action {
+  width: 13px;
+  height: 13px;
+}
+
+@utility icon-control {
+  width: 14px;
+  height: 14px;
+}
+
+/* The right dock (Files, Tasks). Each surface keeps its full width while a
+   negative margin reclaims that width from layout. There is no motion
+   budget here: opening or closing a panel lands in its final geometry on
+   the first frame after the toggle. There is no scrim because these panels
+   remain working surfaces beside the terminal, never modals.
+
+   Expanded, the file viewer takes everything right of the sidebar:
+   absolutely positioned over the content row, and under the modal and
+   popover regions, which are fixed and later in the document. Width and
+   the left seam are dropped there because the panel no longer has an edge
+   against the terminal. */
+[data-region="files"] {
+  --docked-panel-w: min(clamp(620px, 56%, 880px), calc(100% - 360px));
+}
+[data-region="tasks"] {
+  --docked-panel-w: min(clamp(640px, 58%, 1000px), calc(100% - 360px));
+}
+/* The Chats ledger and the Assets list are the file list's width family. */
+[data-region="chats"],
+[data-region="assets"] {
+  --docked-panel-w: min(400px, calc(100% - 360px));
+}
+[data-region="files"],
+[data-region="tasks"],
+[data-region="chats"],
+[data-region="assets"] {
+  position: relative;
+  width: var(--docked-panel-w);
+  margin-right: calc(-1 * var(--docked-panel-w));
+  visibility: hidden;
+  pointer-events: none;
+  border-left-width: 0;
+}
+[data-region="files"][data-open="true"],
+[data-region="tasks"][data-open="true"],
+[data-region="chats"][data-open="true"],
+[data-region="assets"][data-open="true"] {
+  z-index: 1;
+  margin-right: 0;
+  visibility: visible;
+  pointer-events: auto;
+  border-left-width: 1px;
+}
+[data-region="files"][data-expanded="true"] {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  width: auto;
+  max-width: none;
+  margin-right: 0;
+  visibility: visible;
+  pointer-events: auto;
+  border-left-width: 0;
+}
+[data-files-list-scroll] {
+  scrollbar-width: none;
+}
+[data-files-list-scroll]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Files panel breadcrumb overrides.
+   The DS Breadcrumbs item padding is 2px vertical, which leaves an
+   icon-only root wearing its hover wash like a collar; 6px all round
+   makes the root a square target and gives text crumbs room. The
+   shrink floors keep the nav able to report overflow, which is what
+   keeps the elision loop alive. */
+[data-files-crumbs] {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.crumb-item {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 3.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.crumb-item:hover {
+  color: var(--color-text-primary);
+}
+.crumb-item:focus-visible {
+  outline: none;
+  background: var(--color-wash-hover);
+}
+.crumb-item:first-child {
+  padding-left: 10px;
+  flex-shrink: 1;
+}
+.crumb-item[aria-current="location"] {
+  color: var(--color-text-primary);
+}
+.crumb-current {
+  min-width: 4em;
+}
+/* Once the trail has elided down to root + current and the root label
+   has been dropped, the current crumb must be allowed to shrink below
+   its normal floor so it ellipsises inside the nav instead of overflowing it. */
+.crumb-current[data-crumb-tight] {
+  min-width: 0;
+}
+.crumb-ellipsis {
+  flex: 0 0 auto;
+  min-width: 0;
+  cursor: default;
+}
+.crumb-root-icon {
+  width: calc(1.55em + 12px);
+  min-width: calc(1.55em + 12px);
+  justify-content: center;
+  padding-left: 6px;
+}
+.crumb-sep {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+  padding: 0 2px;
+}
+
+[data-tm-column-scroll] {
+  scrollbar-width: none;
+}
+[data-tm-column-scroll]::-webkit-scrollbar {
+  display: none;
+}
+/* The task card: the card is a button, flex:none at a
+   fixed desktop height, and every child is flex:none too — without that
+   the browser shrinks the text boxes and slices glyphs. The uniform
+   height is deliberate and desktop-only; mobile cards size to content. */
+[data-tm-card] {
+  flex: none;
+}
+[data-tm-card] > * {
+  flex: none;
+}
+@media (width < 48rem) {
+  [data-workspace] {
+    --workspace-safe-area-top: env(safe-area-inset-top);
+  }
+  [data-workspace-titlebar] {
+    height: calc(var(--chrome-h) + var(--workspace-safe-area-top));
+    padding-top: var(--workspace-safe-area-top);
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  [data-region="files"],
+  [data-region="tasks"],
+  [data-region="chats"],
+  [data-region="assets"] {
+    --docked-panel-w: 100%;
+  }
+  /* On the phone the panel fills the screen; the frame bezel is the only
+     left edge, so the docked-panel seam would draw a second line. */
+  [data-region="files"][data-open="true"],
+  [data-region="tasks"][data-open="true"],
+  [data-region="chats"][data-open="true"],
+  [data-region="assets"][data-open="true"] {
+    border-left-width: 0;
+  }
+  [data-region="files"][data-viewing="true"] [data-files-list],
+  [data-region="files"][data-viewing="false"] [data-files-viewer] {
+    display: none;
+  }
+  [data-files-list] {
+    width: 100%;
+    min-width: 0;
+    border-right-width: 0;
+  }
+  [data-files-header] {
+    height: calc(var(--chrome-h) + var(--workspace-safe-area-top));
+    padding-top: var(--workspace-safe-area-top);
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  [data-files-list-scroll] {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  [data-files-sort] {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  [data-files-header] .crumb-item {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+  }
+  [data-files-header] .crumb-root-icon {
+    width: 2.75rem;
+    min-width: 2.75rem;
+    padding-left: 0;
+    justify-content: center;
+  }
+  [data-files-header] [data-files-close],
+  [data-files-viewer-header] :where(button, a) {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  [data-files-upload-area] [data-files-upload] {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  [data-files-viewer-header] {
+    min-width: 0;
+    min-height: 3.25rem;
+    padding-left: max(0.25rem, env(safe-area-inset-left));
+    padding-right: max(0.25rem, env(safe-area-inset-right));
+  }
+  [data-region="files"][data-expanded="true"] [data-files-viewer-header] {
+    min-height: calc(3.25rem + env(safe-area-inset-top));
+    padding-top: calc(0.5rem + env(safe-area-inset-top));
+  }
+  [data-region="tasks"] [data-tm-header] {
+    height: calc(var(--chrome-h) + var(--workspace-safe-area-top));
+    padding-top: var(--workspace-safe-area-top);
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  [data-region="tasks"] [data-tm-toolbar],
+  [data-region="tasks"] [data-tm-status-selector],
+  [data-region="tasks"] [data-tm-board] {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  [data-region="tasks"] [data-tm-column-scroll] {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  [data-files-viewer-scroll] [data-files-text] {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Phone files panel geometry. The phone drops
+   the desktop sort strip, makes every row a 50px touch target, and moves
+   the upload action to a 56px circular floating button at the bottom right
+   of the list. These rules mirror the media query onto [data-viewport="narrow"]
+   so the preview phone frame gets them inside a wide review page. */
+@media (max-width: 600px) {
+  /* The phone renders with antialiased/optimizeLegibility (the DS
+     base sets both), so the files panel matches that rendering rather than
+     the default browser smoothing. */
+  [data-region="files"] {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* The DS body voice carries -0.002em tracking; matching it removes the
+       last subpixel halo from the breadcrumb and row labels on the phone. */
+    letter-spacing: -0.002em;
+  }
+  [data-files-upload-area] {
+    display: none;
+  }
+  [data-files-upload-floating] {
+    display: inline-flex;
+  }
+  [data-files-sort] {
+    display: none;
+  }
+  [data-files-header] {
+    height: auto;
+    gap: 6px;
+    padding: calc(6px + var(--workspace-safe-area-top, 0px)) max(6px, env(safe-area-inset-right)) 6px max(20px, env(safe-area-inset-left));
+  }
+  [data-files-crumbs] {
+    margin-left: -10px;
+  }
+  [data-files-crumbs] .crumb-current {
+    min-width: 0;
+    font-weight: var(--weight-medium);
+  }
+  [data-files-crumbs] .crumb-root-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  [data-files-close] {
+    width: 44px;
+    height: 44px;
+  }
+  [data-files-close] svg {
+    width: 20px;
+    height: 20px;
+  }
+  [data-files-list-scroll] {
+    gap: 1px;
+    padding: 8px 10px;
+  }
+  [data-files-up],
+  [data-files-row] {
+    height: 50px;
+    min-height: 50px;
+    padding: 0 10px;
+    gap: 11px;
+    /* Buttons carry UA appearance/padding/baseline behaviour that can shift
+       text by a subpixel against a div; strip it so the row geometry matches
+       a plain flex container. */
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  [data-files-up] svg,
+  [data-files-row] > svg,
+  [data-files-row] > span > svg {
+    width: 18px;
+    height: 18px;
+  }
+  [data-files-row] .text-body-sm,
+  [data-files-up] .text-body-sm {
+    font-weight: 400;
+    color: var(--color-text-primary);
+  }
+  [data-files-row][aria-current="true"] .text-caption {
+    color: var(--color-text-secondary);
+  }
+  /* The phone's file viewer is its own screen:
+     back, the file's name, and its actions in a 56px chrome; the list's
+     breadcrumb-and-sort chrome leaves with the list it belongs to. */
+  [data-region="files"][data-viewing="true"] [data-files-header],
+  [data-region="files"][data-viewing="true"] [data-files-sort] {
+    display: none;
+  }
+  [data-files-viewer-header] {
+    height: calc(var(--chrome-h) + var(--workspace-safe-area-top, 0px));
+    gap: 6px;
+    padding: var(--workspace-safe-area-top, 0px) 6px 0;
+  }
+  [data-files-viewer-header] [data-files-back] {
+    width: var(--touch-min);
+    height: var(--touch-min);
+  }
+  [data-files-viewer-header] [data-files-back] svg {
+    width: 20px;
+    height: 20px;
+  }
+  [data-files-viewer-header] [data-files-viewer-name] {
+    font-weight: var(--weight-regular);
+  }
+  /* The code column: 1.7 line boxes at the 12px mono cap, the gutter
+     right-aligned at half strength with its own insets. */
+  [data-region="files"] [data-files-text] {
+    padding: 14px 16px 20px 0;
+    font-size: min(var(--type-mono-size), calc(12px * var(--type-mono-xh-ratio)));
+    line-height: 1.7;
+  }
+  /* The gutter is numbers alone: right-aligned to their own width,
+     no rule, no ground of its own — the desktop's 72px IDE gutter reads as a
+     column the phone has no room for. */
+  [data-region="files"] [data-files-line-number] {
+    width: auto;
+    min-width: calc(2ch + 24px);
+    padding: 0 8px 0 16px;
+    border-right: 0;
+    background: transparent;
+    text-align: right;
+    opacity: 0.5;
+  }
+  [data-region="files"] [data-files-line-text] {
+    padding-left: 10px;
+  }
+  /* The footer speaks the UI voice at caption size and says only the
+     size and the age's number. The other facts stay in the
+     markup for the desktop and for readers. */
+  [data-files-viewer-footer] {
+    padding: 12px 20px;
+    font-family: var(--font-ui);
+    font-size: var(--type-caption-size);
+  }
+  [data-viewer-stat="kind"],
+  [data-viewer-stat="lines"],
+  [data-viewer-stat="read-only"],
+  [data-viewer-sep="lines"],
+  [data-viewer-sep="size"],
+  [data-viewer-sep="read-only"],
+  [data-stat-word] {
+    display: none;
+  }
+  [data-files-wrap-dot] {
+    display: none;
+  }
+  [data-files-wrap-switch] {
+    display: inline-flex;
+  }
+  /* An image's footer keeps every fact: format, dimensions,
+     size and age, beside the Fit/100% pair at touch height. */
+  [data-files-image-footer] {
+    padding: 8px 16px 8px 20px;
+  }
+  [data-files-image-footer] :is([data-viewer-stat], [data-viewer-sep]) {
+    display: inline;
+  }
+  [data-files-image-footer] [data-stat-word] {
+    display: inline;
+  }
+  [data-files-zoom-group] {
+    margin: 0;
+  }
+  [data-files-zoom] {
+    display: inline-flex;
+    align-items: center;
+    height: var(--touch-min);
+    padding: 0 12px;
+    border-radius: var(--radius-control);
+  }
+  /* The refusal's action is the phone's large button. */
+  [data-files-image-action] {
+    margin-top: 8px;
+  }
+  [data-files-image-action] > :is(a, button) {
+    height: 48px;
+    padding: 0 20px;
+    gap: 8px;
+    font-size: var(--type-body-size);
+    font-weight: var(--weight-medium);
+  }
+  [data-files-image-action] svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+[data-viewport="narrow"] [data-region="sidebar"] {
+  position: fixed;
+  inset: 132px 0 0 0;
+  width: 100%;
+  height: auto;
+  background: var(--color-surface-overlay);
+  max-width: none;
+  border-right: 0;
+  border-radius: 28px 28px 0 0;
+}
+[data-viewport="narrow"] [data-region="sidebar"] > .chrome {
+  display: none;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-projects-menu] {
+  display: none;
+}
+[data-viewport="narrow"] [data-sidebar-sheet-chrome] {
+  display: block;
+}
+[data-viewport="narrow"] [data-sidebar-sheet-actions] {
+  display: block;
+}
+[data-viewport="narrow"] [data-region="terminal"] {
+  --terminal-padding: 12px 16px;
+  padding: var(--terminal-padding);
+}
+[data-viewport="narrow"] [data-recovery-scrollback] {
+  padding: 0;
+}
+[data-viewport="narrow"] [data-recovery-banner] {
+  display: flex;
+}
+[data-viewport="narrow"] [data-recovery-register] {
+  display: none;
+}
+[data-viewport="narrow"] [data-region="terminal"]:has([data-recovery-banner]) {
+  padding: 0;
+}
+[data-viewport="narrow"] [data-region="terminal"]:has([data-recovery-banner]) [data-recovery-scrollback] {
+  padding: 12px 16px;
+}
+[data-viewport="narrow"] [data-region="files"] {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.002em;
+}
+[data-viewport="narrow"] [data-files-list] {
+  width: 100%;
+  min-width: 0;
+  border-right-width: 0;
+}
+[data-viewport="narrow"] [data-region="files"][data-open="true"],
+[data-viewport="narrow"] [data-region="tasks"][data-open="true"] {
+  border-left-width: 0;
+}
+[data-viewport="narrow"] [data-files-upload-area] {
+  display: none;
+}
+[data-viewport="narrow"] [data-files-upload-floating] {
+  display: inline-flex;
+}
+[data-viewport="narrow"] [data-files-sort] {
+  display: none;
+}
+[data-viewport="narrow"] [data-files-header] {
+  height: auto;
+  gap: 6px;
+  padding: 6px max(6px, env(safe-area-inset-right)) 6px max(20px, env(safe-area-inset-left));
+}
+[data-viewport="narrow"] [data-files-crumbs] {
+  margin-left: -10px;
+}
+[data-viewport="narrow"] [data-files-crumbs] .crumb-current {
+  min-width: 0;
+  font-weight: var(--weight-medium);
+}
+[data-viewport="narrow"] [data-files-crumbs] .crumb-root-icon svg {
+  width: 18px;
+  height: 18px;
+}
+[data-viewport="narrow"] [data-files-close] {
+  width: 44px;
+  height: 44px;
+}
+[data-viewport="narrow"] [data-files-close] svg {
+  width: 20px;
+  height: 20px;
+}
+[data-viewport="narrow"] [data-files-list-scroll] {
+  gap: 1px;
+  padding: 8px 10px;
+}
+[data-viewport="narrow"] [data-files-up],
+[data-viewport="narrow"] [data-files-row] {
+  height: 50px;
+  min-height: 50px;
+  padding: 0 10px;
+  gap: 11px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+[data-viewport="narrow"] [data-files-up] svg,
+[data-viewport="narrow"] [data-files-row] > svg,
+[data-viewport="narrow"] [data-files-row] > span > svg {
+  width: 18px;
+  height: 18px;
+}
+[data-viewport="narrow"] [data-files-row] .text-body-sm,
+[data-viewport="narrow"] [data-files-up] .text-body-sm {
+  font-weight: 400;
+  color: var(--color-text-primary);
+}
+  /* The phone's file viewer is its own screen:
+     back, the file's name, and its actions in a 56px chrome; the list's
+     breadcrumb-and-sort chrome leaves with the list it belongs to. */
+[data-viewport="narrow"] [data-region="files"][data-viewing="true"] [data-files-header],
+[data-viewport="narrow"] [data-region="files"][data-viewing="true"] [data-files-sort] {
+    display: none;
+  }
+[data-viewport="narrow"] [data-files-viewer-header] {
+    height: var(--chrome-h);
+    gap: 6px;
+    padding: 0 6px;
+  }
+[data-viewport="narrow"] [data-files-viewer-header] [data-files-back] {
+    width: var(--touch-min);
+    height: var(--touch-min);
+  }
+[data-viewport="narrow"] [data-files-viewer-header] [data-files-back] svg {
+    width: 20px;
+    height: 20px;
+  }
+[data-viewport="narrow"] [data-files-viewer-header] [data-files-viewer-name] {
+    font-weight: var(--weight-regular);
+  }
+  /* The code column: 1.7 line boxes at the 12px mono cap, the gutter
+     right-aligned at half strength with its own insets. */
+[data-viewport="narrow"] [data-region="files"] [data-files-text] {
+    padding: 14px 16px 20px 0;
+    font-size: min(var(--type-mono-size), calc(12px * var(--type-mono-xh-ratio)));
+    line-height: 1.7;
+  }
+[data-viewport="narrow"] [data-region="files"] [data-files-line-number] {
+    width: auto;
+    min-width: calc(2ch + 24px);
+    padding: 0 8px 0 16px;
+    border-right: 0;
+    background: transparent;
+    text-align: right;
+    opacity: 0.5;
+  }
+[data-viewport="narrow"] [data-region="files"] [data-files-line-text] {
+    padding-left: 10px;
+  }
+  /* The footer speaks the UI voice at caption size and says only the
+     size and the age's number. The other facts stay in the
+     markup for the desktop and for readers. */
+[data-viewport="narrow"] [data-files-viewer-footer] {
+    padding: 12px 20px;
+    font-family: var(--font-ui);
+    font-size: var(--type-caption-size);
+  }
+[data-viewport="narrow"] [data-viewer-stat="kind"],
+[data-viewport="narrow"] [data-viewer-stat="lines"],
+[data-viewport="narrow"] [data-viewer-stat="read-only"],
+[data-viewport="narrow"] [data-viewer-sep="lines"],
+[data-viewport="narrow"] [data-viewer-sep="size"],
+[data-viewport="narrow"] [data-viewer-sep="read-only"],
+[data-viewport="narrow"] [data-stat-word] {
+    display: none;
+  }
+[data-viewport="narrow"] [data-files-wrap-dot] {
+    display: none;
+  }
+[data-viewport="narrow"] [data-files-wrap-switch] {
+    display: inline-flex;
+  }
+[data-viewport="narrow"] [data-files-image-footer] {
+    padding: 8px 16px 8px 20px;
+  }
+[data-viewport="narrow"] [data-files-image-footer] :is([data-viewer-stat], [data-viewer-sep]),
+[data-viewport="narrow"] [data-files-image-footer] [data-stat-word] {
+    display: inline;
+  }
+[data-viewport="narrow"] [data-files-zoom-group] {
+    margin: 0;
+  }
+[data-viewport="narrow"] [data-files-zoom] {
+    display: inline-flex;
+    align-items: center;
+    height: var(--touch-min);
+    padding: 0 12px;
+    border-radius: var(--radius-control);
+  }
+[data-viewport="narrow"] [data-files-image-action] {
+    margin-top: 8px;
+  }
+[data-viewport="narrow"] [data-files-image-action] > :is(a, button) {
+    height: 48px;
+    padding: 0 20px;
+    gap: 8px;
+    font-size: var(--type-body-size);
+    font-weight: var(--weight-medium);
+  }
+[data-viewport="narrow"] [data-files-image-action] svg {
+    width: 16px;
+    height: 16px;
+  }
+
+[data-viewport="narrow"] [data-files-row][aria-current="true"] .text-caption {
+  color: var(--color-text-secondary);
+}
+
+/* Sidebar collapse hides the sidebar ENTIRELY (no rail) — the re-expand
+   control lives in the top bar ([data-region="sidebar-expand"], populated
+   by the sidebar shell).
+
+   The sidebar overrides the row family ONCE here:
+   dense 6px/8px/8px rows for the 272px rail. Deliberately NOT
+   data-density="compact", which would also drag --control-h-sm from 28 to
+   24 and shrink the in-row icon buttons — the three --row-* tokens move
+   the interior only, which is the part the reference wants denser.
+
+   Desktop collapse changes geometry instantly. On phones the fixed sheet
+   moves without resizing the terminal; inert removes its controls from
+   interaction immediately while visibility waits for dismissal to finish. */
+[data-region="sidebar"] {
+  --row-py: 6px;
+  --row-px: 8px;
+  --row-icon-gap: 8px;
+  transition: none;
+}
+[data-workspace][data-collapsed="true"] [data-region="sidebar"] {
+  margin-left: calc(-1 * var(--sidebar-w));
+  visibility: hidden;
+}
+@media (width < 48rem) {
+  [data-workspace][data-collapsed="true"] [data-region="sidebar"] {
+    margin-left: 0;
+    transform: translateX(-100%);
+  }
+}
+
+/* A phone sheet enters from the bottom, where its rounded edge and grabber
+   place it. Only transform and the scrim's opacity move; the terminal keeps
+   its geometry. The shared duration becomes zero for reduced motion. */
+@media (max-width: 600px) {
+  [data-workspace] [data-region="sidebar"] {
+    transition: transform var(--dur-base) var(--ease-out), visibility 0s;
+  }
+  [data-workspace][data-collapsed="false"] [data-region="sidebar"] {
+    margin-left: 0;
+    transform: translateY(0);
+    visibility: visible;
+  }
+  [data-workspace][data-collapsed="true"] [data-region="sidebar"] {
+    margin-left: 0;
+    transform: translateY(100%);
+    transition-delay: 0s, var(--dur-base);
+    pointer-events: none;
+  }
+  [data-workspace] [data-region="sidebar-scrim"] {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out), visibility 0s var(--dur-base);
+  }
+  [data-workspace][data-collapsed="false"] [data-region="sidebar-scrim"] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+}
+[data-viewport="narrow"] [data-workspace] [data-region="sidebar"] {
+  transition: transform var(--dur-base) var(--ease-out), visibility 0s;
+}
+[data-viewport="narrow"] [data-workspace][data-collapsed="false"] [data-region="sidebar"] {
+  margin-left: 0;
+  transform: translateY(0);
+  visibility: visible;
+}
+[data-viewport="narrow"] [data-workspace][data-collapsed="true"] [data-region="sidebar"] {
+  margin-left: 0;
+  transform: translateY(100%);
+  transition-delay: 0s, var(--dur-base);
+  pointer-events: none;
+}
+[data-viewport="narrow"] [data-workspace] [data-region="sidebar-scrim"] {
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out), visibility 0s var(--dur-base);
+}
+[data-viewport="narrow"] [data-workspace][data-collapsed="false"] [data-region="sidebar-scrim"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* The sessions tree: a 2px rail indents every session
+   under an open project. The rail colour is the project's own when one is
+   set (an inline border-left-color on the list), else the border voice. */
+.session-rail {
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-left-color: var(--color-border);
+}
+
+/* The no-selection rail: the 2px rule is the mark of
+   an open session's rail, so it leaves with the selection. Painted over
+   rows nobody chose, the sidebar claims a selection the pane does not
+   show, and the unselected rail reads as selected. */
+.session-rail-bare {
+  border-left-width: 0;
+}
+
+/* The session-row drag state: the dragged row reads at
+   reduced opacity, and the hovered target opens a row-height gap where the
+   dragged row would land. Both are painted onto the live row by the shell
+   during the gesture, so a re-render can never cancel the drag. The gap is
+   the target row's own margin: it reserves the slot visually without
+   extending the row's painted box over it. A margin is also invisible to
+   hit testing, and opening one shifts the target and every row below it
+   away from a pointer that never moved — so sidebar-dom.ts accepts the
+   drop on the rail container and drag.ts resolves the slot against the
+   dragstart geometry, never a live hit test. Sessions are the only draggable rows;
+   projects move by menu alone. */
+[data-session].project-row-drag {
+  opacity: 0.4;
+}
+
+[data-session].project-row-drop-gap-before {
+  margin-top: calc(var(--row-py) * 2 + var(--text-body) * 1.3);
+}
+
+[data-session].project-row-drop-gap-after {
+  margin-bottom: calc(var(--row-py) * 2 + var(--text-body) * 1.3);
+}
+
+/* A row whose submenu is open takes the hover wash unless it is already
+   selected, in which case the selected wash stands. */
+.group\/project[data-selected="false"]:has([aria-haspopup="menu"][aria-expanded="true"]) {
+  background: var(--color-wash-hover);
+  border-radius: var(--radius-control);
+}
+[data-session][aria-selected="false"]:has([aria-haspopup="menu"][aria-expanded="true"]) {
+  background: var(--color-wash-hover);
+}
+
+/* Inline editing keeps the resting row's installation-specific tracking. */
+[data-rename-input],
+[data-rename-project-input] {
+  letter-spacing: var(--face-ui-tracking-body, normal);
+}
+
+/* The inline rename fields carry no chrome of their own:
+   the row wash plus an accent selection over the auto-selected text is the
+   whole editing affordance, so that selection must read as accent — the
+   page-wide tint behind it is the resting register, not the editing one. */
+[data-rename-input]::selection,
+[data-rename-project-input]::selection {
+  background: var(--color-accent);
+  color: var(--color-surface-card);
+}
+
+/* Anchored overlays (modals, popovers) sit above the docked panels; each
+   panel re-enables pointer events on its own surface. */
+[data-region="modals"] > * {
+  pointer-events: auto;
+}
+[data-region="popovers"] > * {
+  pointer-events: auto;
+}
+
+/* The session row's ONE trailing control: the ellipsis
+   trigger rests at opacity 0 and pointer-events none, and the row hover
+   or keyboard focus reveals it while the age tick underneath fades out —
+   a 110ms opacity transition is one of the few the row keeps. Focus
+   counts twice over: the row itself carries the list's roving tabindex, and
+   the trigger inside it is its own tab stop, so both the row and its
+   descendants have to answer. Only :focus-visible, though — a mouse click
+   focuses the row without asking for the cluster, and hover already covers
+   the pointer.
+   The trigger is absolutely positioned at the row's right edge, so
+   revealing it never changes the row's height. */
+.session-menu-trigger {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  display: inline-flex;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 110ms ease;
+}
+.group:hover .session-menu-trigger,
+.group:focus-visible .session-menu-trigger,
+.group:has(:focus-visible) .session-menu-trigger {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* A row with an open submenu keeps its action cluster visible even after
+   the pointer leaves, so you can still reach the menu. */
+[data-project-actions]:has([aria-haspopup="menu"][aria-expanded="true"]),
+.session-menu-trigger:has([aria-haspopup="menu"][aria-expanded="true"]) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The tick keeps the other half of that trade. The trigger overlays it, so
+   whatever holds one visible has to hold the other hidden: hover and focus
+   move them together, but an open menu outlives both - the pointer leaves the
+   row and the focus sits in the menu, which is not inside the row - and the
+   tick would fade back in underneath the trigger. */
+.group:has(.session-menu-trigger [aria-haspopup="menu"][aria-expanded="true"])
+  [data-session-meta] {
+  opacity: 0;
+}
+
+/* No hover on a phone or coarse pointer: the trigger joins the row's flow
+   (an absolute overlay would sit on top of the age tick, which has no
+   hover state to fade it out there) and stays permanently visible. The
+   button's own pointer-coarse utilities size it back up to a touch
+   target, so this rule must not set a size. */
+@media (width < 48rem), (pointer: coarse) {
+  .session-menu-trigger {
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (pointer: coarse) {
+  .scrim :where(button, input:not([type="hidden"]), select, textarea, [role="button"]) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
+/* The shared dialog anatomy: one scrim/dialog/head/body/foot structure for
+   every dialog. The scrim fills its mount region (the app-level modals
+   layer) so its padding is the gutter. Plain classes, so the source order
+   of the parts is deterministic rather than utility-sort order. */
+.dialog,
+.scrim,
+.dialog-head,
+.dialog-title,
+.dialog-title-prompt,
+.dialog-desc,
+.dialog-body,
+.dialog-foot {
+  display: flex;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--color-scrim);
+  /* The scrim softens what it covers as well as dimming it (Blueprint
+     bp-scrim): the chrome behind a dialog is context, not competing text. */
+  backdrop-filter: var(--blur-scrim);
+}
+
+/* The modal host shows one screen at a time; a screen's dialog lays out as
+   the scrim's own child. */
+[data-modal-screen] {
+  display: contents;
+}
+[data-modal-screen][hidden] {
+  display: none;
+}
+
+.dialog {
+  position: relative;
+  flex-direction: column;
+  width: min(520px, 100%);
+  /* Blueprint's 88%: the scrim is the containing block, so percent
+     measures the mount region, not the window. */
+  max-height: 88%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--color-surface-overlay);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--ring-overlay);
+}
+
+.dialog-head {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6) var(--space-3);
+}
+
+.dialog-title {
+  min-width: 0;
+  font-size: var(--type-title-3-size);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--type-button-ls);
+  line-height: var(--type-title-3-lh);
+  color: var(--color-text-primary);
+}
+
+.dialog-desc {
+  margin-top: var(--space-1);
+  font-size: var(--type-body-sm-size);
+  /* No own line box or tracking: the DS leaves the desc on the
+     inherited body leading and letter-spacing, and the dialog's rhythm
+     below is measured from that box. */
+  line-height: var(--type-body-lh);
+  letter-spacing: var(--type-body-ls);
+  color: var(--color-text-secondary);
+}
+
+.dialog-body {
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0 var(--space-6) var(--space-5);
+}
+
+.dialog-foot {
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-top: var(--hairline);
+}
+
+/* A dialog's icon control (Blueprint bp-iconbtn--sm): the 28px footprint on
+   the control-sm radius, speaking in the secondary voice, washed on hover and
+   dimmed when it has nowhere to go. */
+.dialog-iconbtn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition: var(--transition-control);
+}
+
+.dialog-iconbtn:hover:not(:disabled) {
+  background: var(--color-wash-hover);
+  color: var(--color-text-primary);
+}
+
+.dialog-iconbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* The Add project dialog's machine voice: every path, remote, head line and
+   store the readouts state is set in the mono stack at the x-height of the
+   text size beside it, carrying the face's own weight and tracking. */
+[data-add-project] [data-mono] {
+  font-family: var(--font-mono);
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+  font-weight: var(--type-mono-weight);
+  font-size: min(var(--type-mono-size), calc(var(--type-caption-size) * var(--type-mono-xh-ratio)));
+}
+[data-add-project] [data-mono="body-sm"] {
+  font-size: min(var(--type-mono-size), calc(var(--type-body-sm-size) * var(--type-mono-xh-ratio)));
+}
+[data-add-project] [data-mono="control"] {
+  font-size: min(var(--type-mono-size), calc(var(--type-control-size) * var(--type-mono-xh-ratio)));
+}
+[data-add-project] [data-mono="inherit"] {
+  font-size: inherit;
+}
+[data-add-project] .break-anywhere {
+  overflow-wrap: anywhere;
+}
+
+/* The directory picker's body stacks its path line and list at the tighter
+   rhythm: the two are one control, not two sections. */
+[data-directory-dialog] .dialog-body {
+  gap: var(--space-3);
+}
+
+/* The directory picker's path line is machine voice: the mono stack at the
+   body-sm x-height, carrying the face's own weight and tracking. */
+[data-directory-path-line] {
+  font-family: var(--font-mono);
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+  font-weight: var(--type-mono-weight);
+  font-size: min(var(--type-mono-size), calc(var(--type-body-sm-size) * var(--type-mono-xh-ratio)));
+}
+
+
+
+
+
+/* The upload ask's own controls: the same-choice checkbox
+   is the native input dressed in the DS's line, radius and accent — an
+   outlined rounded square that fills when it decides for the rest of the
+   batch — and the field's refusal line takes space only when it has
+   something to say, so an empty one does not hold the checkbox away. */
+.dialog[data-files-conflict] input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-mark);
+  background: var(--color-surface-card);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.dialog[data-files-conflict] input[type="checkbox"]:checked {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+.dialog[data-files-conflict] input[type="checkbox"]::before {
+  content: "";
+  width: 9px;
+  height: 4px;
+  border-left: 2px solid var(--color-text-on-accent);
+  border-bottom: 2px solid var(--color-text-on-accent);
+  transform: rotate(-45deg);
+  opacity: 0;
+  transition: var(--transition-control);
+}
+.dialog[data-files-conflict] input[type="checkbox"]:checked::before {
+  opacity: 1;
+}
+.dialog[data-files-conflict] input[type="checkbox"]:focus-visible {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px var(--color-wash-hover);
+}
+.dialog[data-files-conflict] input[type="checkbox"]:disabled {
+  opacity: 0.45;
+}
+@media (pointer: coarse) {
+  .dialog[data-files-conflict] input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
+[data-files-conflict-name-error]:empty {
+  display: none;
+}
+
+/* The phone sheet's rows inherit the body recipe computed at the menu’s
+   15px size; desktop rows keep the normal tracking of every other menu. */
+.menu[data-more-popover] {
+  width: max-content;
+  font-size: 15px;
+  letter-spacing: var(--type-body-ls, -0.002em);
+  word-spacing: var(--face-ui-word-spacing, normal);
+}
+
+.menu[data-more-popover] button {
+  text-rendering: inherit;
+}
+
+.menu[data-more-popover] > :where(.menuitem, [data-font-row]) {
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+.menu[data-more-popover] > .relative > button[data-theme-flyout] {
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+.menu[data-more-popover] > [data-font-row] button {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Narrow-scope sheet presentation: only the new-session
+   picker and the settings sheet anchor to the bottom edge, fill the width,
+   carry a 38×4 grabber, and stack the primary action at the bottom. The rules
+   are duplicated for the real viewport media query and for
+   [data-viewport="narrow"], which the preview phone frame sets because a 393px
+   mock inside a wide review page never matches a media query. */
+@media (max-width: 600px) {
+  .scrim:has(> [data-modal-screen]:last-child [data-new-session-modal]) {
+    padding: 0;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  [data-popover-backdrop]:has([data-more-popover]) {
+    background: var(--color-scrim);
+  }
+  .dialog[data-new-session-modal] {
+    width: 100%;
+    max-width: none;
+    max-height: 92%;
+    border-radius: 28px 28px 0 0;
+    box-shadow: none;
+  }
+  .dialog[data-new-session-modal]::before {
+    content: "";
+    display: block;
+    flex: none;
+    width: 38px;
+    height: 4px;
+    margin: 12px auto 4px;
+    border-radius: 999px;
+    background: var(--color-border-strong);
+  }
+  /* The sheet opens straight onto its filter: grabber, field, rule,
+     rows. The title and the project line are desktop chrome for a card that
+     has to say what it is; a sheet you raised from the New session
+     control does not. Escape and the scrim still close it. */
+  .dialog[data-new-session-modal] .dialog-head {
+    display: none;
+  }
+  .dialog[data-new-session-modal] .dialog-body {
+    gap: 0;
+    padding: 0;
+  }
+  /* The field's row is the sheet's own header, so it carries the rule under
+     it rather than sitting inside the body's padding. */
+  .dialog[data-new-session-modal] .inputwrap:has([data-new-session-filter]) {
+    margin: 0;
+    padding: 6px 16px 12px;
+    border-bottom: var(--hairline);
+    border-radius: 0;
+  }
+  .dialog[data-new-session-modal] .dialog-foot {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6) max(var(--space-4), env(safe-area-inset-bottom));
+  }
+  .dialog[data-new-session-modal] .dialog-foot > button {
+    width: 100%;
+    min-height: var(--control-h-lg);
+  }
+
+  /* The upload-collision ask: the sheet rises
+     from the bottom edge over the panel it belongs to, with its actions
+     stacked full-width at 48px. */
+  .scrim:has(> [data-modal-screen]:last-child [data-files-conflict]) {
+    padding: 0;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  .dialog[data-files-conflict] {
+    width: 100%;
+    max-width: none;
+    max-height: 92%;
+    border-radius: 28px 28px 0 0;
+    box-shadow: none;
+  }
+  .dialog[data-files-conflict]::before {
+    content: "";
+    display: block;
+    flex: none;
+    width: 38px;
+    height: 4px;
+    margin: 12px auto 4px;
+    border-radius: 999px;
+    background: var(--color-border-strong);
+  }
+  .dialog[data-files-conflict] .dialog-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6) max(var(--space-4), env(safe-area-inset-bottom));
+  }
+  .dialog[data-files-conflict] .dialog-foot > button {
+    width: 100%;
+    min-height: 48px;
+  }
+  .dialog[data-files-conflict] .dialog-foot [data-files-conflict-cancel] {
+    border-color: transparent;
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  /* The phone draws no centred dialogs. A screen that has its own
+     header, its own body and its own action bar is a route, not a card on a
+     scrim: it takes the frame, and the workspace it came from is gone until
+     it closes. Dialogs opt in, because the
+     sheet presentation above stays for the ones that rise from the
+     bottom edge over a workspace still in view. */
+  .scrim:has(> [data-modal-screen]:last-child [data-phone-fullscreen]) {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    /* A route has nothing behind it to dim: the workspace is gone, not
+       obscured, so a tint here only darkens the route's own ground. */
+    background: none;
+  }
+  .dialog[data-phone-fullscreen] {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    /* The app's own surface, not the overlay one. A card raised above a
+       workspace earns the lighter ground; a screen that IS the workspace
+       reads as a card floating on nothing. */
+    background: var(--color-surface);
+  }
+  /* A fullscreen route owns the device's top edge, so its header clears
+     the status bar: without the inset the close X sits under the iOS
+     clock/battery row. env() is 0 where there is no notch. */
+  .dialog[data-phone-fullscreen] .dialog-head {
+    padding-top: calc(var(--space-5) + env(safe-area-inset-top, 0px));
+  }
+  /* The body is the only part that scrolls: a route whose header and actions
+     scroll away leaves you no way out of it. */
+  .dialog[data-phone-fullscreen] .dialog-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .dialog[data-phone-fullscreen] .dialog-foot {
+    flex: none;
+    /* The actions sit on the frame's bottom edge whatever the body above them
+       is made of. Not every dialog wraps its content in .dialog-body, so a
+       route that relies on that wrapper stretching leaves its actions halfway
+       up the screen on the ones that do not. */
+    margin-top: auto;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) max(var(--space-4), env(safe-area-inset-bottom));
+  }
+  .dialog[data-phone-fullscreen] .dialog-foot > button {
+    min-height: var(--control-h-lg);
+  }
+  /* The route's caption: one line under the header, above
+     the body, ending in the rule. Desktop's card says the same thing in its
+     hint bar and has no room to repeat it. */
+  .dialog[data-phone-fullscreen] [data-project-caption] {
+    display: block;
+  }
+  /* The route foot: the primary action across the width; the header's
+     X is the way out, so a second Cancel is desktop chrome. */
+  .dialog[data-phone-fullscreen] .dialog-foot [data-project-cancel] {
+    display: none;
+  }
+  .dialog[data-phone-fullscreen] .dialog-foot [data-project-submit] {
+    flex: 1;
+  }
+
+  .menu[data-more-popover] {
+    position: absolute;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100%;
+    min-width: auto !important;
+    max-width: none;
+    max-height: 92%;
+    overflow: auto;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    box-shadow: 0 0 0 1px var(--color-border-strong);
+    padding: 0 0 32px;
+    gap: 0;
+  }
+  .menu[data-more-popover]::before {
+    content: "";
+    display: block;
+    flex: none;
+    width: 38px;
+    height: 4px;
+    margin: 8px auto 2px;
+    border-radius: 999px;
+    background: var(--color-border-strong);
+    opacity: 1;
+  }
+  [data-more-popover] button {
+    min-block-size: var(--touch-min);
+    min-inline-size: var(--touch-min);
+  }
+  /* The sheet rows: the current session sits
+     on the accent wash inside an inset accent-border ring — sheet chrome
+     the desktop rail replaces with its own selected wash. */
+  [data-region="sidebar"] [data-list-row][aria-selected="true"] {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    box-shadow: inset 0 0 0 1px var(--color-accent-border);
+  }
+  /* The session row's swipe-to-close: the row
+     clips a sliding surface over one Close action. The surface carries
+     the row's own inset and ground; the li becomes the 44px clip frame.
+     Mid-drag the shell writes the surface's right inline and suppresses
+     the transition; the parked states animate 180ms. */
+  /* At rest the surface is layout-transparent and the row is exactly
+     the row it always was; a live gesture promotes the surface to the
+     sliding layer and the li to its 44px clip frame. */
+  /* The phone rows stand 44; the desktop
+     row earned that height from its hover trigger, which the sheet
+     retires for the swipe. */
+  [data-region="sidebar"] [data-session] {
+    min-height: var(--touch-min);
+    /* Vertical panning stays the sheet's; horizontal belongs to the
+       swipe. Without this the browser can claim a horizontal drag as
+       overscroll and cancel the gesture mid-travel. */
+    touch-action: pan-y;
+  }
+  [data-region="sidebar"] [data-session] > [data-session-swipe-surface] {
+    display: contents;
+  }
+  [data-region="sidebar"] [data-session].swipe-open,
+  [data-region="sidebar"] [data-session].swipe-closing,
+  [data-region="sidebar"] [data-session].swipe-dragging {
+    position: relative;
+    overflow: hidden;
+    height: var(--touch-min);
+    padding: 0;
+  }
+  [data-region="sidebar"] [data-session] > [data-session-swipe-close] {
+    /* Hidden until the gesture: the surface is transparent chrome, so
+       the action may not sit painted underneath at rest. */
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 110px;
+    padding-left: 14px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 0;
+    background: var(--color-error);
+    color: #FFFFFF;
+    font-size: var(--type-body-sm-size);
+    font-weight: var(--weight-medium);
+  }
+  [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-surface],
+  [data-region="sidebar"] [data-session].swipe-closing > [data-session-swipe-surface],
+  [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-surface] {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-overlay);
+    transition: right var(--dur-base) var(--ease-out);
+  }
+  [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-surface] {
+    right: 100px;
+  }
+  [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-close],
+  [data-region="sidebar"] [data-session].swipe-closing > [data-session-swipe-close],
+  [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-close] {
+    visibility: visible;
+  }
+  [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-surface] {
+    transition: none;
+  }
+  /* The sheet has no per-row menus: swipe is the row's one action
+     surface, so the hover-revealed trigger stays desktop chrome. */
+  [data-region="sidebar"] [data-session] [data-session-menu] {
+    display: none;
+  }
+  /* The phone row splits status from time:
+     the spinner leads in a 13px status column and the time trails on
+     every row — the desktop keeps its swap, where streaming replaces
+     the tick. */
+  [data-region="sidebar"] [data-session-status] {
+    display: flex;
+  }
+  [data-region="sidebar"] [data-meta-spinner] {
+    display: none;
+  }
+  [data-region="sidebar"] [data-meta-tick] {
+    display: inline;
+  }
+
+  /* The phone tasks screen. The header drops its
+     hairline and speaks title-3; Add task collapses to its icon. The status
+     segments rise above the search row, the search field takes the width and
+     holds its tongue, and the sort pills and Filter flatten into one row of
+     bordered chips. The columns lose their eyebrow — the segments already
+     say it — and the cards take 20px padding on the card radius.
+     Sorting by status stays desktop-only chrome: the segments already hold
+     one status apiece, so the pill would reorder nothing the phone shows. */
+  /* Doubled with the region so it outweighs the safe-area titlebar rule
+     above, which reaches the same element with the region in its selector. */
+  [data-region="tasks"] [data-tm-header] {
+    order: -2;
+    height: auto;
+    border-bottom: 0;
+    padding: calc(8px + var(--workspace-safe-area-top, 0px)) 6px 10px max(20px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
+  }
+  [data-tm-header] .chrome-title {
+    font-size: var(--text-title-3);
+    font-weight: var(--weight-medium, 500);
+  }
+  [data-tm-add-task-label] {
+    display: none;
+  }
+  [data-tm-header] [data-tm-add-task="header"] {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    border: 0;
+    background: none;
+  }
+  [data-tm-header] [data-tm-add-task="header"] svg {
+    width: 16px;
+    height: 16px;
+  }
+  [data-tm-status-selector] {
+    order: -1;
+    gap: 4px;
+    padding: 10px 20px 8px;
+  }
+  [data-tm-toolbar] {
+    gap: 7px;
+    padding: 2px 20px 10px;
+  }
+  [data-tm-toolbar] > label {
+    flex: 1 1 100%;
+    max-width: none;
+    margin-bottom: 1px;
+  }
+  [data-tm-search]::placeholder {
+    color: transparent;
+  }
+  [data-tm-toolbar] > span.ml-auto,
+  [data-tm-sort-caption],
+  [data-tm-sort="status"] {
+    display: none;
+  }
+  [data-tm-toolbar] .tabs-pill {
+    gap: 7px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+  }
+  [data-tm-toolbar] .tab,
+  [data-tm-toolbar] [data-tm-filters] {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-card);
+    color: var(--color-text-tertiary);
+  }
+  [data-tm-toolbar] .tab-selected {
+    border-color: var(--color-accent-border);
+    background: var(--color-wash-selected);
+    color: var(--color-accent);
+  }
+  [data-tm-toolbar] [data-tm-filters] {
+    font-size: var(--type-label-size);
+    font-variant-caps: all-small-caps;
+    font-weight: var(--weight-medium, 500);
+    letter-spacing: var(--type-label-ls);
+  }
+  [data-tm-toolbar] [data-tm-filters] svg {
+    display: none;
+  }
+  [data-tm-board] {
+    gap: 10px;
+    padding: 0 20px;
+  }
+  [data-tm-board] section > header {
+    display: none;
+  }
+  [data-tm-board] [data-tm-column-scroll] {
+    gap: 10px;
+  }
+  [data-tm-card] {
+    gap: 9px;
+    border-radius: var(--radius-card);
+    padding: 20px;
+  }
+  [data-tm-card] [data-tm-card-title] {
+    line-height: 1.35;
+  }
+  [data-tm-card] .priority-label {
+    text-transform: none;
+  }
+  /* The desktop card pins deps to its fixed 132px floor through a spacer;
+     a content-sized phone card has no floor to pin against, so
+     its rows run on the one 9px rhythm. */
+  [data-tm-card] [data-tm-card-spacer] {
+    display: none;
+  }
+
+  /* The settings sheet opens under a titled header: the
+     grabber, then "Session settings" with a close control. It also drops the
+     info-bar and side-panel rows — the phone renders no info bar and opens
+     the session list as its own sheet, so neither toggle controls anything
+     this frame shows — and shortens two labels to the width the sheet has. */
+  [data-more-popover] [data-settings-sheet-chrome] {
+    display: flex;
+  }
+  [data-more-popover] [data-show-info-bar],
+  [data-more-popover] [data-show-side-panel],
+  /* These controls remain desktop-only in the accepted phone layout. */
+  [data-more-popover] [data-auto-color],
+  [data-more-popover] [data-confirm-before-removing],
+  [data-more-popover] [data-git-identities] {
+    display: none;
+  }
+  /* Shortcut chips belong to desktop. */
+  [data-more-popover] [data-menu-shortcut] {
+    display: none;
+  }
+  [data-more-popover] [data-theme-swatches],
+  [data-more-popover] [data-theme-disclosure] {
+    display: inline-flex;
+  }
+  [data-more-popover] [data-copy-wide],
+  [data-project-form] [data-copy-wide],
+  /* The desktop card explains what the phone route has no room for; the
+     phone route shows neither hint line. */
+  [data-project-form] [data-project-path-hint],
+  [data-project-form] [data-project-identity-hint] {
+    display: none;
+  }
+  [data-more-popover] [data-copy-phone],
+  [data-project-form] [data-copy-phone] {
+    display: inline;
+  }
+  /* The desktop card's fields wear the DS input recipe (surface-card on
+     border-strong); the phone route draws its fields on the darker
+     sidebar ground. */
+  [data-project-form] [data-project-path],
+  [data-project-form] [data-project-git-profile] {
+    background: var(--color-sidebar-surface);
+    border-color: var(--color-field-border);
+  }
+
+  /* At the narrow scope the settings sheet fills the width, so the theme
+     flyout's left-side popover position lands off-screen. Render it as the
+     pushed Terminal theme screen instead: full app area,
+     chrome with back/close, 16px check column, and a chevron on Custom…. */
+  .menu[data-more-popover] [data-theme-list] {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    min-width: auto !important;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--color-surface);
+    padding: 0;
+    gap: 0;
+    z-index: 60;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-chrome {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: var(--chrome-h);
+    padding: 0 6px;
+    border-bottom: var(--hairline);
+  }
+  /* Left beside the chevron at title-3. */
+  .menu[data-more-popover] [data-theme-list] .theme-title {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    font-size: var(--type-title-3-size);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-primary);
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-back,
+  .menu[data-more-popover] [data-theme-list] .theme-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-back:hover,
+  .menu[data-more-popover] [data-theme-list] .theme-close:hover {
+    background: var(--color-wash-hover);
+    color: var(--color-text-primary);
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 10px;
+    overflow: auto;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-row-active {
+    background: var(--color-wash-selected);
+  }
+  /* The Custom row sits a step further off the rule than the rule
+     sits off the last theme: measured 6px above, 9px below. */
+  .menu[data-more-popover] [data-theme-list] .menu-sep {
+    margin: 6px 0 9px;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-check {
+    width: 16px;
+  }
+  /* The five swatches are what a theme is chosen by, and
+     the reason this surface is a pushed screen rather than a Select: the
+     value has to be visible for every option at once. They sit on the
+     row's trailing edge at 13px, larger than the desktop
+     flyout's 9px because the row is a touch target. */
+  .menu[data-more-popover] [data-theme-list] .theme-swatch-strip {
+    display: inline-flex;
+    flex: none;
+    margin-left: auto;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-swatch-strip {
+    gap: 3px;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-swatch-strip > span > span {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+  }
+  .menu[data-more-popover] [data-theme-list] .theme-chevron {
+    display: inline;
+    color: var(--color-text-tertiary);
+    font-size: 20px;
+    line-height: 1;
+  }
+}
+
+/* The phone full-screen route, mirrored: a device frame drawn inside a wide
+   review page is below the boundary in its own box, not in the viewport a
+   media query reads. */
+[data-viewport="narrow"] .scrim:has(> [data-modal-screen]:last-child [data-phone-fullscreen]) {
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  background: none;
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--color-surface);
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-head {
+  padding-top: calc(var(--space-5) + env(safe-area-inset-top, 0px));
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-foot {
+  flex: none;
+  margin-top: auto;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) max(var(--space-4), env(safe-area-inset-bottom));
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-foot > button {
+  min-height: var(--control-h-lg);
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] [data-project-caption] {
+  display: block;
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-foot [data-project-cancel] {
+  display: none;
+}
+[data-viewport="narrow"] .dialog[data-phone-fullscreen] .dialog-foot [data-project-submit] {
+  flex: 1;
+}
+
+[data-viewport="narrow"] .scrim:has(> [data-modal-screen]:last-child [data-new-session-modal]) {
+  padding: 0;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+[data-viewport="narrow"] [data-popover-backdrop]:has([data-more-popover]) {
+  background: var(--color-scrim);
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] {
+  width: 100%;
+  max-width: none;
+  max-height: 92%;
+  border-radius: 28px 28px 0 0;
+  box-shadow: none;
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .dialog-head {
+  display: none;
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .dialog-body {
+  gap: 0;
+  padding: 0;
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .inputwrap:has([data-new-session-filter]) {
+  margin: 0;
+  padding: 6px 16px 12px;
+  border-bottom: var(--hairline);
+  border-radius: 0;
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 38px;
+  height: 4px;
+  margin: 12px auto 4px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .dialog-head {
+  padding-top: var(--space-3);
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .dialog-foot {
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) max(var(--space-4), env(safe-area-inset-bottom));
+}
+[data-viewport="narrow"] .dialog[data-new-session-modal] .dialog-foot > button {
+  width: 100%;
+  min-height: var(--control-h-lg);
+}
+/* The preview phone frame mirrors the collision sheet rules above, the
+   same way it mirrors the new-session sheet: a narrow mock inside a wide
+   review page never matches the media query. */
+[data-viewport="narrow"] .scrim:has(> [data-modal-screen]:last-child [data-files-conflict]) {
+  padding: 0;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+[data-viewport="narrow"] .dialog[data-files-conflict] {
+  width: 100%;
+  max-width: none;
+  max-height: 92%;
+  border-radius: 28px 28px 0 0;
+  box-shadow: none;
+}
+[data-viewport="narrow"] .dialog[data-files-conflict]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 38px;
+  height: 4px;
+  margin: 12px auto 4px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+}
+[data-viewport="narrow"] .dialog[data-files-conflict] .dialog-foot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) max(var(--space-4), env(safe-area-inset-bottom));
+}
+[data-viewport="narrow"] .dialog[data-files-conflict] .dialog-foot > button {
+  width: 100%;
+  min-height: 48px;
+}
+[data-viewport="narrow"] .dialog[data-files-conflict] .dialog-foot [data-files-conflict-cancel] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+[data-viewport="narrow"] .menu[data-more-popover] {
+  position: absolute;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  bottom: 0 !important;
+  width: 100%;
+  min-width: auto !important;
+  max-width: none;
+  max-height: 92%;
+  overflow: auto;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  box-shadow: 0 0 0 1px var(--color-border-strong);
+  padding: 0 0 32px;
+  gap: 0;
+}
+[data-viewport="narrow"] .menu[data-more-popover]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 38px;
+  height: 4px;
+  margin: 8px auto 2px;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  opacity: 1;
+}
+[data-viewport="narrow"] [data-more-popover] button {
+  min-block-size: var(--touch-min);
+  min-inline-size: var(--touch-min);
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-list-row][aria-selected="true"] {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-accent-border);
+}
+/* Narrow mirror. The session row's swipe-to-close: the row
+   clips a sliding surface over one Close action. The surface carries
+   the row's own inset and ground; the li becomes the 44px clip frame.
+   Mid-drag the shell writes the surface's right inline and suppresses
+   the transition; the parked states animate 180ms. */
+[data-viewport="narrow"] [data-region="sidebar"] [data-session] {
+  min-height: var(--touch-min);
+  touch-action: pan-y;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session] > [data-session-swipe-surface] {
+  display: contents;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-open,
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-closing,
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-dragging {
+  position: relative;
+  overflow: hidden;
+  height: var(--touch-min);
+  padding: 0;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session] > [data-session-swipe-close] {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+  padding-left: 14px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: var(--color-error);
+  color: #FFFFFF;
+  font-size: var(--type-body-sm-size);
+  font-weight: var(--weight-medium);
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-surface],
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-closing > [data-session-swipe-surface],
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-surface] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-overlay);
+  transition: right var(--dur-base) var(--ease-out);
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-surface] {
+  right: 100px;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-open > [data-session-swipe-close],
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-closing > [data-session-swipe-close],
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-close] {
+  visibility: visible;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session].swipe-dragging > [data-session-swipe-surface] {
+  transition: none;
+}
+/* The sheet has no per-row menus: swipe is the row's one action
+   surface, so the hover-revealed trigger stays desktop chrome. */
+[data-viewport="narrow"] [data-region="sidebar"] [data-session] [data-session-menu] {
+  display: none;
+}
+[data-viewport="narrow"] .session-rail [data-new-session] {
+  min-height: 44px;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-session-status] {
+  display: flex;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-meta-spinner] {
+  display: none;
+}
+[data-viewport="narrow"] [data-region="sidebar"] [data-meta-tick] {
+  display: inline;
+}
+/* Narrow-frame mirror of the phone tasks rules above. */
+[data-viewport="narrow"] [data-tm-header] {
+  order: -2;
+  height: auto;
+  border-bottom: 0;
+  padding: 8px 6px 10px 20px;
+}
+[data-viewport="narrow"] [data-tm-header] .chrome-title {
+  font-size: var(--text-title-3);
+  font-weight: var(--weight-medium, 500);
+}
+[data-viewport="narrow"] [data-tm-add-task-label] {
+  display: none;
+}
+[data-viewport="narrow"] [data-tm-header] [data-tm-add-task="header"] {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+  border: 0;
+  background: none;
+}
+[data-viewport="narrow"] [data-tm-header] [data-tm-add-task="header"] svg {
+  width: 16px;
+  height: 16px;
+}
+[data-viewport="narrow"] [data-tm-status-selector] {
+  order: -1;
+  gap: 4px;
+  padding: 10px 20px 8px;
+}
+[data-viewport="narrow"] [data-tm-toolbar] {
+  gap: 7px;
+  padding: 2px 20px 10px;
+}
+[data-viewport="narrow"] [data-tm-toolbar] > label {
+  flex: 1 1 100%;
+  max-width: none;
+  margin-bottom: 1px;
+}
+[data-viewport="narrow"] [data-tm-search]::placeholder {
+  color: transparent;
+}
+[data-viewport="narrow"] [data-tm-toolbar] > span.ml-auto,
+[data-viewport="narrow"] [data-tm-sort-caption],
+[data-viewport="narrow"] [data-tm-sort="status"] {
+  display: none;
+}
+[data-viewport="narrow"] [data-tm-toolbar] .tabs-pill {
+  gap: 7px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+[data-viewport="narrow"] [data-tm-toolbar] .tab,
+[data-viewport="narrow"] [data-tm-toolbar] [data-tm-filters] {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-card);
+  color: var(--color-text-tertiary);
+}
+[data-viewport="narrow"] [data-tm-toolbar] .tab-selected {
+  border-color: var(--color-accent-border);
+  background: var(--color-wash-selected);
+  color: var(--color-accent);
+}
+[data-viewport="narrow"] [data-tm-toolbar] [data-tm-filters] {
+  font-size: var(--type-label-size);
+  font-variant-caps: all-small-caps;
+  font-weight: var(--weight-medium, 500);
+  letter-spacing: var(--type-label-ls);
+}
+[data-viewport="narrow"] [data-tm-toolbar] [data-tm-filters] svg {
+  display: none;
+}
+[data-viewport="narrow"] [data-tm-board] {
+  gap: 10px;
+  padding: 0 20px;
+}
+[data-viewport="narrow"] [data-tm-board] section > header {
+  display: none;
+}
+[data-viewport="narrow"] [data-tm-board] [data-tm-column-scroll] {
+  gap: 10px;
+}
+[data-viewport="narrow"] [data-tm-card] {
+  gap: 9px;
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+[data-viewport="narrow"] [data-tm-card] [data-tm-card-title] {
+  line-height: 1.35;
+}
+[data-viewport="narrow"] [data-tm-card] .priority-label {
+  text-transform: none;
+}
+[data-viewport="narrow"] [data-tm-card] [data-tm-card-spacer] {
+  display: none;
+}
+
+[data-viewport="narrow"] [data-more-popover] [data-settings-sheet-chrome] {
+  display: flex;
+}
+[data-viewport="narrow"] [data-more-popover] [data-show-info-bar],
+[data-viewport="narrow"] [data-more-popover] [data-show-side-panel],
+[data-viewport="narrow"] [data-more-popover] [data-auto-color],
+[data-viewport="narrow"] [data-more-popover] [data-confirm-before-removing],
+[data-viewport="narrow"] [data-more-popover] [data-git-identities] {
+  display: none;
+}
+[data-viewport="narrow"] [data-more-popover] [data-menu-shortcut] {
+  display: none;
+}
+[data-viewport="narrow"] [data-more-popover] [data-theme-swatches],
+[data-viewport="narrow"] [data-more-popover] [data-theme-disclosure] {
+  display: inline-flex;
+}
+[data-viewport="narrow"] [data-more-popover] [data-copy-wide],
+[data-viewport="narrow"] [data-project-form] [data-copy-wide],
+[data-viewport="narrow"] [data-project-form] [data-project-path-hint],
+[data-viewport="narrow"] [data-project-form] [data-project-identity-hint] {
+  display: none;
+}
+[data-viewport="narrow"] [data-more-popover] [data-copy-phone],
+[data-viewport="narrow"] [data-project-form] [data-copy-phone] {
+  display: inline;
+}
+[data-viewport="narrow"] [data-project-form] [data-project-path],
+[data-viewport="narrow"] [data-project-form] [data-project-git-profile] {
+  background: var(--color-sidebar-surface);
+  border-color: var(--color-field-border);
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  min-width: auto !important;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--color-surface);
+  padding: 0;
+  gap: 0;
+  z-index: 60;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--chrome-h);
+  padding: 0 6px;
+  border-bottom: var(--hairline);
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-title {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-size: var(--type-title-3-size);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-back,
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-back:hover,
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-close:hover {
+  background: var(--color-wash-hover);
+  color: var(--color-text-primary);
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px;
+  overflow: auto;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-row-active {
+  background: var(--color-wash-selected);
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .menu-sep {
+  margin: 6px 0 9px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-check {
+  width: 16px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-swatch-strip {
+  display: inline-flex;
+  flex: none;
+  margin-left: auto;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-swatch-strip {
+  gap: 3px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-swatch-strip > span > span {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-theme-list] .theme-chevron {
+  display: inline;
+  color: var(--color-text-tertiary);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Settings sheets retain the supplied row shape and 44px touch targets. */
+@media (max-width: 600px) {
+  .menu[data-more-popover] > [data-settings-sheet-chrome] {
+    padding: 6px 8px 6px 20px;
+    gap: 8px;
+  }
+  .menu[data-more-popover] > .menuitem,
+  .menu[data-more-popover] > .relative > button[data-theme-flyout] {
+    min-height: 44px;
+    padding: 0 20px;
+    font-weight: 400;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    line-height: var(--type-body-lh);
+  }
+  .menu[data-more-popover] > [data-skip-permissions] {
+    justify-content: center;
+  }
+  .menu[data-more-popover] > [data-font-row] > span:last-child {
+    gap: 2px;
+    margin-right: -2px;
+  }
+    .menu[data-more-popover] > .relative > button[data-theme-flyout] {
+    gap: 12px;
+  }
+  .menu[data-more-popover] > .relative > button[data-theme-flyout] [data-theme-name] {
+    line-height: inherit;
+  }
+  .menu[data-more-popover] > [data-font-row] {
+    padding: 10px 20px 0;
+    min-height: 54px;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+  }
+  .menu[data-more-popover] > [data-font-row] [data-font-label] {
+    font-weight: 400;
+  }
+  .menu[data-more-popover] > .menu-sep {
+    margin: 10px 0;
+    height: 1px;
+    flex-shrink: 0;
+  }
+  .menu[data-more-popover] [data-font-row] [data-font-size] {
+    font-family: var(--font-ui);
+    font-weight: 400;
+    font-size: var(--type-body-sm-size);
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    min-width: 34px;
+  }
+  .menu[data-more-popover] > [data-font-row] button {
+    color: var(--color-text-primary);
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 0;
+  }
+  .menu[data-more-popover] > [data-font-row] button::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-card);
+  }
+  .menu[data-more-popover] > [data-font-row] button > span {
+    position: relative;
+    z-index: 1;
+  }
+  .menu[data-more-popover] > [data-font-row] button:hover::before {
+    background: var(--color-wash-hover);
+  }
+}
+
+[data-viewport="narrow"] .menu[data-more-popover] > [data-settings-sheet-chrome] {
+  padding: 6px 8px 6px 20px;
+  gap: 8px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > .menuitem,
+[data-viewport="narrow"] .menu[data-more-popover] > .relative > button[data-theme-flyout] {
+  min-height: 44px;
+  padding: 0 20px;
+  font-weight: 400;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  line-height: var(--type-body-lh);
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-skip-permissions] {
+  justify-content: center;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] > span:last-child {
+  gap: 2px;
+  margin-right: -2px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > .relative > button[data-theme-flyout] {
+  gap: 12px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > .relative > button[data-theme-flyout] [data-theme-name] {
+  line-height: inherit;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] {
+  padding: 10px 20px 0;
+  min-height: 54px;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] [data-font-label] {
+  font-weight: 400;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > .menu-sep {
+  margin: 10px 0;
+  height: 1px;
+  flex-shrink: 0;
+}
+[data-viewport="narrow"] .menu[data-more-popover] [data-font-row] [data-font-size] {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: var(--type-body-sm-size);
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  min-width: 34px;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] button {
+  color: var(--color-text-primary);
+  position: relative;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] button::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 2px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-card);
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] button > span {
+  position: relative;
+  z-index: 1;
+}
+[data-viewport="narrow"] .menu[data-more-popover] > [data-font-row] button:hover::before {
+  background: var(--color-wash-hover);
+}
+
+@media (max-width: 600px) {
+  .menu[data-more-popover] > [data-settings-sheet-chrome] > span {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    line-height: var(--type-body-lh);
+  }
+}
+
+[data-viewport="narrow"] .menu[data-more-popover] > [data-settings-sheet-chrome] > span {
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  line-height: var(--type-body-lh);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .dialog {
+    animation: none;
+  }
+}
+
+/* The custom terminal theme dialog's product-specific pieces:
+   the live preview's machine register, the slot wells, and the color
+   wheel popover. No DS analogue — the values are the
+   reference dialog's own geometry. */
+.theme-dialog-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 13px 15px 15px;
+}
+
+.theme-dialog-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  transform: translateY(2px);
+}
+
+.theme-slot-well {
+  height: 26px;
+  border-radius: var(--radius-control-sm);
+}
+
+/* A 160px conic-plus-radial disc with a black dim overlay carrying
+   value, and a 13px slider sweeping black to the saturated hue. Both are
+   pointer-driven with capture, so the dialog paints attributes in place
+   rather than re-rendering the surface a drag is captured on. */
+.theme-wheel {
+  position: relative;
+  display: block;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+  border-radius: var(--radius-circle);
+  cursor: crosshair;
+  touch-action: none;
+  background:
+    radial-gradient(circle closest-side, #fff, rgba(255, 255, 255, 0) 100%),
+    conic-gradient(#F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.theme-wheel-dim {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-circle);
+  background: #000;
+  pointer-events: none;
+}
+
+.theme-wheel-knob {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  border-radius: var(--radius-circle);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.theme-value-track {
+  position: relative;
+  display: block;
+  height: 13px;
+  margin-top: 13px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  touch-action: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.theme-value-thumb {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 19px;
+  margin: -9.5px 0 0 -4px;
+  border-radius: 3px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* The shared menu anatomy: one .menu surface for every
+   popover — overlay surface, card radius, the overlay ring — with
+   .menuitem rows that wash on hover and .menu-sep hairlines between
+   groups. Plain classes like the dialog anatomy above, so the parts'
+   source order is the paint order. */
+.menu {
+  /* Density belongs to the overlay, not to whatever spawned it. A popover
+     parented inside the sidebar would otherwise render at the rail's 6/8
+     while an identical one in the top chrome kept root 10/10 — the same
+     anatomy at two row heights, chosen by DOM position. All three axes are
+     restated together: they are density-scoped, so an inset that stays put
+     while another shrinks reads as a bug. */
+  --row-py: 10px;
+  --row-px: 10px;
+  --row-icon-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 180px;
+  padding: var(--space-2);
+  background: var(--color-surface-overlay);
+  border-radius: var(--radius-card);
+  box-shadow: var(--ring-overlay);
+}
+
+.menu-sep {
+  height: 1px;
+  margin: var(--space-1) 0;
+  border: 0;
+  background: var(--color-border);
+}
+
+.menuitem {
+  display: flex;
+  align-items: center;
+  gap: var(--row-icon-gap);
+  width: 100%;
+  padding: var(--row-py) var(--row-px);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--type-body-sm-size);
+  font-weight: var(--weight-medium);
+  line-height: normal;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-control);
+}
+
+/* In the reference these rows are <div class="bp-menuitem"> and the others are
+   <button class="bp-menuitem">; .bp-menuitem declares no line-height, so the
+   divs inherit the 1.55 body ratio and stand 40px while the buttons take the
+   UA's normal and stand 36px. Ours are all buttons, so the taller line box has
+   to be stated. */
+.menuitem-toggle {
+  line-height: var(--type-body-lh);
+}
+
+.menuitem:hover {
+  background: var(--color-wash-hover);
+  color: var(--color-text-primary);
+}
+
+.menuitem[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.menuitem[aria-disabled="true"]:hover,
+.menuitem[aria-disabled="true"]:active {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+/* A row whose submenu is open is an active row, which is the reference's look. */
+.menuitem[aria-expanded="true"] {
+  background: var(--color-wash-hover);
+}
+
+.menuitem:active {
+  background: var(--color-wash-pressed);
+}
+
+.menuitem:focus-visible {
+  outline: none;
+  background: var(--color-wash-hover);
+}
+
+/* The theme list carries the pushed-screen chrome and Custom… chevron for
+   the narrow scope; at desktop scope it is a plain left-side flyout and
+   those pieces stay hidden. The rows wrapper keeps the same column gap so
+   the flyout layout does not change. */
+/* The desktop flyout's place beside the More menu. In CSS rather than inline
+   on the markup: an inline top survives every narrower scope, and the phone's
+   inset: 0 lost to it — the pushed screen started 6px above the viewport and
+   clipped its own chrome. */
+[data-theme-list] {
+  right: calc(100% + 10px);
+  top: -6px;
+  z-index: 10;
+  min-width: 212px;
+}
+
+[data-theme-list] .theme-chrome,
+[data-theme-list] .theme-chevron {
+  display: none;
+}
+[data-theme-list] .theme-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Nothing tappable under the touch floor on a phone;
+   the workspace keeps the same class names. */
+@media (max-width: 600px) {
+  .menuitem,
+  .tab {
+    min-height: var(--touch-min);
+  }
+}
+[data-viewport="narrow"] .menuitem,
+[data-viewport="narrow"] .tab {
+  min-height: var(--touch-min);
+}
+
+/* The reference's terminal pane scrollbar and selection stay muted. */
+[data-region="terminal"] ::selection {
+  background: rgba(224, 118, 78, 0.35);
+}
+
+/* The cell grid is fitted to this box's whole width (term.ts owns the
+   column count), but an integer number of cells cannot fill an arbitrary
+   width: a remainder narrower than one cell is always left over. Centering
+   the grid splits that remainder evenly, so a padded provider's frame
+   reads the same on both sides at any width; pinned to the start instead,
+   the whole remainder lands on the right and the frame reads crooked —
+   20px on the left against 26px on the right at an 8px cell. The value
+   comes from the pane's padding rules below, which hold the one list of
+   providers that must NOT center. Keep the host a flex row: a block host
+   would stretch .xterm to the full width, exposing xterm's empty
+   overflow-y:scroll viewport and its classic scrollbar track in the
+   remainder. */
+[data-live-terminal] {
+  display: flex;
+  justify-content: var(--terminal-grid-align, center);
+  height: 100%;
+  width: 100%;
+}
+
+/* The terminal owns its pixels. Its geometry is the emulator's, driven by
+   the --t-* locals and the mono register — never chrome tokens. The host
+   keeps a relative box for the jump-to-live pill. */
+[data-region="terminal"] {
+  position: relative;
+  background: var(--t-bg);
+  color: var(--t-fg);
+  font-family: var(--font-mono);
+  font-weight: var(--type-mono-weight);
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+}
+
+/* Padding around the terminal output.
+   Most CLIs (claude, codex, and the rest) draw on whatever background the
+   terminal gives them, so padding around their output looks like part of the
+   terminal. opencode, kilo, mimo and grok paint their own background instead
+   (grok's fullscreen TUI fills the pane with its own ground), so padding
+   would put our colour right next to theirs, which looks like a bug. Those
+   get no padding, and for the same reason their grid starts at the pane
+   edge: their background ends at the first and last column, so our ground
+   beside it reads as a gutter. --terminal-grid-align is what
+   [data-live-terminal] above centers the grid with; it lives here so the
+   provider list exists in exactly one place and the alignment cannot drift
+   from the padding it matches. */
+[data-region="terminal"] {
+  --terminal-grid-align: center;
+  --terminal-padding: 10px var(--space-5);
+  padding: var(--terminal-padding);
+}
+
+[data-region="terminal"][data-terminal-provider="opencode"],
+[data-region="terminal"][data-terminal-provider="kilo"],
+[data-region="terminal"][data-terminal-provider="mimo"],
+[data-region="terminal"][data-terminal-provider="grok"] {
+  --terminal-grid-align: flex-start;
+  --terminal-padding: 0px;
+  padding: var(--terminal-padding);
+}
+
+/* The emulator's own ground. xterm.css hardcodes background-color:#000 on
+   .xterm-viewport as an OS X scrollbar-opacity workaround, and any part of
+   the emulator the renderer does not cover falls through to it — a
+   full-width black band under the last row, on a console that is never
+   black. --t-bg is the active terminal theme's background, set on the pane,
+   so this tracks every theme including the light ones. Cells paint over it,
+   so this only ever shows where the renderer painted nothing.
+   Scoped to the pane on purpose: xterm's stylesheet loads after ours, and an
+   unscoped .xterm .xterm-viewport ties its specificity and loses on order. */
+[data-region="terminal"] .xterm,
+[data-region="terminal"] .xterm .xterm-viewport,
+[data-region="terminal"] .xterm .xterm-screen {
+  background-color: var(--t-bg, var(--color-console-bg));
+}
+
+/* The recovery transcript is the pane's content, so it carries the content
+   inset the emulator's grid would: the pane's own padding is the frame around
+   both. Live and preview render the same element, so a screen that reaches
+   recovery in the app and a capture of it cannot drift apart. */
+/* The desktop carries the reconnect facts in the register under the stream,
+   so the band is the phone's alternative to it, not an addition. */
+[data-recovery-banner] {
+  display: none;
+}
+
+[data-recovery-scrollback] {
+  padding: 10px 20px;
+}
+
+[data-region="terminal-dock"] {
+  display: none;
+}
+
+[data-region="terminal-soft-keys"] {
+  display: none;
+}
+
+/* File text stays the only selectable content. Each logical line is a
+   row: the number label sits in a sticky left gutter (its own element,
+   sunken like the body, hairline right rule, half opacity, never
+   selectable) so wrapped continuations stay associated with their number
+   without entering copied text. The gutter's right padding keeps the
+   label clear of the rule; the row's left padding clears the number. */
+[data-files-line] {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  min-width: 100%;
+}
+
+[data-files-line-number] {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  flex: none;
+  box-sizing: border-box;
+  width: 4.5rem;
+  padding: 0 0.75rem 0 1rem;
+  text-align: right;
+  background: var(--color-surface-sunken);
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text-tertiary);
+  opacity: 0.5;
+  /* The gutter is sticky, so it composites on its own layer, and that layer
+     rasterizes the right-aligned last digit several ways from one paint to
+     the next — a phantom diff in every capture comparison that follows.
+     A paint containment boundary pins the raster. Isolated by experiment:
+     static and contain:paint are stable, sticky and translateZ(0) are not. */
+  contain: paint;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The label is a pseudo-element so the file's bytes stay the only text
+   in the pane: the number never enters textContent, selection, or copy. */
+[data-files-line-number]::before {
+  content: attr(data-line-number);
+}
+
+[data-files-line-text] {
+  min-width: 0;
+  flex: 1;
+  min-height: 1.62em;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+[data-files-newline] {
+  display: none;
+}
+
+/* The phone scope. Blueprint puts its phone behaviour at max-width:600px and
+   mirrors it onto [data-viewport="narrow"] for device frames drawn inside wide
+   pages; these rules must sit at the same boundary or a tablet-width viewport
+   gets phone chrome it has no room for and loses the desktop affordances it
+   still needs. */
+@media (max-width: 600px) {
+  /* The terminal pane is inset by 12px/16px rather than the desktop
+     10px/20px: a narrow screen cannot spare 40px of ground, and the pane's
+     padding is where the transcript's first line starts, so every line below
+     it follows this value. The recovery transcript drops its own inset here
+     because the pane's is already the phone's whole one. */
+  [data-region="terminal"] {
+    --terminal-padding: 12px 16px;
+    padding: var(--terminal-padding);
+  }
+  [data-recovery-scrollback] {
+    padding: 0;
+  }
+  [data-recovery-banner] {
+    display: flex;
+  }
+  /* The band and the register are the same facts at two widths — the band is
+     the phone's ALTERNATIVE to the register, so where one shows the other
+     must not, or the screen says "reconnecting" twice. */
+  [data-recovery-register] {
+    display: none;
+  }
+  /* The band spans the pane, so the pane's own inset would hold it off three
+     edges. With a band mounted the inset moves to the transcript, which is
+     what it was ever for — the band is drawn flush and the text is padded
+     under it. */
+  [data-region="terminal"]:has([data-recovery-banner]) {
+    padding: 0;
+  }
+  [data-region="terminal"]:has([data-recovery-banner]) [data-recovery-scrollback] {
+    padding: 12px 16px;
+  }
+  /* The phone opens the sidebar as a bottom sheet:
+     full width under the titlebar, rounded top, its own grabber and
+     "Sessions" chrome — not the desktop's left drawer. The desktop lockup
+     and PROJECTS header leave with the drawer they belong to. */
+  [data-region="sidebar"] {
+    position: fixed;
+    /* 132px is the measured sheet top (grabber at
+       y=207 on the reference minus the frame's own chrome); a notch's safe
+       area pushes the titlebar and the sheet down together. */
+    inset: calc(132px + var(--workspace-safe-area-top, 0px)) 0 0 0;
+    width: 100%;
+    height: auto;
+    /* A sheet raised over the workspace wears the overlay surface, like
+       every other overlay; the paper sidebar ground belongs to the desktop
+       rail this no longer is. */
+    background: var(--color-surface-overlay);
+    max-width: none;
+    border-right: 0;
+    border-radius: 28px 28px 0 0;
+  }
+  [data-region="sidebar"] > .chrome {
+    display: none;
+  }
+  [data-region="sidebar"] [data-projects-menu] {
+    display: none;
+  }
+  [data-sidebar-sheet-chrome] {
+    display: block;
+  }
+  [data-sidebar-sheet-actions] {
+    display: block;
+  }
+  /* The session list is opened from the titlebar's Sessions button on a
+     phone, so the desktop sidebar re-expand affordance is hidden there. */
+  [data-region="sidebar-expand"],
+  [data-region="sidebar-expand-divider"] {
+    display: none;
+  }
+  /* A dock with nothing mounted in it is a bordered bar drawn across the
+     bottom of the pane for no reason. The regions are chrome for controls, so
+     the dock leaves the layout until something is mounted — an empty pane and
+     a loading selection have no keys and no input row to carry. */
+  [data-region="terminal-dock"]:not([data-dock-mounted]) {
+    display: none;
+  }
+  [data-region="terminal-dock"] {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    position: relative;
+    /* No hairline against the scrollback: the seam
+       is the pane's own bottom padding — a rule here sat hard against the
+       transcript's last line. */
+    background: var(--color-console-bg);
+    /* The dock is a sibling of the terminal pane, so terminal-local tokens
+       must be restated here for the key strip and compose controls. */
+    --t-input-bg: #1A212B;
+    --t-panel-border: #3A414D;
+  }
+  [data-region="terminal-status"] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem max(0.5rem, env(safe-area-inset-right)) 0.375rem max(0.5rem, env(safe-area-inset-left));
+    font-family: var(--font-mono);
+    letter-spacing: var(--type-mono-tracking);
+    word-spacing: normal;
+    font-size: var(--type-micro-size);
+    line-height: 1.4;
+    color: var(--color-console-fg);
+  }
+  [data-region="terminal-status"]:empty {
+    display: none;
+  }
+  /* On a phone the jump-to-live pill sits just above the key strip on
+     the left, where the popped arrow pad can occlude it and it does not
+     overlap the reconnect control at the right. */
+  [data-live-scrollback-pill] {
+    top: auto;
+    right: auto;
+    bottom: 10px;
+    left: 18px;
+  }
+  [data-region="terminal-soft-keys"] {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: none;
+    gap: 6px;
+    padding: 0 12px;
+  }
+  [data-region="terminal-soft-keys"]::-webkit-scrollbar {
+    display: none;
+  }
+  /* The button is the touch target and the span is the key. The key is
+     36px inside a 44px strip, and a 36px button would put the whole strip
+     under the 44px minimum every pointer-coarse control owes. */
+  [data-region="terminal-soft-keys"] button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex: none;
+    min-width: 46px;
+    min-height: var(--touch-min);
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  [data-region="terminal-soft-keys"] button [data-soft-key-visual] {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--t-panel-border);
+    border-radius: var(--radius-control-sm);
+    background: var(--t-input-bg);
+    color: var(--t-dim);
+    font-family: var(--font-mono);
+    letter-spacing: var(--type-mono-tracking);
+    word-spacing: normal;
+    font-size: min(var(--type-mono-size), calc(12px * var(--type-mono-xh-ratio)));
+    line-height: 1;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* A session that is not live cannot take a keystroke, so its keys read as
+     the border does: present, and plainly not accepting input. */
+  [data-region="terminal-soft-keys"][data-soft-keys-inert] [data-soft-key-visual] {
+    color: var(--t-panel-border);
+  }
+  [data-region="terminal-soft-keys"] button:focus-visible {
+    outline: none;
+    background: var(--color-wash-hover);
+  }
+  [data-region="terminal-soft-keys"] [data-terminal-ctrl][aria-pressed="true"] [data-soft-key-visual] {
+    border-color: var(--color-accent);
+    background: var(--color-accent-tint);
+    color: var(--color-accent-on-tint);
+  }
+  /* The arrow-grid key carries the four arrows as a 3x2 glyph and needs less
+     horizontal padding so the glyph reads as one compact control. */
+  [data-region="terminal-soft-keys"] [data-terminal-arrow-pad] [data-soft-key-visual] {
+    padding: 0 8px;
+  }
+  [data-terminal-arrow-grid] {
+    display: grid;
+    grid-template-columns: repeat(3, 9px);
+    grid-template-rows: repeat(2, 11px);
+    gap: 0;
+    align-items: center;
+    justify-items: center;
+    font-size: min(var(--type-mono-size), calc(10px * var(--type-mono-xh-ratio)));
+    line-height: 11px;
+  }
+  [data-region="terminal-compose"] {
+    /* The 10px seam, plus the device's own bottom inset: without
+       env() the compose row sits directly on the iOS home indicator. */
+    padding: 0 20px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  [data-region="terminal-compose"] form {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  [data-region="terminal-compose"] label {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--touch-min);
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid var(--t-panel-border);
+    border-radius: var(--radius-control);
+    background: var(--t-input-bg);
+    color: var(--t-dim);
+    font-family: var(--font-mono);
+    letter-spacing: var(--type-mono-tracking);
+    word-spacing: normal;
+    font-size: min(var(--type-mono-size), calc(13px * var(--type-mono-xh-ratio)));
+    line-height: 1;
+  }
+  [data-region="terminal-compose"] label textarea {
+    flex: 1;
+    min-width: 0;
+    /* Auto height centers the single line — and its caret — on the
+       prompt's line inside the 44px label; a full-height box pins the
+       caret to its own top-left while the prompt centers. */
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-console-fg);
+    font-family: inherit;
+    /* 16px, not the label's mono scale: iOS zooms the page when a focused
+       control's font is smaller, and this control focuses on every message.
+       The prompt glyph keeps its scale on the label. */
+    font-size: 16px;
+    line-height: normal;
+    resize: none;
+    outline: none;
+  }
+  [data-region="terminal-compose"] button[type="submit"] {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-circle);
+    background: var(--color-accent);
+    color: var(--color-text-on-accent);
+  }
+  [data-terminal-arrow-pad-popover] {
+    display: grid;
+    grid-template-columns: repeat(3, 46px);
+    grid-template-rows: repeat(3, 46px);
+    gap: 8px;
+    justify-content: center;
+    /* The pad hovers clear of the dock by its own 8px rhythm. The reference
+       draws the pad flush on the dock's top edge; the gap is deliberate. */
+    margin-bottom: 8px;
+  }
+  [data-terminal-arrow-pad-popover] button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid var(--t-panel-border);
+    border-radius: var(--radius-control-sm);
+    background: var(--t-input-bg);
+    color: var(--t-fg);
+  }
+  [data-terminal-arrow-pad-popover] [data-terminal-soft-key="backspace"] {
+    color: var(--t-dim);
+  }
+  [data-terminal-arrow-pad-popover] [data-terminal-byte="\r"] {
+    color: var(--t-accent);
+  }
+}
+
+@keyframes terminal-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* The spin animations are registered as THEME tokens, so components
+   reach them through the generated utilities (animate-spinner,
+   animate-row-spinner) instead of hand-written classes: keyframes are
+   the one thing utilities cannot express inline. */
+@theme {
+  --animate-spinner: terminal-spin 0.7s linear infinite;
+  --animate-row-spinner: terminal-spin 0.8s linear infinite;
+}
+
+/* The sign-in field: a 32px ink grid under a radial falloff, so the card
+   sits in a lit centre and the edges settle to flat ink. Two layers
+   rather than one because the grid must fade with the light — a grid
+   drawn to the edges reads as a texture the page forgot to finish. */
+@utility login-field {
+  position: relative;
+  background: var(--color-surface);
+}
+
+@utility login-field-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgb(251 252 254 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(251 252 254 / 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(ellipse 108% 96% at 50% 44%, #000, transparent 100%);
+  mask-image: radial-gradient(ellipse 108% 96% at 50% 44%, #000, transparent 100%);
+}
+
+@utility login-field-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 74% 64% at 50% 44%, rgb(255 255 255 / 0.01), rgb(255 255 255 / 0) 66%),
+    radial-gradient(ellipse 96% 88% at 50% 44%, rgb(0 0 0 / 0) 30%, rgb(0 0 0 / 0.74) 72%, rgb(0 0 0 / 1) 100%);
+}
+
+/* The Noisefloor mark's authorizing sweep: all five rows share one
+   opacity wave, phase-shifted by negative animation-delay so at any
+   instant one row is at peak and the rest gradient away from it —
+   signal rising out of the floor, bottom row first. The delays live in
+   this stylesheet and nowhere else: set inline on the rows,
+   animation-delay resolves to 0s on every one of them, all five rows
+   fall in phase, and the mark blinks as one block instead of
+   sweeping. */
+@keyframes nfsweep {
+  0% { opacity: 1; }
+  24% { opacity: 0.72; }
+  48% { opacity: 0.46; }
+  72% { opacity: 0.25; }
+  84% { opacity: 0.16; }
+  100% { opacity: 1; }
+}
+
+.nfmark[data-sweep="on"] .nfrow {
+  animation-name: nfsweep;
+  animation-duration: 3.6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: var(--nfrow-delay, 0s);
+}
+
+/* Row 5 leads at delay 0s and keeps full opacity wherever the wave
+   stops; rows 1-4 trail it and hold their still offsets below. */
+.nfmark[data-sweep="on"] .nfrow:nth-child(1) { --nfrow-delay: -1.6s; --nfrow-still: 0.39; }
+.nfmark[data-sweep="on"] .nfrow:nth-child(2) { --nfrow-delay: -2.1s; --nfrow-still: 0.53; }
+.nfmark[data-sweep="on"] .nfrow:nth-child(3) { --nfrow-delay: -2.6s; --nfrow-still: 0.68; }
+.nfmark[data-sweep="on"] .nfrow:nth-child(4) { --nfrow-delay: -3.1s; --nfrow-still: 0.84; }
+
+/* Stopping the wave must not flatten the mark into five identical rows:
+   each row freezes at its phase offset, so the gradient shape survives
+   as a static image. */
+@media (prefers-reduced-motion: reduce) {
+  .nfmark[data-sweep="on"] .nfrow {
+    animation-name: none;
+    opacity: var(--nfrow-still, 1);
+  }
+}
+
+/* The shortcut chip's display lives in a class so the narrow scopes can
+   retire it: an inline display would outrank any stylesheet override. */
+.menu-shortcut {
+  display: inline-flex;
+}
+
+/* The settings toggle switch: DS Switch at 44x26. */
+.row-switch-track {
+  position: relative;
+  display: inline-flex;
+  width: 38px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-300);
+  transition: background 150ms ease-out;
+}
+.row-switch-on {
+  background: var(--color-accent);
+}
+.row-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-circle);
+  background: var(--color-surface-card);
+  transition: transform 150ms ease-out;
+}
+.row-switch-on .row-switch-thumb {
+  transform: translateX(16px);
+}
+
+/* A drag at a phone surface's scroll boundary must not reload the page or
+   pull the workspace away from its controls. The property is not inherited;
+   nested scrollers and dialogs mounted outside the workspace need it too. */
+@media (max-width: 600px), (pointer: coarse) {
+  html,
+  body,
+  body *,
+  .dialog {
+    overscroll-behavior: none;
+  }
+}
+[data-viewport="narrow"],
+[data-viewport="narrow"] * {
+  overscroll-behavior: none;
+}
+
+/* Keep the phone's attachment state above scrollback. Reserving its height
+   lets long server errors wrap without covering terminal output or controls. */
+@media (max-width: 600px) {
+  [data-region="terminal"]:has([data-live-terminal-overlay]:not(.hidden)) {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+  [data-region="terminal"]:has([data-live-terminal-overlay]:not(.hidden)) [data-live-terminal] {
+    flex: 1;
+    min-height: 0;
+    height: 0;
+    padding: var(--terminal-padding);
+    opacity: 0.45;
+  }
+  [data-live-terminal-overlay]:not(.hidden) {
+    position: static;
+    order: -1;
+    flex: none;
+    font-family: var(--font-ui);
+  }
+  [data-attachment-notice] {
+    position: static;
+    min-height: 32px;
+    max-width: none;
+    gap: 8px;
+    padding: 0 16px;
+    border: 0;
+    border-bottom: 1px solid var(--t-rule);
+    border-radius: 0;
+    background: var(--t-input-bg);
+  }
+  [data-attachment-notice] > span {
+    min-width: 0;
+    padding: 6px 0;
+    overflow-wrap: anywhere;
+  }
+  [data-attachment-notice] > button {
+    min-height: 44px;
+    margin: 4px 0;
+  }
+  [data-region="terminal-compose"][inert],
+  [data-region="terminal-soft-keys"][data-soft-keys-inert] {
+    opacity: 0.35;
+  }
+}
+
+/* Project previews use the shared dialog with a compact assignment card. */
+.project-preview-dialog { font-size: var(--type-body-size); line-height: var(--type-body-lh); letter-spacing: -.002em; }
+.project-preview-dialog .dialog-body { gap: 12px; color: var(--color-text-secondary); }
+.project-preview-dialog .dialog-desc { text-wrap: pretty; }
+.project-preview-dialog[data-preview-phase="settings"] .dialog-body,
+.project-preview-dialog[data-preview-phase="setup"] .dialog-body { gap: 14px; }
+.project-preview-dialog p { margin: 0; font-size: var(--type-body-sm-size); line-height: 1.5; text-wrap: pretty; }
+.project-preview-explainer { display: flex; flex-direction: column; gap: 9px; padding: var(--space-5); border: var(--hairline); border-radius: var(--radius-card); background: var(--color-surface-muted); font-size: var(--type-body-sm-size); line-height: 1.5; }
+.project-preview-explainer strong { color: var(--color-text-primary); font-weight: inherit; }
+.project-preview-card { border: var(--hairline); border-radius: var(--radius-card); background: var(--color-surface-card); overflow: hidden; }
+.project-preview-row { display: flex; align-items: center; gap: 12px; padding: 8px 6px 8px 13px; border-bottom: var(--hairline); }
+.project-preview-label { flex: none; width: 82px; color: var(--color-text-tertiary); font-size: var(--type-caption-size); }
+.project-preview-url, .project-preview-port, .project-preview-address { font-family: var(--font-mono); font-size: min(var(--type-mono-size), calc(var(--type-body-sm-size) * var(--type-mono-xh-ratio))); overflow-wrap: anywhere; }
+.project-preview-url { flex: 1; min-width: 0; color: var(--color-text-primary); }
+.project-preview-small-button { flex: none; min-height: 28px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-control-sm); font-size: 13px; font-weight: 500; line-height: 1; letter-spacing: .004em; color: var(--color-text-secondary); }
+.project-preview-small-button:hover { background: var(--color-wash-hover); color: var(--color-text-primary); }
+.project-preview-small-button:disabled { opacity: .45; }
+.project-preview-status { display: flex; flex: 1; min-width: 0; gap: 8px; align-items: center; color: var(--color-text-primary); font-size: var(--type-body-sm-size); }
+.project-preview-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--color-text-tertiary); }
+.project-preview-age { color: var(--color-text-tertiary); }
+.project-preview-up { background: var(--color-success); }
+.project-preview-spinner { display: inline-block; flex: none; width: 11px; height: 11px; border: 1.5px solid var(--color-border-strong); border-top-color: var(--color-text-secondary); border-radius: 50%; animation: terminal-spin 800ms linear infinite; }
+.project-preview-pending { display: flex; align-items: center; gap: 9px; font-size: var(--type-body-sm-size); }
+.project-preview-pending .project-preview-spinner { width: 14px; height: 14px; }
+.project-preview-details-toggle { display: flex; align-items: center; width: 100%; min-height: 36px; gap: 8px; padding: 0 13px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); text-align: left; }
+.project-preview-details-toggle > span { width: 13px; font-family: var(--font-mono); font-size: var(--type-mono-size); line-height: 1; }
+.project-preview-details { display: flex; flex-direction: column; gap: 8px; padding: 0 13px 12px 34px; }
+.project-preview-details > div { display: flex; align-items: baseline; gap: 12px; }
+.project-preview-details > div > span:not(.project-preview-port) { font-size: var(--type-caption-size); }
+.project-preview-dialog .project-preview-details p, .project-preview-dialog .project-preview-note { font-size: var(--type-caption-size); line-height: 1.5; color: var(--color-text-tertiary); }
+.project-preview-address { padding: 10px 12px; border-radius: var(--radius-control); background: var(--color-surface-sunken); color: var(--color-text-primary); }
+.project-preview-issue { display: flex; align-items: flex-start; gap: 10px; padding: var(--space-5); border: 1px solid var(--color-error); border-radius: var(--radius-card); background: var(--color-error-tint); font-size: var(--type-body-sm-size); line-height: 1.5; }
+.project-preview-issue > span:first-child { flex: none; margin-top: 1px; color: var(--color-error-on-tint); }
+.project-preview-issue > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.project-preview-issue strong { color: var(--color-text-primary); font-weight: inherit; }
+.project-preview-warning { border-color: var(--color-warning); background: var(--color-warning-tint); }
+.project-preview-warning > span:first-child { color: var(--color-warning-on-tint); }
+.project-preview-dialog [data-preview-confirm-disable] { margin-right: auto; }
+.project-preview-head-warning { flex: none; color: var(--color-warning-on-tint); margin-top: 2px; }
+.project-preview-grabber { display: none; }
+@media (max-width: 767px) {
+  .scrim:has(> [data-modal-screen]:last-child .project-preview-dialog) { padding: 0; justify-content: flex-end; }
+  .project-preview-dialog { width: 100%; max-height: 92%; border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
+  .project-preview-grabber { display: block; flex: none; width: 38px; height: 4px; border-radius: 999px; background: var(--color-border-strong); margin: 10px auto -6px; }
+  .project-preview-dialog .dialog-foot { flex-direction: column-reverse; padding-bottom: var(--space-6); }
+  .project-preview-dialog .dialog-foot > button { min-height: 44px; width: 100%; flex: none; }
+  .project-preview-dialog [data-preview-confirm-disable] { flex-basis: 100%; justify-content: center; }
+  .project-preview-connection { flex-wrap: wrap; gap: 6px 12px; }
+  .project-preview-connection .project-preview-label { width: 100%; }
+  .project-preview-status { flex: 1 1 100%; }
+  .project-preview-explainer, .project-preview-issue { padding: var(--space-4); }
+}
+
+[data-project-menu-popover] { font-size: var(--type-body-size); line-height: var(--type-body-lh); letter-spacing: -.002em; }
+[data-project-menu-popover] .menuitem { letter-spacing: normal; }
+[data-project-menu-popover] > .grid { padding-inline: var(--row-px); }
+[data-project-preview-actions] { display: flex; flex-direction: column; gap: 1px; }
+[data-project-menu-preview] > [data-project-preview-menu-status],
+[data-project-menu-preview-settings] > .text-caption { font-size: var(--type-label-size); line-height: inherit; }
+/* A fixed icon slot keeps font fallback from widening the action row. */
+[data-project-menu-preview] > span:last-child { flex: none; width: 7px; font-family: var(--font-mono); font-size: var(--type-mono-size); font-weight: var(--type-mono-weight); line-height: 1; color: var(--color-text-tertiary); }
+
+/* The project's actions become a bottom sheet on a phone. The existing
+   color and position controls stay available in the same keyboard ring. */
+.project-menu-sheet-head { display: none; }
+@media (max-width: 767px) {
+  .project-menu-sheet-backdrop { background: var(--color-scrim); }
+  .menu[data-project-menu-popover] {
+    inset: auto 0 0 !important;
+    width: 100%; min-width: 0 !important; max-width: none;
+    max-height: 92% !important; overflow-y: auto; gap: 0;
+    padding: 6px 8px max(26px, env(safe-area-inset-bottom));
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--color-surface-overlay);
+  }
+  [data-project-preview-actions] { gap: 0; }
+  [data-project-menu-popover] .menu-shortcut { display: none; }
+  .project-menu-sheet-head { display: block; }
+  .project-menu-sheet-grabber { display: block; width: 38px; height: 4px; border-radius: 999px; background: var(--color-border-strong); margin: 6px auto 12px; }
+  .project-menu-sheet-title { display: block; padding: 4px 10px 10px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); overflow-wrap: anywhere; }
+  .menu[data-project-menu-popover] .menuitem { min-height: 44px; }
+}
+[data-viewport="narrow"] .project-menu-sheet-backdrop { background: var(--color-scrim); }
+[data-viewport="narrow"] .menu[data-project-menu-popover] {
+  inset: auto 0 0 !important;
+  width: 100%; min-width: 0 !important; max-width: none;
+  max-height: 92% !important; overflow-y: auto; gap: 0;
+  padding: 6px 8px max(26px, env(safe-area-inset-bottom));
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background: var(--color-surface-overlay);
+}
+[data-viewport="narrow"] [data-project-preview-actions] { gap: 0; }
+[data-viewport="narrow"] [data-project-menu-popover] .menu-shortcut { display: none; }
+[data-viewport="narrow"] .project-menu-sheet-head { display: block; }
+[data-viewport="narrow"] .project-menu-sheet-grabber { display: block; width: 38px; height: 4px; border-radius: 999px; background: var(--color-border-strong); margin: 6px auto 12px; }
+[data-viewport="narrow"] .project-menu-sheet-title { display: block; padding: 4px 10px 10px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); overflow-wrap: anywhere; }
+[data-viewport="narrow"] .menu[data-project-menu-popover] .menuitem { min-height: 44px; }
+@import "./security-management.css";
+
+@import "./onboarding.css";
+
+[data-region="tutorial"] {
+  display: none;
+  flex: 0 0 360px;
+  min-width: 0;
+  flex-direction: column;
+  border-left: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+[data-region="tutorial"][data-open="true"] {
+  display: flex;
+}
+.tutorial-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+[data-tutorial-mobile="false"] .tutorial-header {
+  flex: none;
+  height: var(--chrome-h);
+  min-height: 0;
+  padding: 0 16px;
+}
+.tutorial-header h2 {
+  min-width: 0;
+  margin-right: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tutorial-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+.tutorial-lesson {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.tutorial-progress {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 28px;
+}
+.tutorial-progress span {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+.tutorial-progress span[data-complete="true"] {
+  background: var(--color-accent);
+}
+.tutorial-body h3 {
+  margin-bottom: 12px;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.tutorial-body p {
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.tutorial-body .tutorial-scope {
+  font-size: 12px;
+}
+.tutorial-body nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.tutorial-body nav button {
+  padding: 10px;
+  text-align: left;
+  border-radius: 4px;
+}
+.tutorial-body nav button[aria-current] {
+  background: var(--color-wash-hover);
+}
+.tutorial-body nav button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.tutorial-lesson-mark {
+  flex: none;
+  display: inline-flex;
+  width: 14px;
+  margin-top: 2px;
+  color: var(--color-success);
+}
+.tutorial-lesson-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tutorial-lesson-caption {
+  font-size: var(--type-caption-size);
+  color: var(--color-text-tertiary);
+}
+.tutorial-body nav .tutorial-lesson-enable {
+  margin: -4px 0 0 34px;
+  font-size: var(--type-caption-size);
+  color: var(--color-text-tertiary);
+}
+.tutorial-body nav .tutorial-lesson-enable a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.tutorial-body nav button[data-dimmed="true"] .tutorial-lesson-title,
+.tutorial-body nav button[data-dimmed="true"] .tutorial-lesson-mark {
+  opacity: .55;
+}
+.tutorial-body .tutorial-lesson-group {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+.tutorial-body .tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tutorial-body .tutorial-welcome-outcomes {
+  margin-bottom: 16px;
+  padding-left: 20px;
+  list-style: disc;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-lh);
+  color: var(--color-text-secondary);
+}
+.tutorial-body .tutorial-welcome-outcomes li + li {
+  margin-top: 4px;
+}
+.tutorial-body .tutorial-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+.tutorial-body .tutorial-prompt,
+.tutorial-body .tutorial-command {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface-sunken);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+.tutorial-body .tutorial-reason {
+  align-self: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.tutorial-body .tutorial-prompt-more {
+  display: none;
+  margin: -4px 0 12px;
+  font-size: 12px;
+}
+[data-tutorial-mobile="true"] .tutorial-body .tutorial-prompt-more {
+  display: block;
+}
+[data-tutorial-mobile="true"] .tutorial-body .tutorial-ask {
+  display: flex;
+  flex-direction: column;
+}
+[data-tutorial-mobile="true"] .tutorial-body .tutorial-ask .tutorial-actions {
+  order: -2;
+}
+[data-tutorial-mobile="true"] .tutorial-body .tutorial-ask .tutorial-prompt-more {
+  order: -1;
+  margin: -6px 0 8px;
+}
+[data-tutorial-mobile="true"] .tutorial-body .tutorial-prompt:not([data-expanded="true"]) {
+  max-height: calc(4 * 1.5em + 20px);
+  overflow-y: auto;
+}
+.tutorial-body .tutorial-note,
+.tutorial-body .tutorial-footer-note p {
+  font-size: 12px;
+}
+.tutorial-body .tutorial-fallback {
+  margin-top: 8px;
+}
+.tutorial-body .tutorial-status {
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+.tutorial-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+}
+[data-tutorial-action]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+[data-region="tutorial-mobile-bar"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+[data-region="tutorial-mobile-bar"][hidden] {
+  display: none;
+}
+.tutorial-bar-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tutorial-bar-label .tutorial-bar-count {
+  color: var(--color-text-secondary);
+  margin-right: 8px;
+}
+[data-region="tutorial-bar"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 42;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: var(--tutorial-bar-w, 360px);
+  height: var(--chrome-h);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+[data-region="tutorial-bar"][hidden] {
+  display: none;
+}
+[data-region="content"][data-tutorial-folded] > :is([data-region="files"], [data-region="tasks"], [data-region="chats"], [data-region="assets"])[data-open="true"] {
+  padding-top: var(--chrome-h);
+}
+[data-tutorial-mobile="false"] [data-region="tutorial"][data-over="true"] {
+  position: absolute;
+  top: var(--chrome-h);
+  right: 0;
+  z-index: 41;
+  box-sizing: border-box;
+  width: var(--tutorial-bar-w, 360px);
+  height: min(480px, calc(100% - var(--chrome-h)));
+  border-bottom: 1px solid var(--color-border-strong);
+}
+[data-tutorial-handle], .tutorial-collapse {
+  display: none;
+}
+[data-tutorial-mobile="true"] [data-region="tutorial"] {
+  position: absolute;
+  z-index: 25;
+  left: 0;
+  right: 0;
+  bottom: var(--tutorial-dock-bottom, 0px);
+  height: min(480px, 65%);
+  max-height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 12px 12px 0 0;
+}
+[data-tutorial-mobile="true"] [data-tutorial-handle] {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  touch-action: none;
+}
+[data-tutorial-mobile="true"] [data-tutorial-handle] span {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border-strong);
+}
+[data-tutorial-mobile="true"] .tutorial-collapse {
+  display: grid;
+}
+[data-tutorial-mobile="true"] .tutorial-header {
+  min-height: 44px;
+  padding-top: 0;
+}
+[data-tutorial-mobile="true"] .tutorial-header button[aria-label] {
+  min-width: 36px;
+  min-height: 36px;
+}
+[data-tutorial-mobile="true"] .tutorial-body {
+  padding: 16px;
+}
+[data-tutorial-mobile="true"] .tutorial-footer {
+  padding: 12px 16px;
+}
+[data-tutorial-mobile="true"] [data-region="terminal-dock"]:has([data-region="tutorial-mobile-bar"]:not([hidden])) {
+  display: flex;
+}
+
+/* Upload records remain separate from stored files until the folder confirms them. */
+.files-upload-row {
+  display: flex;
+  flex: none;
+  align-items: center;
+  border-radius: 6px;
+  min-height: 36px;
+}
+.files-upload-row > [data-files-upload-select] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: inherit;
+}
+.files-upload-row:hover {
+  background: var(--color-wash-hover);
+}
+.files-upload-row-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 32px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+.files-upload-ring {
+  display: block;
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+  transform: rotate(-90deg);
+}
+.files-upload-ring-track {
+  stroke: var(--color-border);
+}
+.files-upload-badge {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-size: 11px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.files-upload-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--color-surface-sunken);
+}
+.files-upload-details-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.files-upload-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 32px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+.files-upload-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 48px 24px 12px;
+  text-align: center;
+}
+.files-upload-location {
+  overflow-wrap: anywhere;
+}
+.files-upload-details-actions {
+  padding: 12px 24px;
+  text-align: center;
+}
+.files-upload-details-actions button {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: var(--type-body-sm-size);
+}
+.files-upload-progress {
+  display: none;
+  height: 4px;
+  width: 100%;
+  background: var(--color-border);
+}
+.files-upload-progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+}
+.scrim:has(> [data-modal-screen]:last-child .files-upload-sheet) {
+  justify-content: flex-end;
+  padding: 0;
+}
+.files-upload-sheet {
+  flex: none;
+  width: 100%;
+  max-height: 85%;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 20px 20px 0 0;
+  background: var(--color-surface-overlay);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.files-upload-grabber {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  margin: 8px auto 4px;
+}
+.files-upload-sheet .files-upload-details-head {
+  border: 0;
+  min-height: 40px;
+  padding: 0 20px;
+}
+.files-upload-sheet .files-upload-details-body {
+  align-items: stretch;
+  text-align: left;
+  padding: 0 20px 20px;
+  gap: 12px;
+}
+.files-upload-sheet .files-upload-progress:not([hidden]) {
+  display: block;
+}
+.files-upload-sheet .files-upload-details-actions {
+  border-top: 1px solid var(--color-border);
+  padding: 12px 16px;
+}
+.files-upload-sheet .files-upload-details-actions button {
+  width: 100%;
+  min-height: 48px;
+}
+.files-upload-sheet .files-upload-close {
+  width: 44px;
+  height: 44px;
+}
+@media(max-width:800px) {
+  .files-upload-row {
+    min-height: 51px;
+  }
+  .files-upload-row > [data-files-upload-select] {
+    min-height: 51px;
+  }
+  .files-upload-row-action {
+    width: 44px;
+    height: 44px;
+  }
+  .files-upload-badge {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 16px;
+  }
+}
+[data-viewport="narrow"] .files-upload-row {
+  min-height: 51px;
+}
+[data-viewport="narrow"] .files-upload-row > [data-files-upload-select] {
+  min-height: 51px;
+}
+[data-viewport="narrow"] .files-upload-row-action {
+  width: 44px;
+  height: 44px;
+}
+.files-upload-dismiss {
+  flex: none;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-sm-size);
+  cursor: pointer;
+}
+.files-upload-sheet .files-upload-dismiss {
+  min-height: 44px;
+}
+
+/* Compact mobile controls leave the session label the remaining header width. */
+[data-mobile-panels] { display: none; }
+[data-mobile-panels][data-unseen="true"],
+[data-panel-choice="chats"][data-unseen="true"] { color: var(--color-accent); }
+[data-mobile-panels][data-assets-new]:not([data-assets-new="0"]),
+[data-panel-choice="assets"][data-assets-new]:not([data-assets-new="0"]) { color: var(--color-accent); }
+[data-viewport="narrow"] :is([data-titlebar-sessions], [data-live-sessions], [data-titlebar-more], [data-live-more]) { display: grid; height: 44px; width: 44px; }
+[data-viewport="narrow"] [data-desktop-panels] { display: none; }
+[data-viewport="narrow"] [data-mobile-panels] { display: grid; }
+[data-viewport="narrow"] [data-titlebar-actions] { gap: var(--space-1); }
+[data-viewport="narrow"] [data-region="terminal-titlebar"] { gap: var(--space-1); }
+@media (width < 48rem) {
+  [data-desktop-panels] { display: none; }
+  [data-mobile-panels] { display: grid; }
+  [data-titlebar-actions] { gap: var(--space-1); }
+  [data-region="terminal-titlebar"], [data-workspace-titlebar] { gap: var(--space-1); }
+}
+[data-header-context-actions]:not(:has(button:not([hidden]))) { display: none; }
+[data-viewport="narrow"] [data-workspace-titlebar]:has([data-header-context-actions] button:not([hidden])) {
+  flex-wrap: wrap;
+  height: auto;
+  min-height: var(--chrome-h);
+  padding-bottom: var(--space-2);
+}
+[data-viewport="narrow"] [data-header-context-actions] { flex-basis: 100%; justify-content: flex-end; }
+[data-viewport="narrow"] [data-header-context-actions] button { min-height: 44px; }
+@media (width < 48rem) {
+  [data-workspace-titlebar]:has([data-header-context-actions] button:not([hidden])) {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--chrome-h);
+    padding-bottom: var(--space-2);
+  }
+  [data-header-context-actions] { flex-basis: 100%; justify-content: flex-end; }
+  [data-header-context-actions] button { min-height: 44px; }
+}
+
+/* Assets panel (rows, the Blueprint choice box, the delete dialogs). A row
+   is one hit target; the box is drawn, not a native input, because the row
+   itself is the checkbox the keyboard and assistive tech reach. */
+.asset-row { background: transparent; }
+.asset-row:hover { background: var(--color-wash-hover); }
+.asset-row[data-selected="true"] { background: var(--color-wash-selected); }
+.asset-row:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.asset-row[aria-disabled="true"] { cursor: default; }
+.asset-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-mark);
+  background: var(--color-surface-card);
+  color: var(--color-text-on-accent);
+  transition: var(--transition-control);
+}
+.asset-check > svg { opacity: 0; }
+.asset-check[data-asset-check="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+.asset-check[data-asset-check="true"] > svg { opacity: 1; }
+.asset-row:hover .asset-check[data-asset-check="false"] { border-color: var(--color-text-tertiary); }
+.assets-chip > .assets-chip-row:last-of-type:not(:has(+ [data-assets-totals])) { border-bottom-width: 0; }
+.assets-sheet-close { display: none; }
+@media (max-width: 600px) {
+  /* On the phone the panel is the screen: a title-3 header with touch-size
+     controls, 48px rows with larger thumbnails, lg footer buttons. The
+     consent and the outcome rise from the bottom edge as sheets with a
+     grabber, a close control and their actions stacked full-width. */
+  [data-assets-header] {
+    height: auto;
+    padding: 4px 6px 6px 20px;
+    gap: 2px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  [data-assets-header] .chrome-title {
+    font-size: var(--type-title-3-size);
+    font-weight: var(--weight-medium);
+  }
+  [data-assets-header] button { width: var(--touch-min); height: var(--touch-min); }
+  [data-assets-list] { padding: 0 10px; }
+  [data-assets-location-head] { padding: 8px 10px 2px; }
+  .asset-row {
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 2px 10px 2px 0;
+  }
+  [data-asset-slot] { width: var(--touch-min); height: var(--touch-min); }
+  [data-asset-thumb] { width: 44px; height: 33px; }
+  [data-asset-thumb] > svg { width: 16px; height: 16px; }
+  [data-assets-footer] {
+    height: auto;
+    gap: 10px;
+    padding: 10px 16px 10px 20px;
+  }
+  [data-assets-footer] [data-assets-summary] { flex: 1; }
+  [data-assets-footer] > span.ml-auto { display: none; }
+  [data-assets-footer] button {
+    height: var(--control-h-lg);
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-control);
+    font-size: var(--type-body-size);
+  }
+  [data-assets-footer] [data-assets-delete] > svg { display: none; }
+  .scrim:has(> [data-modal-screen]:last-child [data-assets-dialog]) {
+    padding: 0;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+  .dialog[data-assets-dialog] {
+    width: 100%;
+    max-width: none;
+    max-height: 92%;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  }
+  .dialog[data-assets-dialog]::before {
+    content: "";
+    display: block;
+    flex: none;
+    align-self: center;
+    width: 36px;
+    height: 4px;
+    margin: 8px 0 2px;
+    border-radius: 2px;
+    background: var(--color-border-strong);
+  }
+  .dialog[data-assets-dialog] .dialog-head { gap: 10px; padding: 6px 6px 0 20px; }
+  .dialog[data-assets-dialog] .dialog-head > span[aria-hidden] { margin-top: 12px; }
+  .dialog[data-assets-dialog] .dialog-head .dialog-title { padding-top: 8px; }
+  .dialog[data-assets-dialog] .assets-sheet-close { display: grid; }
+  .dialog[data-assets-dialog] .dialog-body { padding: 6px 20px 16px; }
+  .dialog[data-assets-dialog] .assets-chip { border-radius: var(--radius-card); }
+  .dialog[data-assets-dialog] .assets-chip-row { padding: 8px 14px; }
+  .dialog[data-assets-dialog] .dialog-foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    background: var(--color-surface-card);
+  }
+  .dialog[data-assets-dialog] .dialog-foot > button {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+  .dialog[data-assets-dialog] .dialog-foot [data-assets-cancel] {
+    border-color: transparent;
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+  .dialog[data-assets-dialog] .dialog-head { flex-wrap: wrap; row-gap: 0; }
+  .dialog[data-assets-dialog] .dialog-head > div { display: contents; }
+  .dialog[data-assets-dialog] .dialog-head .dialog-title { flex: 1; }
+  .dialog[data-assets-dialog] .dialog-head .dialog-desc { order: 1; flex-basis: 100%; margin-top: 6px; padding-right: 14px; line-height: 1.55; }
+  .dialog[data-assets-dialog] [data-assets-outcome-word] { min-width: 0; }
+  .dialog[data-assets-dialog] .assets-chip-row .font-mono { font-size: min(var(--type-mono-size), calc(var(--type-caption-size) * var(--type-mono-xh-ratio))); }
+  [data-assets-header] button > svg { width: 18px; height: 18px; }
+}
+[data-viewport="narrow"] [data-assets-header] {
+  height: auto;
+  padding: 4px 6px 6px 20px;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-border);
+}
+[data-viewport="narrow"] [data-assets-header] .chrome-title {
+  font-size: var(--type-title-3-size);
+  font-weight: var(--weight-medium);
+}
+[data-viewport="narrow"] [data-assets-header] button { width: var(--touch-min); height: var(--touch-min); }
+[data-viewport="narrow"] [data-assets-list] { padding: 0 10px; }
+[data-viewport="narrow"] [data-assets-location-head] { padding: 8px 10px 2px; }
+[data-viewport="narrow"] .asset-row {
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 2px 10px 2px 0;
+}
+[data-viewport="narrow"] [data-asset-slot] { width: var(--touch-min); height: var(--touch-min); }
+[data-viewport="narrow"] [data-asset-thumb] { width: 44px; height: 33px; }
+[data-viewport="narrow"] [data-asset-thumb] > svg { width: 16px; height: 16px; }
+[data-viewport="narrow"] [data-assets-footer] {
+  height: auto;
+  gap: 10px;
+  padding: 10px 16px 10px 20px;
+}
+[data-viewport="narrow"] [data-assets-footer] [data-assets-summary] { flex: 1; }
+[data-viewport="narrow"] [data-assets-footer] > span.ml-auto { display: none; }
+[data-viewport="narrow"] [data-assets-footer] button {
+  height: var(--control-h-lg);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-control);
+  font-size: var(--type-body-size);
+}
+[data-viewport="narrow"] [data-assets-footer] [data-assets-delete] > svg { display: none; }
+[data-viewport="narrow"] .scrim:has(> [data-modal-screen]:last-child [data-assets-dialog]) {
+  padding: 0;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog] {
+  width: 100%;
+  max-width: none;
+  max-height: 92%;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog]::before {
+  content: "";
+  display: block;
+  flex: none;
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin: 8px 0 2px;
+  border-radius: 2px;
+  background: var(--color-border-strong);
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head { gap: 10px; padding: 6px 6px 0 20px; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head > span[aria-hidden] { margin-top: 12px; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head .dialog-title { padding-top: 8px; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .assets-sheet-close { display: grid; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-body { padding: 6px 20px 16px; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .assets-chip { border-radius: var(--radius-card); }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .assets-chip-row { padding: 8px 14px; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-foot {
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--color-surface-card);
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-foot > button {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-foot [data-assets-cancel] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head { flex-wrap: wrap; row-gap: 0; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head > div { display: contents; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head .dialog-title { flex: 1; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .dialog-head .dialog-desc { order: 1; flex-basis: 100%; margin-top: 6px; padding-right: 14px; line-height: 1.55; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] [data-assets-outcome-word] { min-width: 0; }
+[data-viewport="narrow"] .dialog[data-assets-dialog] .assets-chip-row .font-mono { font-size: min(var(--type-mono-size), calc(var(--type-caption-size) * var(--type-mono-xh-ratio))); }
+[data-viewport="narrow"] [data-assets-header] button > svg { width: 18px; height: 18px; }

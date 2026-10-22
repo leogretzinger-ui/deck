@@ -1,0 +1,10 @@
+interface:
+  display_name: "Agent-to-agent chat"
+  short_description: "Chat live with another running agent"
+  default_prompt: "Use $a2a-chat to ask another agent directly."
+
+dependencies:
+  tools:
+    - type: "cli"
+      value: "a2a"
+      description: "Chat client over the MemPalace Logstream"

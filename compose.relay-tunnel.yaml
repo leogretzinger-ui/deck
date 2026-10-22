@@ -1,0 +1,46 @@
+# You own this directory; it is never mounted into agent sessions.
+services:
+  app:
+    environment:
+      NOISEDECK_RELAY_MODE: external
+  relay-tunnel:
+    image: deck:${NOISEDECK_IMAGE_TAG:?set the explicit production image tag}
+    entrypoint: ["/usr/bin/ssh"]
+    command:
+      - "-F"
+      - /run/relay/config
+      - "-NT"
+      - "-oBatchMode=yes"
+      - "-oStrictHostKeyChecking=yes"
+      - "-oUserKnownHostsFile=/run/relay/known_hosts"
+      - "-oIdentityFile=/run/relay/id_ed25519"
+      - "-oIdentitiesOnly=yes"
+      - "-oExitOnForwardFailure=yes"
+      - "-oServerAliveInterval=10"
+      - "-oServerAliveCountMax=3"
+      - "-oConnectTimeout=10"
+      - "-L"
+      - "0.0.0.0:8766:127.0.0.1:18766"
+      - relay
+    network_mode: service:app
+    depends_on:
+      app:
+        condition: service_started
+    user: "0:0"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      disable: true
+    volumes:
+      - ${NOISEDECK_RELAY_SSH_DIR:?set the private SSH directory}:/run/relay:ro,Z
+      - type: bind
+        source: ./deploy/sidecar-resolv.conf
+        target: /etc/resolv.conf
+        read_only: true
+        bind:
+          create_host_path: false
+          selinux: z
+    restart: unless-stopped
+    cpus: 0.25
+    mem_limit: 128m

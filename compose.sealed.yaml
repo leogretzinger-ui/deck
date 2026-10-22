@@ -1,0 +1,73 @@
+# Sealed storage overlay. Use only through deploy/sealed-compose.sh, which
+# runs the host preflight before this file is applied and writes the
+# launch-bound report after the container exists.
+#
+# Every store Deck writes to becomes a bind mount under one unlocked state
+# root on the host, so a single encrypted directory or volume covers all of
+# them: the two Docker named volumes are replaced, /tmp moves from RAM to a
+# directory under the same root (host root reads a container tmpfs through
+# /proc/<pid>/root, so on the shared-host profile the temporary files need
+# the same FUSE denial as everything else), and the GitHub config lives
+# under the root too. The report the host preflight writes is bound
+# read-only from a host-owned tmpfs so it cannot outlive the boot and the
+# container cannot write it.
+#
+# The container's processes must be, on the host, the user who mounted the
+# state root: FUSE's owner-only rule is what denies root the live view, and
+# it denies a root Docker daemon too, which cannot even stat a bind source
+# inside the mount. So the shared-host profile runs under rootless Podman
+# with the keep-id user namespace that compose.sealed-podman.yaml adds on
+# top of this file; the own-host profile, where root is the partner, runs
+# this file alone under Docker. The wrapper picks the pair.
+services:
+  app:
+    # The host name is the chat identity: a2a announces its key under it
+    # and peers pin that name. A container's default name is its id, which
+    # every down and up replaces; a fixed one keeps the pins across every
+    # lock and unlock. Required, distinct per Deck on a shared machine.
+    hostname: ${NOISEDECK_SEALED_HOSTNAME:?set this Deck's stable host name, the name peers pin}
+    environment:
+      NOISEDECK_REQUIRE_ENCRYPTED_STATE: "true"
+      NOISEDECK_SEALED_PROFILE: ${NOISEDECK_SEALED_PROFILE:-shared-host}
+      NOISEDECK_SWAP_POLICY: ${NOISEDECK_SWAP_POLICY:-personal}
+      NOISEDECK_SEALED_REPORT_PATH: /run/noisedeck/sealed-state/report.json
+    volumes: !override
+      - type: bind
+        source: ${NOISEDECK_SEALED_STATE_ROOT:?set the unlocked sealed state root}/data
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_SEALED_STATE_ROOT:?set the unlocked sealed state root}/home
+        target: /home/agent
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_SEALED_STATE_ROOT:?set the unlocked sealed state root}/projects
+        target: /workspace
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_SEALED_STATE_ROOT:?set the unlocked sealed state root}/tmp
+        target: /tmp
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_SEALED_STATE_ROOT:?set the unlocked sealed state root}/gh
+        target: /home/agent/.config/gh
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_HOST_ID_PATH:-/etc/machine-id}
+        target: /run/noisedeck-host-machine-id
+        read_only: true
+      - type: bind
+        source: ${NOISEDECK_SEALED_REPORT_DIR:?set the host tmpfs directory that receives the sealed-state report}
+        target: /run/noisedeck/sealed-state
+        read_only: true
+        bind:
+          create_host_path: false
+    tmpfs: !override
+      - /run/noisedeck:rw,noexec,nosuid,nodev,size=16m,uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100},mode=0700
+
+volumes: !reset {}

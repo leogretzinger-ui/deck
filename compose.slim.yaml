@@ -1,0 +1,7 @@
+# The slim distribution: Claude Code and Codex only. Everything else about
+# the service — the server, its identity, the Noise tools, the browser
+# sidecar overlay — is unchanged, so this overlay only selects the target.
+services:
+  app:
+    build:
+      target: slim

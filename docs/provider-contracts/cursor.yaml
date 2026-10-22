@@ -1,0 +1,103 @@
+# Cursor Agent (agent-cli-package) — provider contract
+#
+# What was measured, against what:
+#   - The measured artifact is Cursor's official agent-cli-package tarball
+#     for 2026.08.11-e8db854, pinned by per-arch sha256 (the same contract
+#     as Devin's distribution): linux/x64
+#     sha256 bfff4bf6f4e9dd30c1d0ef0a70b6077b074015dd2948e4c50685d53afdcfce5a,
+#     linux/arm64
+#     sha256 ea13f92e295f523a99ce8d8f57d6894d21e5d1e2d030ffad718ccd5955ca2eed.
+#     The image unpacks it under /opt/cursor-agent/<version> and launches
+#     the package's cursor-agent script; the tarball carries its own node
+#     interpreter, index.js bundle, rg, cursorsandbox, and crepectl.
+#   - Runtime shape measured in a real private tmux pane on linux/x64: the
+#     launcher script execs the package's vendored node on its bundled
+#     index.js with the launch path as argv[0] (the script's exec -a), so
+#     the pane process is the vendored interpreter with the configured
+#     executable as its visible command line.
+#   - The interactive launch was measured UNAUTHENTICATED with --trust: the
+#     CLI stays up at the login wall ("Cursor Agent / v2026.08.11-e8db854 /
+#     Press any key to log in..."), and --trust suppressed the
+#     workspace-trust prompt for the launch directory. No input was
+#     delivered; every input-behaviour field below is unmeasured.
+
+provider: cursor
+version_tested: "2026.08.11-e8db854"
+measured_on: "2026-08-22"
+
+runtime_compatibility:
+  method: capability_probes
+  capability_probes:
+    - name: "trust and bypass syntax"
+      args: ["--help"]
+      required_flags:
+        - "--trust"
+        - "--yolo"
+        - "--resume"
+  probe_state_isolation:
+    - HOME
+    - XDG_CACHE_HOME
+  reason: >
+    Measured on the 2026.08.11-e8db854 package: --version and --help
+    write ~/.cursor/cli-config.json and populate the Node compile cache
+    under the cache home. The probe runner redirects HOME and the XDG cache
+    root into a throwaway tree so compatibility checks cannot mutate the
+    user's persisted provider state.
+
+distribution:
+  channel: "https://downloads.cursor.com/lab/<version>/<os>/<arch>/agent-cli-package.tar.gz"
+  sha256_amd64: "bfff4bf6f4e9dd30c1d0ef0a70b6077b074015dd2948e4c50685d53afdcfce5a"
+  sha256_arm64: "ea13f92e295f523a99ce8d8f57d6894d21e5d1e2d030ffad718ccd5955ca2eed"
+
+executable:
+  # The pane process is the package's vendored node interpreter running its
+  # bundled index.js; argv[0] is the configured launch path. The vendored
+  # interpreter path is unique to this pinned package, but the process is
+  # still an interpreter, so pane identity rests on the full tuple.
+  launch_path: "/usr/local/bin/cursor-agent"
+  launch_target: "/opt/cursor-agent/2026.10.19-6bbf2c4/dist-package/index.js"
+  proc_exe: "/opt/cursor-agent/2026.10.19-6bbf2c4/dist-package/node"
+  proc_cmdline: "/usr/local/bin/cursor-agent --use-system-ca <launch target>"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+
+identity:
+  contract: fresh-relaunch-only
+  session_flag_present: true
+  trusted_identity_capture: false
+  provider_state_read_by_deck: false
+  provider_output_read_by_deck: false
+
+launch:
+  new_session_args: ["--trust"]
+  operator_bypass_args: ["--yolo"]
+  resume_args: null
+
+session_storage:
+  root: "~/.cursor"
+  contents_read_by_deck: false
+  cache: "~/.cache/cursor-compile-cache"
+
+first_run_walls:
+  login_wall: "Press any key to log in..."
+
+injection:
+  # Unmeasured: no authenticated Cursor session has accepted input — the
+  # measured run stops at the login wall, which injected bytes would answer
+  # instead of the user. These close only through an authenticated tmux
+  # conformance run (the Phase 0 spike), and the descriptor encodes nothing
+  # until then.
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unmeasured
+  verified: false
+
+exit:
+  sigterm_exits: unmeasured
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: single-exec'd-vendored-interpreter
+  process_tree_verified: true
+  group_kill_survivors: unmeasured

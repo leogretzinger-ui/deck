@@ -1,0 +1,31 @@
+-- 013_identity_capture_lost: when a session's identity capture path died
+-- while the session kept running.
+--
+-- Recovery relaunches a retrieved-identity session with no recorded id
+-- rather than parking it, on the reasoning that such a session has not
+-- had its first submission yet, so there is no conversation to lose
+-- (FR-R6). That reasoning depends on a premise the row itself does not
+-- carry: that the capture path was ALIVE the whole time. It is not
+-- always true.
+--
+--   A capture expires, or a service restart drops the in-memory registry.
+--   The session keeps running, because taking a working session away to
+--   report something the operator cannot act on is worse. The operator
+--   then submits, the provider creates a real conversation, and its hook
+--   presents a token nothing will accept — so the id stays NULL while a
+--   conversation exists on disk. A later death would relaunch fresh and
+--   orphan it.
+--
+-- This column is the missing premise. Set when the capture path is known
+-- to have died, it marks a row whose NULL identity can no longer be read
+-- as "nothing has happened" — only as "we can no longer find out". Such a
+-- row parks on death instead of relaunching.
+--
+-- Nullable with no default: a row that never lost a capture has nothing
+-- to record, and backfilling a timestamp would assert an event that did
+-- not happen. Cleared when a launch registers a fresh capture, because
+-- the new one is alive.
+--
+-- Plain column addition, so no table rebuild and no foreign_keys toggle.
+
+ALTER TABLE sessions ADD COLUMN identity_capture_lost_at TEXT;

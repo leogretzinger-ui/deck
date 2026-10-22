@@ -1,0 +1,7 @@
+# Opt-in companion to compose.licensed-fonts.yaml for the Go + MemPalace build.
+# This service compiles the frontend inherited by the final derived app image.
+services:
+  go-base:
+    build:
+      additional_contexts:
+        licensed-fonts: ${NOISEDECK_LICENSED_FONTS_DIR:?Set the external licensed font directory}

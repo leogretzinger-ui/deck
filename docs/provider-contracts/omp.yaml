@@ -1,0 +1,109 @@
+# Oh My Pi (omp) — Phase 0 behavioural contract
+#
+# These facts were measured against the real omp 17.2.12 CLI in a private
+# tmux namespace. Unmeasured surfaces are listed separately
+# and are not release evidence.
+
+provider: omp
+version_tested: "17.2.12"
+measured_on: "2026-08-11"
+
+evidence:
+  launch_argv: ["/usr/local/bin/omp"]
+  private_tmux_namespace: true
+  authenticated_resume_round_trip: false
+
+runtime_compatibility_probe:
+  commands:
+    # The delegated launch delivers its prompt as omp's positional MESSAGES
+    # (NewDelegatedSessionArgs). A release that withdrew the positional would
+    # launch a session whose prompt is never delivered and no flag check would
+    # notice, so the probe names the positional as well as the flags. omp
+    # documents it under an ARGUMENTS header, not on the USAGE line.
+    - args: ["--help"]
+      required_flags:
+        - "--hook=<value>"
+        - "--resume=<value>"
+        - "--auto-approve"
+        # The delegated launch passes --no-prewalk so a routed session cannot
+        # switch itself to another model at its first edit; withdrawing the
+        # flag would silently return that behaviour.
+        - "--no-prewalk"
+      required_usage_tokens: ["MESSAGES"]
+  scope: command-line-syntax-only
+  does_not_remeasure: [exact-resume, injection, modal-handling, containment]
+
+native_receive_probe:
+  # The extension hands unread a2a mail to an idle session as a new user
+  # prompt; the probe drives the real omp CLI against a synthetic mailbox
+  # and a loopback model.
+  script: "probe_a2a_receive.py --harness omp"
+  network: none
+  timeout_s: 300
+
+executable:
+  launch_path: "/usr/local/bin/omp"
+  launch_target: "/usr/local/lib/node_modules/@oh-my-pi/pi-coding-agent/dist/cli.js"
+  proc_exe: "/usr/local/bin/bun"
+  proc_cmdline: "bun /usr/local/bin/omp"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+
+# id and thinking are the values the measured probes ran under, recorded as
+# measurement context only. Deck passes no provider, model, or thinking
+# selector to omp; whatever the provider itself resolves is authoritative.
+model:
+  provider: zai
+  id: "glm-5.2"
+  thinking: max
+  authenticated_catalog_verified: false
+
+identity:
+  contract: retrieved-by-hook
+  new_session_args: ["--hook", "$HOOK_PATH"]
+  resume_args: ["--resume", "$FULL_UUID"]
+  id_format: uuidv7
+  hook:
+    mechanism: typescript-event-module
+    flag: "--hook"
+    event: "session_start"
+    session_id_source: "ctx.sessionManager.getSessionId()"
+    available_at_process_launch: true
+    native_trust_required_before_launch: false
+    install_owner: provisioning
+    console_role: verify-and-refuse
+  exact_full_uuid_resume_verified: true
+  authenticated_history_continuity_verified: false
+  prefix_resume_footgun: case-insensitive-prefix-first-match-no-ambiguity-error
+  forbidden_resume_flags: ["--continue", "-c", "--session", "--fork"]
+  unknown_id_fails_loudly: true
+  unknown_id_exit_status: 1
+
+session_storage:
+  root: "~/.omp/agent/sessions/<encoded-cwd>"
+  filename: "<timestamp>_<uuidv7>.jsonl"
+  shared_databases: ["agent.db", "history.db", "models.db"]
+  contents_read_by_deck: false
+
+exit:
+  sigterm_exits: true
+  sigkill_exits: true
+
+environment:
+  permitted:
+    - "XDG_DATA_HOME"
+    - "XDG_STATE_HOME"
+    - "XDG_CACHE_HOME"
+  config_root: "~/.omp"
+  config_root_override: "PI_CONFIG_DIR"
+
+required_config_paths:
+  - "~/.omp"
+  - "$HOOK_PATH"
+
+unmeasured:
+  - injection
+  - active-turn-input
+  - modal-input-handling
+  - startup-splash-input-handling
+  - containment

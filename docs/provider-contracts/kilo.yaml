@@ -1,0 +1,38 @@
+# Kilo CLI provider contract. Command syntax and plugin/config locations are
+# pinned to the documented 7.4.21 surface. Nothing at runtime re-checks them.
+provider: kilo
+version_tested: "7.4.21"
+measured_on: "2026-08-13"
+
+runtime_compatibility_probe:
+  command: ["--help"]
+  required_flags: ["-s", "--session", "--auto"]
+
+identity:
+  contract: retrieved-by-plugin-event
+  event: session.created
+  native_id_shape: "ses_ plus 26 base62 characters"
+  available_at_process_launch: false
+  new_session_args: []
+  resume_args: ["--session", "$NATIVE_ID"]
+  recency_selectors_forbidden: ["--continue", "-c"]
+  plugin_path: "~/.config/kilo/plugin/noisedeck-provider-hook.js"
+
+permissions:
+  skip_permissions_arg: ["--auto"]
+
+state:
+  required_paths: ["~/.config/kilo", "~/.local/share/kilo"]
+
+executable:
+  launch_path: "/usr/local/bin/kilo"
+  wrapper: "/usr/local/lib/node_modules/@kilocode/cli/bin/kilo"
+  pane_process: "/usr/local/bin/node"
+  interpreted_process_identity_sufficient: false
+
+injection:
+  bracketed_paste: true
+  submit_key: Enter
+  multiline: true
+  active_turn: queued
+  modal_input: discarded

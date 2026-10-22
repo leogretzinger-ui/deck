@@ -1,0 +1,4 @@
+interface:
+  display_name: "Browser screenshot"
+  short_description: "Screenshot a page into the Assets panel"
+  default_prompt: "Use $browser-screenshot to capture the app preview."

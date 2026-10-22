@@ -1,0 +1,27 @@
+# Build a reproducible Go development image instead of mounting a mutable
+# host toolchain into /workspace. The base is the full image built from this
+# checkout in the same BuildKit graph; it carries the C compiler needed by
+# Deck's cgo-backed tests. A later overlay can retarget go-base (see
+# compose.go-mempalace.yaml), and NOISEDECK_DERIVED_BASE_CONTEXT can name any
+# other build context, for example docker-image://<an image you built>.
+services:
+  go-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        VERSION: ${NOISEDECK_BUILD_VERSION:-${NOISEDECK_IMAGE_TAG:-local}}
+        NOISEDECK_RUNTIME_UID: ${NOISEDECK_RUNTIME_UID:-1026}
+        NOISEDECK_RUNTIME_GID: ${NOISEDECK_RUNTIME_GID:-100}
+        NOISEDECK_FONTS: ${NOISEDECK_FONTS:-auto}
+        NOISE_TASKS_REPO: ${NOISE_TASKS_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/tasks.git}
+        NOISE_SDLC_REPO: ${NOISE_SDLC_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/sdlc.git}
+        NOISE_VISUAL_DIFF_REPO: ${NOISE_VISUAL_DIFF_REPO:-https://github.com/${NOISEDECK_SOURCE_ORG:-noisefloor-oss}/visual-diff.git}
+    scale: 0
+  app:
+    build:
+      dockerfile: deploy/derived/go.Dockerfile
+      target: runtime
+      additional_contexts:
+        deck-base: ${NOISEDECK_DERIVED_BASE_CONTEXT:-service:go-base}

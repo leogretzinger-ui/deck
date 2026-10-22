@@ -1,0 +1,102 @@
+# Qwen Code — provider contract
+#
+# Measured against the real official 0.21.14 package: --help and --version
+# render, the parser rejects unknown flags with exit 1 everywhere except
+# behind --help/--version, an unauthenticated launch in a private tmux
+# namespace with an isolated home stops at the "Connect a Provider" modal,
+# and SIGTERM to the pane's process group exits the process. No
+# authenticated session was reachable, so nothing an authenticated run
+# would show is claimed here.
+
+provider: qwen
+version_tested: "0.21.14"
+measured_on: "2026-08-20"
+
+runtime_compatibility:
+  # A positional prompt renders the launch command's own option synopsis;
+  # the root --help omits the launch flags and exits 0 for any argv, so it
+  # cannot verify a flag. A flag renamed or removed in a future version
+  # disappears from this synopsis and reports drift.
+  command: ["probe", "--help"]
+  required_flags: ["--resume", "--chat-recording", "--yolo"]
+
+executable:
+  launch_path: "/usr/local/bin/qwen"
+  launch_target: "/usr/local/lib/node_modules/@qwen-code/qwen-code/cli-entry.js"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/qwen"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+
+identity:
+  # Fresh-relaunch-only: Deck captures no native identity, issues no
+  # --resume argv, and never presents a relaunched process as continuation
+  # of a conversation. --resume and --chat-recording are real, pinned CLI
+  # syntax (the probe above verifies they still parse), but Deck does not
+  # act on a resume contract no run has observed.
+  contract: fresh-relaunch-only
+  # The CLI's help states --continue/--resume do not work when chat
+  # recording is false, so the launch argv pins --chat-recording on.
+  new_session_args: ["--chat-recording"]
+  resume_args: none # Deck builds none until the measurements below land
+  exact_resume_verified: false
+
+  # Earning the resume path back requires one authenticated run inside a
+  # private tmux namespace, observed by a person, that measures each item
+  # below. Qwen Code's documentation is not evidence for any of them.
+  #
+  # 1. Session identity delivery: launch authenticated, with the
+  #    documented SessionStart hook provisioned, and record whether the
+  #    hook fires at all, when it fires relative to process start, the
+  #    exact source value a fresh start emits, the shape of the session_id
+  #    it carries, and whether the payload includes the working directory.
+  # 2. Exact resume: capture that session_id, exit the CLI, relaunch with
+  #    `qwen --chat-recording --resume <exact-id>`, and observe the prior
+  #    conversation's content present in the resumed session — the only
+  #    proof that --resume resumed that conversation rather than silently
+  #    starting a new one.
+  # 3. Refused resume: relaunch with an id that does not exist and record
+  #    how the CLI fails (exit status, timing) so a dead candidate can be
+  #    told from a live one.
+  # 4. Resume attestation: repeat measurement 1 on the resumed process and
+  #    pin the source value (or other provider-documented signal) that
+  #    distinguishes an exact resume from a fresh start. Deck matches that
+  #    value byte-for-byte and never invents an equivalent.
+  #
+  # Until all four are recorded here with their observed values, the
+  # descriptor stays fresh-relaunch-only and rejects every resume argv.
+  resume_path_remeasurement: required
+
+session_storage:
+  root: "~/.qwen"
+  contents_read_by_deck: false
+
+permissions:
+  # -y/--yolo is the launch command's own "automatically accept all
+  # actions" flag — the boolean form of --approval-mode's yolo choice,
+  # which the CLI itself equates ("running headless with --yolo /
+  # approval-mode=yolo"). The string form --approval-mode is also launch
+  # syntax but is not listed in the root --help, and approval mode is
+  # switchable in-session (the TUI prints "Exit: Shift+Tab or
+  # /approval-mode default"); Deck passes the direct boolean.
+  operator_bypass_args: ["--yolo"]
+
+injection:
+  # No authenticated run reached Qwen Code's composer, so no field carries
+  # a value: the descriptor reports the zero contract and this file claims
+  # nothing. Measure bracketed paste, the submit key, and multiline in an
+  # authenticated session before any value appears here.
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unknown
+  verified: false
+
+exit:
+  # Measured on a live pane at the unauthenticated startup modal: SIGTERM
+  # to the pane's process group exited the CLI.
+  sigterm_exits: true
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: unmeasured     # needs a session running real tool commands

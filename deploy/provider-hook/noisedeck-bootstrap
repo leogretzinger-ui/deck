@@ -1,0 +1,60 @@
+#!/bin/sh
+# noisedeck-bootstrap — first-boot provider provisioning.
+# Provisioning owns provider configuration; Deck never writes it at
+# runtime. The work itself
+# lives in noisedeck-provision (a real TOML parse + structured edit, tested);
+# this wrapper exists so a provisioning failure can never stop the
+# service — the launch gate's remediation covers that case.
+set -u
+
+case ${NOISEDECK_AUTH_MODE-} in
+  none|password|oidc|trusted_proxy|builtin) ;;
+  "")
+    echo "noisedeck-bootstrap: NOISEDECK_AUTH_MODE must be rendered explicitly" >&2
+    exit 78
+    ;;
+  *)
+    echo "noisedeck-bootstrap: NOISEDECK_AUTH_MODE is invalid" >&2
+    exit 78
+    ;;
+esac
+
+if ! /usr/local/bin/noisedeck-deployment-host-guard; then
+  exit 78
+fi
+
+# Encrypted state. The gate reads the same
+# configuration serve will, so every way of requiring encrypted state, an
+# environment value in any spelling or the YAML key, holds provisioning,
+# MemPalace, the courier and every CLI until the host report is present
+# and every store verifies. When nothing requires it the command returns
+# at once after logging the classification.
+if ! /usr/local/bin/noise deck sealed-check -gate "$@"; then
+  echo "noisedeck-bootstrap: encrypted state is required and the check refused; nothing was started" >&2
+  exit 78
+fi
+
+if ! /usr/local/bin/noisedeck-provision; then
+  echo "noisedeck-bootstrap: provider provisioning failed; affected provider launches will refuse with remediation" >&2
+fi
+
+# The home volume survives image changes. Remove only Deck-managed MemPalace
+# entries when the overlay is absent so opting out does not leave dead hooks,
+# MCP registrations, skills, or instructions behind.
+if ! /usr/bin/python3 /usr/local/lib/noisedeck/configure-mempalace.py --remove; then
+  echo "noisedeck-bootstrap: stale MemPalace provider integration cleanup failed" >&2
+fi
+
+# Deck skills ship in the image and the home volume outlives it, so every
+# start refreshes them in each harness, with or without the memory overlay.
+if ! /usr/bin/python3 /usr/local/lib/noisedeck/install_skills.py; then
+  echo "noisedeck-bootstrap: Deck skill installation failed" >&2
+fi
+
+# Removing an optional overlay changes Codex's native hook-trust tuple. Repair
+# the exact Deck-only registration before any recovery can reach its gate.
+if ! /usr/local/bin/noisedeck-provision; then
+  echo "noisedeck-bootstrap: final provider provisioning failed; affected provider launches will refuse with remediation" >&2
+fi
+
+exec /usr/local/bin/noise deck serve "$@"

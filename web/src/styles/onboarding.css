@@ -1,0 +1,58 @@
+/* Generic setup uses the existing enrollment controls and explicit observed states. */
+.onboarding { --type-caps: normal; position: relative; isolation: isolate; display: flex; height: 100dvh; overflow: auto; padding: 40px; background: var(--color-surface); line-height: var(--type-body-lh); letter-spacing: -.002em; }
+.onboarding::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(rgb(251 252 254 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(251 252 254 / .05) 1px, transparent 1px); background-size: 32px 32px; mask-image: radial-gradient(ellipse 78% 68% at 50% 42%, #000, transparent 100%); }
+.onboarding-content { margin: auto; width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+.onboarding:is([data-onboarding="welcome"], [data-onboarding="encryption"]) .onboarding-content { max-width: 520px; }
+.onboarding[data-onboarding="welcome"] .onboarding-content { gap: 18px; }
+.onboarding[data-onboarding="finishing"] .onboarding-content { max-width: 460px; gap: 18px; }
+.onboarding[data-policy="optional"] .onboarding-content { max-width: 540px; }
+.onboarding:is([data-onboarding="unreachable"], [data-onboarding="unconfirmed"]) .onboarding-content { max-width: 460px; }
+.onboarding .enroll-logo { height: 22px; }
+.onboarding[data-onboarding="encryption"] .enroll-logo { height: 20px; }
+.onboarding .enroll-button { width: 100%; }
+.onboarding-intro { display: flex; flex-direction: column; gap: 6px; }
+.onboarding-copy { font-size: var(--type-body-sm-size); line-height: 1.55; color: var(--color-text-secondary); text-wrap: pretty; }
+.onboarding .enroll-title { text-wrap: wrap; }
+.onboarding strong { color: var(--color-text-primary); font-weight: 400; }
+.onboarding-note { display: flex; flex-direction: column; gap: 8px; font-size: var(--type-body-sm-size); line-height: 1.5; color: var(--color-text-secondary); }
+.onboarding-note:has(> svg) { flex-direction: row; gap: 10px; padding: 12px 13px; }
+.onboarding-note > svg { flex: none; margin-top: 2px; color: var(--color-text-tertiary); }
+.onboarding-note > div { display: flex; flex-direction: column; gap: 8px; }
+.onboarding-note .onboarding-copy { line-height: 1.5; }
+.onboarding-facts { margin: 0; }
+.onboarding-facts > div { display: flex; align-items: baseline; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--color-border); }
+.onboarding-facts > div:last-child { border-bottom: 0; }
+.onboarding-facts dt { flex: none; width: 96px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); }
+.onboarding-facts dd { flex: 1; min-width: 0; font-size: var(--type-body-sm-size); overflow-wrap: anywhere; }
+.onboarding[data-onboarding="welcome"] .onboarding-facts > div { padding: 11px 13px; }
+.onboarding[data-onboarding="welcome"] .onboarding-facts dt { width: 82px; }
+.onboarding-facts dd.enroll-mono { font-size: var(--type-mono-size); }
+.onboarding-separated { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--color-border); }
+.onboarding-separated .onboarding-copy { line-height: 1.5; }
+.onboarding-choice { display: flex; flex-direction: column; gap: 10px; }
+.onboarding-choice h2 { font-size: var(--type-body-sm-size); font-weight: var(--weight-medium); }
+.onboarding-choice .enroll-card-heading { gap: 9px; flex-wrap: wrap; }
+.onboarding-choice .enroll-card-heading > svg { color: var(--color-accent); }
+.onboarding-choice .onboarding-copy { line-height: 1.5; }
+.onboarding-policy-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.onboarding-policy-intro { gap: 8px; }
+.onboarding-steps > div { display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--color-border); }
+.onboarding-steps > div:last-child { border-bottom: 0; }
+.onboarding-steps > div > span:first-child { flex: none; width: 14px; font-size: var(--type-caption-size); color: var(--color-text-tertiary); }
+.onboarding-steps > div > span:nth-child(2) { flex: 1; font-size: var(--type-body-sm-size); }
+.onboarding-protection { display: flex; flex-direction: column; gap: 10px; font-size: var(--type-body-sm-size); line-height: 1.5; color: var(--color-text-secondary); }
+.onboarding .enroll-disclosure { min-height: 36px; }
+.onboarding-progress-row { display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid var(--color-border); font-size: var(--type-body-sm-size); }
+.onboarding-progress-row:last-child { border-bottom: 0; }
+.onboarding-progress-row > span:nth-child(2) { flex: 1; }
+.onboarding[data-onboarding="finishing"] .onboarding-progress-row { padding: 13px 15px; color: var(--color-text-secondary); }
+.onboarding[data-onboarding="finishing"] [data-progress="active"] { color: var(--color-text-primary); }
+.onboarding[data-onboarding="finishing"] [data-progress="pending"] { opacity: .45; }
+.onboarding[data-onboarding="signin"] .onboarding-content { max-width: 340px; align-items: center; gap: 18px; background: var(--color-surface-card); border: 1px solid var(--color-border); border-radius: var(--radius-panel); padding: 32px 28px 26px; text-align: center; }
+.onboarding[data-onboarding="signin"] .enroll-logo { height: 26px; }
+.onboarding[data-onboarding="signin"] h1 { font-size: var(--type-body-sm-size); font-weight: var(--weight-regular); line-height: 1.5; color: var(--color-text-secondary); }
+@media (max-width: 600px) { .onboarding { padding: 20px; } .onboarding .enroll-button, .onboarding .enroll-disclosure { min-height: 44px; } .onboarding-choice .enroll-badge { margin-left: auto; } .onboarding-steps .enroll-caption { text-align: right; } }
+
+.onboarding-policy-title .enroll-badge:not(.enroll-badge-accent) { background: var(--color-surface-muted); color: var(--color-text-secondary); }
+
+.onboarding .enroll-mono { color: var(--color-text-primary); }

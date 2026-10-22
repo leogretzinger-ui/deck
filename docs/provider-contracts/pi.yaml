@@ -1,0 +1,108 @@
+# Pi — Phase 0 behavioural contract
+#
+# Values marked measured came from Pi in a private tmux namespace. The
+# injection, modal, exit, and containment facts were measured against
+# 0.84.1; the identity/hook facts against 0.84.2 on 2026-08-23.
+# Authenticated probes used only synthetic markers and their task-owned
+# session store was deleted after measurement.
+
+provider: pi
+version_tested: "0.84.2"
+measured_on: "2026-08-23"
+
+runtime_compatibility:
+  command: ["--help"]
+  required_flags:
+    - "--provider"
+    - "--print"
+    - "--session"
+    - "--extension"
+    - "--approve"
+
+native_receive_probe:
+  # The extension hands unread a2a mail to an idle session as a new user
+  # prompt; the probe drives the real pi CLI against a synthetic mailbox
+  # and a loopback model.
+  script: "probe_a2a_receive.py --harness pi"
+  network: none
+  timeout_s: 300
+
+executable:
+  launch_path: "/usr/local/bin/pi"
+  launch_target: "/usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/pi"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+
+# id and thinking are the values the measured probes ran under, and the
+# catalog verification is an observed capability fact about the provider.
+# Deck binds --provider only; it passes no model or thinking selector, so
+# whatever the provider itself resolves is authoritative.
+model:
+  provider: zai
+  id: "glm-5.2"
+  thinking: max
+  authenticated_catalog_verified: true
+
+identity:
+  contract: retrieved-by-hook
+  new_session_args: ["--provider", "zai", "--extension", "$HOOK_PATH"]
+  resume_args: ["--provider", "zai", "--session", "$NATIVE_ID"]
+  id_format: uuidv7
+  hook:
+    mechanism: javascript-event-module
+    flag: "--extension"
+    event: "session_start"
+    session_id_source: "ctx.sessionManager.getSessionId()"
+    cwd_source: "ctx.sessionManager.getCwd()"
+    available_at_process_launch: true
+    measured_delivery_latency: "0.8s after process start, no user input"
+    native_trust_required_before_launch: false
+    discovery_dirs_never_contain_hook: ["<cwd>/.pi/extensions/", "~/.pi/agent/extensions/"]
+    install_owner: provisioning
+    install_path: "~/.pi/noisedeck-provider-hook.js"
+    console_role: verify-and-refuse
+  unknown_id_fails_loudly: true
+  unknown_id_diagnostic: "No session found matching"
+  exact_resume_verified: true
+  # --session-id is forbidden on new launches: pi keeps a brand-new session
+  # in memory and writes the session file only after the first assistant
+  # response (measured 0.84.2: message-free launch and clean exit persist
+  # nothing), so the flag warns "No project session found" on every
+  # genuinely new session and no message-free launch can pre-create one.
+  forbidden_new_session_flags: ["--session-id"]
+  session_file_written: after-first-assistant-response
+  forbidden_resume_flags: ["--continue", "--resume", "--fork"]
+
+session_storage:
+  root: "~/.pi/agent/sessions/<encoded-cwd>"
+  filename: "<timestamp>_<uuidv7>.jsonl"
+  contents_read_by_deck: false
+
+injection:
+  bracket_paste: true
+  submit_sequence: "Enter"
+  multiline: true
+  active_turn_input: queued-by-cli
+  active_turn_verified: true
+  verified: true
+
+modal_prompts:
+  startup_trust_prompt: true
+  input_during_modal: silently-discarded
+  input_during_modal_verified: true
+  approve_flag_scope: project-local-resource-trust-only
+
+exit:
+  sigterm_exits: true
+  pane_dead_status: ""
+  pane_dead_signal: ""
+
+containment:
+  idle_pane_process: "/usr/local/bin/node"
+  idle_children: none-observed
+  native_bang_child_stays_in_process_group: false
+  native_bang_child_stays_in_session: false
+  group_kill_survivors: native-bang-child
+  group_kill_verified: true

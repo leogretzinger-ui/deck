@@ -1,0 +1,48 @@
+# Explicitly unencrypted, fresh gateway installations only. This profile is
+# never applied by sealed-compose.sh and makes no at-rest privacy claim.
+services:
+  app:
+    container_name: ${NOISEDECK_PLAIN_CONTAINER:?set the installation container name}
+    hostname: ${NOISEDECK_PLAIN_INSTANCE:?set the installation identity}
+    userns_mode: "keep-id:uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100}"
+    ports: !reset []
+    environment:
+      NOISEDECK_REQUIRE_ENCRYPTED_STATE: "false"
+      NOISEDECK_SEALED_PROFILE: ""
+      NOISEDECK_SEALED_REPORT_PATH: ""
+      ANTHROPIC_API_KEY: ""
+      NOISEDECK_RELAY_TOKEN: ""
+    volumes: !override
+      - type: bind
+        source: ${NOISEDECK_PLAIN_STATE_ROOT:?set the managed plain state root}/data
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_PLAIN_STATE_ROOT:?set the managed plain state root}/home
+        target: /home/agent
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_PLAIN_STATE_ROOT:?set the managed plain state root}/projects
+        target: /workspace
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_PLAIN_STATE_ROOT:?set the managed plain state root}/tmp
+        target: /tmp
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_PLAIN_STATE_ROOT:?set the managed plain state root}/gh
+        target: /home/agent/.config/gh
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NOISEDECK_HOST_ID_PATH:-/etc/machine-id}
+        target: /run/noisedeck-host-machine-id
+        read_only: true
+    tmpfs: !override
+      - /run/noisedeck:rw,noexec,nosuid,nodev,size=16m,uid=${NOISEDECK_RUNTIME_UID:-1026},gid=${NOISEDECK_RUNTIME_GID:-100},mode=0700
+
+volumes: !reset {}

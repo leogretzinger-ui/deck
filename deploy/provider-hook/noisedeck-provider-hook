@@ -1,0 +1,73 @@
+#!/bin/sh
+# noisedeck-provider-hook — the provisioned SessionStart hook receiver.
+# Provisioning installs this and registers it in the provider's hook config
+# (docs/provider-contracts/); Deck never writes provider config.
+#
+# The provider runs this with the hook payload on stdin. We retain that payload
+# only in memory while making bounded delivery attempts to the per-launch
+# capture endpoint whose URL and token arrive in the launched CLI's environment.
+# A launch without a durable grant carries neither variable and is a quiet
+# no-op.
+#
+# Exit status is always 0: a capture failure must never break the CLI.
+# Its honest signal is the capture expiring and the exact launch generation
+# recording that provider identity is no longer retrievable.
+diagnostic() {
+  [ "${NOISEDECK_HOOK_DIAGNOSTICS:-}" = true ] || return 0
+  timeout 1 /usr/local/bin/noisedeck-hook-diagnostics "$@" >/dev/null 2>&1 || :
+}
+diagnostic receiver_entered
+if [ -z "$NOISEDECK_SESSION_HOOK_URL" ] || [ -z "$NOISEDECK_SESSION_HOOK_TOKEN" ]; then
+  diagnostic receiver_missing_launch_env
+  exit 0
+fi
+
+set --
+if [ -n "$NOISEDECK_SESSION_HOOK_SOCKET" ]; then
+  set -- --unix-socket "$NOISEDECK_SESSION_HOOK_SOCKET"
+fi
+
+payload=$(cat 2>/dev/null) || { diagnostic receiver_payload_unavailable; exit 0; }
+started_at=$(date +%s 2>/dev/null) || { diagnostic receiver_clock_unavailable; exit 0; }
+case "$started_at" in
+  ''|*[!0-9]*) diagnostic receiver_clock_unavailable; exit 0 ;;
+esac
+
+deadline=$((started_at + 8))
+attempt=1
+while [ "$attempt" -le 3 ]; do
+  now=$(date +%s 2>/dev/null) || { diagnostic receiver_clock_unavailable; exit 0; }
+  case "$now" in
+    ''|*[!0-9]*) diagnostic receiver_clock_unavailable; exit 0 ;;
+  esac
+  remaining=$((deadline - now))
+  [ "$remaining" -gt 0 ] || { diagnostic receiver_deadline; exit 0; }
+  attempt_timeout=$remaining
+  [ "$attempt_timeout" -le 3 ] || attempt_timeout=3
+
+  status=$(
+    printf '%s' "$payload" |
+      curl "$@" --silent --output /dev/null --write-out '%{http_code}' \
+        --connect-timeout "$attempt_timeout" --max-time "$attempt_timeout" \
+        --request POST \
+        --header "Content-Type: application/json" \
+        --header "X-Noisedeck-Hook-Token: $NOISEDECK_SESSION_HOOK_TOKEN" \
+        --data-binary @- "$NOISEDECK_SESSION_HOOK_URL" 2>/dev/null
+  )
+  curl_status=$?
+  diagnostic receiver_attempt "$attempt" "$curl_status" "${status:-0}"
+
+  if [ "$curl_status" -eq 0 ]; then
+    case "$status" in
+      2??) diagnostic receiver_accepted; exit 0 ;;
+      4??) diagnostic receiver_client_refused; exit 0 ;;
+      5??) ;;
+      *) diagnostic receiver_unexpected_status; exit 0 ;;
+    esac
+  fi
+  attempt=$((attempt + 1))
+  [ "$attempt" -le 3 ] || break
+  sleep 1 2>/dev/null || exit 0
+done
+diagnostic receiver_retry_exhausted
+exit 0

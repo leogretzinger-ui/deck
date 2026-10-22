@@ -1,0 +1,125 @@
+/* The licensed type set: the webfonts licensed to Noisefloor, which are
+   not redistributable. Every entry imports it as "@fonts", which
+   vite.config.ts resolves to this sheet. Descriptors are the reference
+   tokens/fonts.css verbatim — including the ss12 glyph compositing for
+   U+0025/U+0030/U+0031. */
+
+/* Blueprint webfonts.
+   Euclid Flex ships in two optical cuts: WebXL (large / display) and WebS (small / UI + text).
+   Family "Euclid Flex" = WebS, use at <= 28px. Family "Euclid Flex XL" = WebXL, use at >= 28px.
+   Both cuts are complete: weights 100-700, upright and italic.
+   Baskerville 10 Pro is the reading face - long-form prose, quotes, source excerpts.
+   Operator Mono SSm (Lig) is the code + data face; its italic is a true cursive, used for comments. */
+
+/* --- Euclid Flex, WebS cut (UI + text) --- */
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Ultralight-WebS.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-UltralightItalic-WebS.woff2") format("woff2");font-weight:100;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Thin-WebS.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-ThinItalic-WebS.woff2") format("woff2");font-weight:200;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Light-WebS.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-LightItalic-WebS.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Regular-WebS.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-RegularItalic-WebS.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Medium-WebS.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-MediumItalic-WebS.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Semibold-WebS.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-SemiboldItalic-WebS.woff2") format("woff2");font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Bold-WebS.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-BoldItalic-WebS.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+
+/* --- ss12 GLYPHS, composited into both families -----------------------------------
+   Three glyphs in Euclid Flex's default set are wrong for Blueprint:
+     U+0025  %  drawn stacked (two rings around a bar) instead of diagonal
+     U+0030  0  a full circle, 164.8 per 200em - wider than capital O, 1.57x the 3
+     U+0031  1  a bare vertical stroke, confusable with I and l in data
+   All three have alternates in the ss12 stylistic set, and ss12 exists in the WebXL
+   files ONLY - the WebS (UI/text) cut carries no feature tables at all. These faces
+   bind those three codepoints to the WebXL outline for the matching weight and style,
+   with the feature baked into the @font-face descriptor. The browser composites the
+   family: everything else from WebS, these three from WebXL+ss12.
+   The point is that there is NO authoring rule and no class. Data strings from an API,
+   CMS copy, translated strings, aria-label / alt / title / placeholder, option labels,
+   document.title and anything concatenated in JS are all covered, because the fix is
+   in the font rather than in the markup.
+   Verified: the descriptor alone produces the alternates with no font-feature-settings
+   anywhere on the page (lone 0 = 122.4, matching WebXL+ss12 exactly). --font-features
+   on body remains as a second path for engines that ignore the descriptor.
+   METRICS - deliberate changes: % 85.4 -> 198.2 (2.3x wider; strings with a percent grow
+   about 6%), 0 164.8 -> 122.4 (narrower), 1 54.4 -> 64 (wider). Check tight lockups.
+   U+2030 is excluded on purpose: per mille is out of the system, and leaving it stacked
+   keeps a mark we do not set conspicuous rather than quietly legitimising it. */
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Ultralight-WebXL.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-UltralightItalic-WebXL.woff2") format("woff2");font-weight:100;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Thin-WebXL.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-ThinItalic-WebXL.woff2") format("woff2");font-weight:200;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Light-WebXL.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-LightItalic-WebXL.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Regular-WebXL.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-RegularItalic-WebXL.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Medium-WebXL.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-MediumItalic-WebXL.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Semibold-WebXL.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-SemiboldItalic-WebXL.woff2") format("woff2");font-weight:600;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-Bold-WebXL.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex";src:url("/fonts/EuclidFlex-BoldItalic-WebXL.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+
+/* --- Euclid Flex XL, WebXL cut (display) --- */
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Ultralight-WebXL.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-UltralightItalic-WebXL.woff2") format("woff2");font-weight:100;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Thin-WebXL.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-ThinItalic-WebXL.woff2") format("woff2");font-weight:200;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Light-WebXL.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-LightItalic-WebXL.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Regular-WebXL.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-RegularItalic-WebXL.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Medium-WebXL.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-MediumItalic-WebXL.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Semibold-WebXL.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-SemiboldItalic-WebXL.woff2") format("woff2");font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Bold-WebXL.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-BoldItalic-WebXL.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+
+/* The same three glyphs for the display family, so they survive a dropped feature setting. */
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Ultralight-WebXL.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-UltralightItalic-WebXL.woff2") format("woff2");font-weight:100;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Thin-WebXL.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-ThinItalic-WebXL.woff2") format("woff2");font-weight:200;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Light-WebXL.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-LightItalic-WebXL.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Regular-WebXL.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-RegularItalic-WebXL.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Medium-WebXL.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-MediumItalic-WebXL.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Semibold-WebXL.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-SemiboldItalic-WebXL.woff2") format("woff2");font-weight:600;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-Bold-WebXL.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+@font-face{font-family:"Euclid Flex XL";src:url("/fonts/EuclidFlex-BoldItalic-WebXL.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap;unicode-range:U+0025,U+0030-0031;font-feature-settings:"ss12" 1}
+
+/* --- Operator Mono SSm + Baskerville 10 Pro (unchanged) --- */
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-Light.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-LightItalic.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-Book.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-BookItalic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-MediumItalic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Operator Mono SSm";src:url("/fonts/OperatorMonoSSmLig-BoldItalic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro-Italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro-MediumItalic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Baskerville 10 Pro";src:url("/fonts/Baskerville10Pro-BoldItalic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+
+/* The stacks, licensed families first. The ramp in app.css is this set's
+   own tuning, so nothing else is re-stated here. "Dank Mono" is the
+   reference's fallback mono face — no @font-face ships it, so it resolves
+   only where installed locally and falls through everywhere else. */
+:root {
+  --font-ui: "Euclid Flex", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Euclid Flex XL", "Euclid Flex", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Operator Mono SSm", "Dank Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-prose: "Baskerville 10 Pro", Georgia, "Times New Roman", serif;
+  --font-features: "ss12" 1;
+}

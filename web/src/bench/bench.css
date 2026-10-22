@@ -1,0 +1,432 @@
+/* The font-substitution bench's own stylesheet. Two things live here and a
+   rule governs both:
+
+   1. An ALIAS layer. The design prototype's markup speaks the Blueprint
+      token vocabulary (--surface, --accent, --text-primary…); Deck carries
+      the same system under --color-* names in app.css. The aliases map the
+      names rather than duplicating any value, so the bench always renders
+      Deck's live tokens — light, dark, and density included.
+
+   2. The bp-* COMPONENT classes the transcribed markup uses. The prototype
+      loaded them from a design system that is not part of Deck, so these are
+      authored here from Deck's typography tokens and color system. They
+      are scoped to this page: nothing under the app's entry imports this
+      file, and the app at rest is untouched.
+
+   The licensed @font-face bindings are NOT here: the bench reuses app.css's
+   own bindings (WebS/WebXL split and unicode-range included) and never adds
+   font files. */
+
+:root {
+  --surface: var(--color-surface);
+  --surface-muted: var(--color-surface-muted);
+  --surface-card: var(--color-surface-card);
+  --surface-overlay: var(--color-surface-overlay);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-tertiary: var(--color-text-tertiary);
+  --text-on-accent: var(--color-text-on-accent);
+  --accent: var(--color-accent);
+  --accent-tint: var(--color-accent-tint);
+  --accent-border: var(--color-accent-border);
+  --accent-on-tint: var(--color-accent-on-tint);
+  --success: var(--color-success);
+  --success-tint: var(--color-success-tint);
+  --warning: var(--color-warning);
+  --error: var(--color-error);
+  --error-tint: var(--color-error-tint);
+  --signal-border: var(--color-signal-border);
+}
+
+/* The palettes. The prototype swapped per-palette stylesheets from a design
+   system that is not part of Deck, so the five picks ship as accent
+   overrides scoped to a root attribute; cobalt is Deck's own accent and
+   overrides nothing. */
+:root[data-bench-palette="neutral"] {
+  --accent: #52525b;
+  --accent-tint: color-mix(in srgb, #52525b 12%, var(--color-surface));
+  --accent-border: color-mix(in srgb, #52525b 38%, var(--color-surface));
+  --accent-on-tint: color-mix(in srgb, #52525b 82%, var(--color-text-primary));
+}
+:root[data-bench-palette="warm"] {
+  --accent: #b45309;
+  --accent-tint: color-mix(in srgb, #b45309 12%, var(--color-surface));
+  --accent-border: color-mix(in srgb, #b45309 38%, var(--color-surface));
+  --accent-on-tint: color-mix(in srgb, #b45309 82%, var(--color-text-primary));
+}
+:root[data-bench-palette="teal"] {
+  --accent: #0f766e;
+  --accent-tint: color-mix(in srgb, #0f766e 12%, var(--color-surface));
+  --accent-border: color-mix(in srgb, #0f766e 38%, var(--color-surface));
+  --accent-on-tint: color-mix(in srgb, #0f766e 82%, var(--color-text-primary));
+}
+:root[data-bench-palette="violet"] {
+  --accent: #6d28d9;
+  --accent-tint: color-mix(in srgb, #6d28d9 12%, var(--color-surface));
+  --accent-border: color-mix(in srgb, #6d28d9 38%, var(--color-surface));
+  --accent-on-tint: color-mix(in srgb, #6d28d9 82%, var(--color-text-primary));
+}
+
+#bench {
+  font-family: var(--font-ui);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-lh);
+  color: var(--text-primary);
+  background: var(--surface);
+}
+#bench *, #bench *::before, #bench *::after { box-sizing: border-box; }
+#bench b { font-weight: var(--weight-semibold); }
+#bench code {
+  font-family: var(--font-mono);
+  font-weight: var(--type-mono-weight);
+  font-size: min(var(--type-mono-size), calc(1em * var(--type-mono-xh-ratio)));
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+}
+#bench h1, #bench h2, #bench h3, #bench p { margin: 0; }
+
+/* ---- voices ---- */
+.bp-appname {
+  font-family: var(--tc-chrome, var(--font-display));
+  font-weight: var(--weight-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.bp-eyebrow {
+  font-size: var(--type-label-sm-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: 0.09em;
+  color: var(--text-tertiary);
+}
+.bp-label {
+  font-size: var(--type-label-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  color: var(--text-secondary);
+}
+.bp-title-1 { font-size: var(--type-title-1-size); line-height: var(--type-title-1-lh); letter-spacing: var(--type-title-1-ls); font-weight: var(--weight-medium); }
+.bp-title-2 { font-size: var(--type-title-2-size); line-height: var(--type-title-2-lh); letter-spacing: var(--type-title-2-ls); font-weight: var(--weight-medium); }
+.bp-title-3 { font-size: var(--type-title-3-size); line-height: var(--type-title-3-lh); letter-spacing: var(--type-title-3-ls); font-weight: var(--weight-medium); }
+.bp-display-1, .bp-display-2, .bp-display-3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  text-transform: uppercase;
+}
+.bp-display-1 { font-size: var(--type-display-1-size); line-height: var(--type-display-1-lh); letter-spacing: var(--type-display-1-ls); }
+.bp-display-2 { font-size: var(--type-display-2-size); line-height: var(--type-display-2-lh); letter-spacing: var(--type-display-2-ls); }
+.bp-display-3 { font-size: var(--type-display-3-size); line-height: var(--type-display-3-lh); letter-spacing: var(--type-display-3-ls); }
+/* The reading voice keeps its own advance: a substitute prose face sets
+   narrower than the licensed one and the ch-based measure follows it, so
+   nothing here tracks it out. What must not reach it is the interface
+   face's tracking and word-spacing, which inherit from body; its own
+   tracking is the bench's prose trim, normal until you move it. */
+.bp-prose {
+  font-family: var(--font-prose);
+  font-size: var(--type-prose-size);
+  line-height: var(--type-prose-lh);
+  letter-spacing: var(--tc-prose-ls, normal);
+  word-spacing: normal;
+}
+.bp-prose p + p { margin-top: 0.85em; }
+.bp-cite {
+  font-family: var(--tc-chrome, var(--font-ui));
+  font-size: 0.62em;
+  color: var(--accent);
+  font-weight: var(--weight-medium);
+}
+
+/* ---- tabs ---- */
+.bp-tabs { display: inline-flex; align-items: center; gap: 2px; }
+.bp-tabs--pill {
+  padding: 2px;
+  border: var(--hairline);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+}
+.bp-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font: inherit;
+  font-size: var(--type-label-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.bp-tab--selected { background: var(--surface-card); color: var(--text-primary); box-shadow: var(--ring); }
+
+/* ---- buttons ---- */
+.bp-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: var(--type-button-size);
+  letter-spacing: var(--type-button-ls);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.bp-btn--primary { background: var(--accent); color: var(--text-on-accent); }
+.bp-btn--secondary { background: var(--surface-card); color: var(--text-primary); border-color: var(--color-border-strong); }
+.bp-btn--ghost { background: transparent; color: var(--text-secondary); }
+.bp-btn--ghost:hover, .bp-btn--secondary:hover { background: var(--color-wash-hover); }
+.bp-btn--sm { padding: 4px 10px; font-size: var(--type-control-sm-size); border-radius: var(--radius-control-sm); }
+.bp-btn--pill { border-radius: var(--radius-pill); }
+
+/* ---- inputs ---- */
+.bp-input {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-control-sm);
+  background: var(--color-field);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--type-control-size);
+  padding: 7px 10px;
+}
+.bp-input--sm { font-size: var(--type-control-sm-size); padding: 4px 8px; }
+.bp-input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.bp-selectwrap { position: relative; width: 100%; }
+.bp-select { padding-right: 26px; }
+.bp-selectwrap .bp-icon {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.bp-icon {
+  display: inline-block;
+  background: currentColor;
+  color: var(--text-tertiary);
+}
+.bp-icon--chevron {
+  width: 15px;
+  height: 15px;
+  /* The prototype masked an icon asset; the bench inlines the same chevron
+     so the page stays self-contained. */
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 6l4 4 4-4"/></svg>') center / contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 6l4 4 4-4"/></svg>') center / contain no-repeat;
+}
+
+/* ---- switch ---- */
+.bp-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.bp-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.bp-switch__track {
+  width: 32px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  position: relative;
+  transition: background var(--dur-fast) var(--ease-out);
+  flex: none;
+}
+.bp-switch--sm .bp-switch__track { width: 28px; height: 16px; }
+.bp-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-circle);
+  background: var(--surface-card);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.bp-switch--sm .bp-switch__thumb { width: 12px; height: 12px; }
+.bp-switch input:checked + .bp-switch__track { background: var(--accent); }
+.bp-switch input:checked + .bp-switch__track .bp-switch__thumb { transform: translateX(14px); }
+.bp-switch--sm input:checked + .bp-switch__track .bp-switch__thumb { transform: translateX(12px); }
+
+/* ---- fields + choices ---- */
+.bp-field { display: flex; flex-direction: column; gap: 5px; }
+.bp-field__label {
+  font-size: var(--type-label-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  color: var(--text-secondary);
+}
+.bp-field__hint { font-size: var(--type-caption-size); line-height: var(--type-caption-lh); color: var(--text-tertiary); }
+.bp-choice { display: flex; align-items: flex-start; gap: 9px; cursor: pointer; font-size: var(--type-body-sm-size); }
+.bp-choice__body { display: flex; flex-direction: column; gap: 2px; }
+.bp-choice__desc { color: var(--text-tertiary); font-size: var(--type-caption-size); }
+
+/* ---- panels + cards + rows ---- */
+.bp-panel {
+  background: var(--surface-card);
+  border: var(--hairline);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+.bp-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: var(--hairline);
+}
+.bp-panel__title {
+  font-size: var(--type-label-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+.bp-panel__sub { font-size: var(--type-caption-size); color: var(--text-tertiary); }
+.bp-panel__body { padding: 14px 16px; }
+.bp-rows { display: flex; flex-direction: column; }
+.bp-rows--inset { padding: 14px 16px; gap: 18px; }
+.bp-card {
+  background: var(--surface-card);
+  border: var(--hairline);
+  border-radius: var(--radius-card);
+  padding: var(--card-pad);
+}
+
+/* ---- badges + tags ---- */
+.bp-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: var(--hairline);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  font-size: var(--type-caption-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.bp-badge--sm { padding: 1px 7px; font-size: var(--type-micro-size); }
+.bp-badge--success { background: var(--success-tint); color: var(--color-success-on-tint); border-color: transparent; }
+.bp-badge--warning { background: var(--color-warning-tint); color: var(--color-warning-on-tint); border-color: transparent; }
+.bp-badge--evidence { background: var(--color-evidence-tint); color: var(--color-evidence-on-tint); border-color: transparent; }
+.bp-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: var(--hairline);
+  padding: 3px 10px;
+  font-size: var(--type-body-sm-size);
+  color: var(--text-secondary);
+}
+.bp-tag--selected { background: var(--accent-tint); border-color: var(--accent-border); color: var(--accent-on-tint); }
+
+/* ---- menu items (section nav) ---- */
+.bp-menuitem {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-control-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--type-body-sm-size);
+}
+.bp-menuitem:hover { background: var(--color-wash-hover); }
+.bp-menuitem--selected { background: var(--color-wash-selected); color: var(--text-primary); }
+
+/* ---- confidence meter ---- */
+.bp-conf { display: flex; flex-direction: column; gap: 6px; }
+.bp-conf__bars { display: flex; gap: 3px; }
+.bp-conf__seg { height: 4px; flex: 1; border-radius: 2px; background: var(--color-border); }
+.bp-conf__seg--on { background: var(--accent); }
+.bp-conf__label { display: flex; justify-content: space-between; gap: 10px; font-size: var(--type-caption-size); color: var(--text-tertiary); }
+.bp-conf__level {
+  font-variant-caps: var(--type-caps);
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+/* ---- source list ---- */
+.bp-source { display: flex; gap: 12px; font-family: var(--tc-chrome, var(--font-ui)); }
+.bp-source__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-mark);
+  background: var(--surface-muted);
+  border: var(--hairline);
+  font-size: var(--type-micro-size);
+  color: var(--text-secondary);
+}
+.bp-source__body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bp-source__title { font-size: var(--type-body-sm-size); font-weight: var(--weight-medium); }
+.bp-source__meta { display: flex; gap: 6px; font-size: var(--type-caption-size); color: var(--text-tertiary); }
+.bp-source__quote {
+  font-family: var(--font-prose);
+  font-size: var(--type-prose-sm-size);
+  line-height: var(--type-prose-sm-lh);
+  letter-spacing: var(--tc-prose-ls, normal);
+  word-spacing: normal;
+  color: var(--text-secondary);
+  padding-left: 10px;
+  border-left: 2px solid var(--signal-border);
+}
+
+/* ---- tables ---- */
+.bp-table { width: 100%; border-collapse: collapse; font-size: var(--type-body-sm-size); }
+.bp-table--inset { margin: 0; }
+.bp-table__h {
+  text-align: left;
+  padding: 8px 14px;
+  font-size: var(--type-label-sm-size);
+  font-variant-caps: var(--type-caps);
+  letter-spacing: var(--type-label-ls);
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  border-bottom: var(--hairline);
+}
+.bp-table__h--num, .bp-table__c--num { text-align: right; font-variant-numeric: tabular-nums; }
+.bp-table__r + .bp-table__r .bp-table__c { border-top: var(--hairline); }
+.bp-table__c { padding: 9px 14px; vertical-align: baseline; }
+
+/* ---- code ---- */
+.bp-code {
+  font-family: var(--font-mono);
+  font-weight: var(--type-mono-weight);
+  font-size: min(var(--type-mono-size), calc(var(--type-body-sm-size) * var(--type-mono-xh-ratio)));
+  line-height: var(--type-mono-lh);
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+  color: var(--text-primary);
+}
+.bp-code .c, .bp-code em {
+  font-style: italic;
+  font-weight: var(--type-mono-cursive-weight);
+  color: var(--text-tertiary);
+}
+#bench code em { font-style: italic; font-weight: var(--type-mono-cursive-weight); color: var(--text-tertiary); }
+
+/* ---- focus pill hover (the prototype used a runtime style-hover) ---- */
+[data-focuspill]:hover { opacity: 1 !important; }
+
+/* The role specimens set their own voice: the interface tracking and word
+   correction inherited from body must not shape a mono or prose specimen,
+   nor a display sample, whose word space is its own size's. A mono
+   specimen carries the mono tracking; a prose specimen carries the bench's
+   prose trim (--tc-prose-ls, 0 until you move it), which the
+   main specimen's inline declaration continues to override. */
+[data-wrole="mono"] {
+  letter-spacing: var(--type-mono-tracking);
+  word-spacing: normal;
+}
+[data-wrole="prose"] {
+  letter-spacing: var(--tc-prose-ls, normal);
+  word-spacing: normal;
+}
+.bp-display-1, .bp-display-2, .bp-display-3 {
+  word-spacing: normal;
+}

@@ -1,0 +1,110 @@
+# Xiaomi MiMo Code — provider contract
+#
+# What was measured, against what:
+#   - The shipped artifact is the pinned @mimo-ai/cli 0.1.13 npm wrapper
+#     (the image installs it; its launcher picks the vendored platform
+#     binary for the host CPU at runtime, including the x64 baseline
+#     fallback for CPUs without AVX2). Its runtime shape was measured in a
+#     real private tmux pane at a non-root install prefix with the same
+#     node interpreter path the image carries (/usr/local/bin/node); the
+#     launch path below is the deployment's configured executable.
+#   - The official native installer artifact (~/.mimocode/bin/mimo, a
+#     133,896,320-byte ELF, sha256 bd6c0621…) is a DIFFERENT build from the
+#     vendored platform binary (134,195,328 bytes, sha256 dcc98102…): same
+#     version string, different bytes. It is not the shipped artifact and
+#     none of its observations transfer.
+#   - Interactive RENDERING was measured 2026-08-23 in a private tmux
+#     namespace on the authenticated user home (no prompt was ever
+#     submitted; no input injection is claimed). Input delivery and the
+#     rest of interactive behaviour remain unmeasured, per the wall below.
+
+provider: mimo
+version_tested: "0.1.13"
+measured_on: "2026-08-23"
+
+runtime_compatibility_probe:
+  command: ["--help"]
+  required_flags: ["--trust", "--yolo"]
+  scope: "Credential-free startup and launch syntax only."
+  does_not_remeasure: "Historical presentation, identity, input, or lifecycle observations."
+  side_effects: >
+    Help creates SQLite, logs, and cache files. The daily probe isolates
+    HOME and XDG config/data/state/cache in disposable tmpfs without network
+    access or mounted provider credentials; no persisted state is changed.
+
+executable:
+  # The pane process is the Node launcher; /proc/exe is the interpreter and
+  # cannot distinguish MiMo from any other Node process. Pane identity rests
+  # on the full pane-identity tuple, never on the executable.
+  launch_path: "/usr/local/bin/mimo"
+  launch_target: "/usr/local/lib/node_modules/@mimo-ai/cli/bin/mimo"
+  proc_exe: "/usr/local/bin/node"
+  proc_cmdline: "node /usr/local/bin/mimo --trust"
+  interpreted: true
+  usable_runtime_executable_evidence: false
+  child_process:
+    # Measured in the pane: the launcher spawnSyncs the vendored platform
+    # binary as a child in the same process group and session. The real CLI
+    # is that child; the pane PID Deck observes is only its launcher.
+    exe: "/usr/local/lib/node_modules/@mimo-ai/cli/bin/.mimocode"
+    cmdline: "/usr/local/lib/node_modules/@mimo-ai/cli/bin/.mimocode --trust"
+    same_pgid_and_sid_as_pane: true
+
+identity:
+  contract: fresh-relaunch-only
+  session_flag_present: true
+  trusted_identity_capture: false
+  provider_state_read_by_deck: false
+  provider_output_read_by_deck: false
+
+launch:
+  new_session_args: ["--trust"]
+  operator_bypass_args: ["--yolo"]
+  resume_args: null
+
+presentation:
+  # Measured 2026-08-23 (see header): the TUI paints a centered card and
+  # letterboxes itself. Painted columns never reach column 0 at any tested
+  # pane width (200/120/80 columns; the card's left edge lands at 64/24/23),
+  # and the rows above and below the card are left unpainted too.
+  letterboxed_tui: true
+  painted_card_ground: "#1E1E1E"
+  measured_card_fg: ["#EEEEEE", "#A0A0A0", "#808080"]
+  measured_accent: "#FB8147"
+  measured_warm_gold: "#E8DAB2"
+  # MiMo prints its status line on the unpainted ground, so the terminal
+  # background is visible beside and around the card at every width.
+  status_line_printed_on_unpainted_ground: true
+  # The web terminal therefore pins this provider to its measured palette
+  # (web/src/terminal/provider-theme.ts): the unpainted cells are the
+  # terminal's canvas, and painting them the theme's colour reads as a
+  # gutter around the card. Painted provider cells are transported
+  # untouched; Deck never alters what MiMo drew.
+  terminal_palette: provider-measured
+
+session_storage:
+  config: "~/.config/mimocode"
+  data: "~/.local/share/mimocode"
+  state: "~/.local/state/mimocode"
+  cache: "~/.cache/mimocode"
+  contents_read_by_deck: false
+
+injection:
+  # Unmeasured: no input was ever delivered to a MiMo prompt (the 2026-08-23
+  # rendering pass observed only). These close only through an authenticated
+  # tmux conformance run (the Phase 0 spike), and the descriptor encodes
+  # nothing until then.
+  bracket_paste: unmeasured
+  submit_sequence: unmeasured
+  multiline: unmeasured
+  active_turn_input: unmeasured
+  verified: false
+
+exit:
+  sigterm_exits: unmeasured
+  forced_signal: SIGKILL
+
+containment:
+  process_tree: launcher-plus-vendored-binary-child
+  process_tree_verified: true
+  group_kill_survivors: unmeasured

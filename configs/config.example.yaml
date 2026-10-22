@@ -1,0 +1,271 @@
+# Noisefloor Deck — example configuration.
+# Copy to config.yaml, edit, and pass with -config. Precedence: compiled
+# defaults, then this file, then environment variables. Every setting has an
+# env name derived from its YAML path: NOISEDECK_ + the path uppercased with
+# underscores — server.bind is NOISEDECK_SERVER_BIND, tmux.session_prefix is
+# NOISEDECK_TMUX_SESSION_PREFIX. Lists are comma-separated in the environment.
+#
+# OIDC's session secret is env-only (NOISEDECK_AUTH_SESSION_SECRET) and has no
+# key in this file, so it can never be committed or backed up with the rest
+# of the configuration; putting auth.session_secret here is rejected. Password
+# mode generates and persists its own independent signing secret.
+
+server:
+  # Bind loopback by default. A non-loopback bind is refused unless
+  # authentication is configured.
+  bind: "127.0.0.1:8837"
+
+  # Origins permitted to make state-changing requests and open a WebSocket.
+  # Strict string match, no wildcards — so both names a person types for
+  # this machine are listed; the IP alone refuses every write from
+  # http://localhost.
+  allowed_origins:
+    - "http://127.0.0.1:8837"
+    - "http://localhost:8837"
+
+# Optional private previews of your projects' dev servers. Disabled when empty.
+# Hosted mode requires HTTPS on Deck and a separate preview domain.
+# Target registration changes require a restart only for static targets;
+# managed registrations and app source edits do not. The local launcher needs
+# no Deck credentials.
+project_previews:
+  bind: ""
+  # Empty chooses $HOME/.local/state/noisedeck/preview.sock when enabled.
+  # Custom paths need a private parent directory owned by the Deck user.
+  metadata_socket: ""
+  deck_origin: ""
+  unconfined: false
+  targets: []
+  # Example after configuring DNS/TLS and choosing unique strict dev ports:
+  # bind: "127.0.0.1:8840"
+  # deck_origin: "https://deck.example.com"
+  # unconfined: true
+  # targets:
+  #   - project_id: "ID from Deck's authenticated project registry"
+  #     origin: "https://shop.example.net"
+  #     upstream: "127.0.0.1:5173"
+  # Alternatively, for Deck reached over loopback HTTP (no DNS or TLS):
+  # loopback: true
+  # loopback_port: 8840
+  # unconfined: true
+  # port_min: 15000
+  # port_max: 15007
+  # Leave bind and deck_origin empty; all server.allowed_origins must be
+  # loopback HTTP origins. Do not combine with base_domain or static targets.
+
+auth:
+  # "none", "password", "oidc", or "trusted_proxy". "builtin" remains a
+  # deprecated oidc alias during migration. OIDC uses single-user
+  # Google OIDC; the full boundary is in internal/auth/doc.go. Password is the
+  # secure default and generates a bootstrap credential on first boot.
+  mode: "password"
+
+  google:
+    # The OAuth web client for this deployment. The client SECRET is
+    # env-only: NOISEDECK_AUTH_GOOGLE_CLIENT_SECRET (like NOISEDECK_AUTH_SESSION_SECRET,
+    # it must never live in a file that gets committed or backed up).
+    client_id: ""
+    # The EXACT registered callback. https in production; http only on a
+    # loopback IP. Never derived from request headers.
+    redirect_url: ""
+    # Your verified Google account. Exactly one email signs
+    # in; changing or adding identities is a recorded decision.
+    allowed_email: ""
+
+  trusted_proxy:
+    # Only these source addresses may assert a proxy identity, and inbound
+    # identity headers are stripped before it is honored.
+    addresses: []
+    identity_header: "X-Forwarded-User"
+
+# Finish harness login transports only reviewed native localhost callbacks.
+# The instance belongs to one person; this is not a multi-user auth broker.
+harness_login:
+  enabled: true
+  # Required in trusted_proxy mode: exact identity supplied by the trusted
+  # proxy for this instance's one user. Empty disables callback handoff.
+  trusted_proxy_identity: ""
+
+database:
+  # Must be on a local filesystem with working SQLite locking — never a CIFS
+  # or NFS mount.
+  path: "./run/noisedeck.db"
+  busy_timeout: "5s"
+  # Exclusive backend lock. When omitted it is derived as
+  # "noisedeck.lock" beside database.path, keeping the lock on the same
+  # filesystem as the state it guards.
+  # lock_path: "./run/noisedeck.lock"
+
+tmux:
+  # Dedicated socket, separate from any other tmux server on the host. The
+  # directory must be owned by the runtime user with mode 0700.
+  socket_path: "./run/tmux/noisedeck.sock"
+  session_prefix: "noisedeck-"
+  # tmux stamps history-limit when a pane is created. Existing panes keep their
+  # birth limit; an explicit value here or in NOISEDECK_TMUX_SCROLLBACK_LINES
+  # overrides the default without being clamped.
+  scrollback_lines: 2000
+
+projects:
+  # Projects may only be registered beneath these roots, after symlink
+  # resolution.
+  allowed_roots:
+    - "/workspace"
+
+reconciler:
+  # Default period 15s; worst-case display objective 60s.
+  interval: "15s"
+
+taskmaster:
+  # Pinned, preinstalled noise host — built from a pinned Tasks ref in
+  # the image (see Dockerfile). A dev host can stage the same package with
+  # a root `make noise-tasks-package` — Tasks 2.5 packaging installs a
+  # setuid worktree broker and demands a root-owned 0700 staging tree —
+  # then install that tree under /usr/local as a
+  # trusted host operation. Runtime package installation is forbidden.
+  # Generation (`noise tasks generate`) auto-selects its backend:
+  # the Anthropic API when
+  # ANTHROPIC_API_KEY is non-empty, otherwise the bundled claude CLI
+  # (subscription auth). NOISE_TASKS_PROVIDER=api|claude-cli forces one;
+  # NOISETASK_PROVIDER remains its migration-plan-gated compatibility alias.
+  # Neither available yields a local refusal in the run record. Reads never
+  # need either.
+  executable: "/usr/local/bin/noise"
+
+providers:
+  # Executables must be absolute when set; when omitted they are resolved
+  # from PATH once at startup, and a provider absent from PATH is marked
+  # unavailable with a direct diagnostic rather
+  # than being a configuration error. Expected per-provider behaviour is
+  # measured in docs/provider-contracts/.
+  # Claude Code resolves from PATH: the image installs it at
+  # /usr/local/bin/claude, and the native installer at ~/.local/bin/claude.
+  claude: {}
+  # Command Code reports its native session UUID through the documented
+  # SessionStart hook. Provisioning installs the hook in the persisted config.
+  command_code:
+    executable: "/usr/local/bin/command-code"
+    hook_config: "~/.commandcode/settings.json"
+  # hook_config names the provider config file carrying the SessionStart
+  # identity hook. Provisioning installs the hook; Deck never
+  # writes these files and must verify the hook before every launch or
+  # resume, refusing when it is missing or malformed.
+  codex:
+    executable: "/usr/local/bin/codex"
+    hook_config: "~/.codex/hooks.json"
+  # Devin's documented SessionStart hook is also the exact-resume attestation:
+  # a resume candidate stays provisional unless it reports source=resume and
+  # the requested native id.
+  devin:
+    executable: "/usr/local/bin/devin"
+    hook_config: "~/.config/devin/config.json"
+  kimi:
+    executable: "/usr/local/bin/kimi"
+    hook_config: "~/.kimi-code/config.toml"
+  # Kilo allocates sessions lazily and reports identity through the
+  # provisioning-owned global plugin.
+  kilo:
+    executable: "/usr/local/bin/kilo"
+    hook_config: "~/.config/kilo/plugin/noisedeck-provider-hook.js"
+  # MiMo Code has no trusted native identity capture in this release.
+  # Recovery relaunches a fresh interactive CLI instead of claiming resume.
+  mimo:
+    executable: "/usr/local/bin/mimo"
+  # opencode's identity arrives through a provisioning-installed plugin file
+  # (docs/provider-contracts/opencode.yaml): hook_config names that file.
+  opencode:
+    executable: "/usr/local/bin/opencode"
+    hook_config: "~/.config/opencode/plugins/noisedeck-provider-hook.js"
+  # Grok Build is fresh-relaunch-only: no identity hook is provisioned and
+  # Deck issues no resume argv. Authentication (browser sign-in) remains
+  # managed by you in ~/.grok; the npm package bootstraps its binary into
+  # ~/.grok/bin on first run.
+  grok:
+    executable: "/usr/local/bin/grok"
+  # Cursor Agent is fresh-relaunch-only: no identity hook is provisioned and
+  # Deck issues no resume argv. Launch passes --trust for the workspace; the
+  # login wall is managed by you in ~/.cursor.
+  cursor:
+    executable: "/usr/local/bin/cursor-agent"
+  # Qwen Code is fresh-relaunch-only: no identity hook is provisioned and
+  # Deck issues no resume argv. Authentication remains managed by you in
+  # ~/.qwen.
+  qwen:
+    executable: "/usr/local/bin/qwen"
+  # Qoder is fresh-relaunch-only: no identity hook is provisioned and Deck
+  # issues no resume argv. Authentication remains managed by you in ~/.qoder;
+  # note Qoder also appends its local-files block to the global git ignore
+  # at ~/.config/git/ignore on first run.
+  qoder:
+    executable: "/usr/local/bin/qoder"
+  # pi allocates its own session id and reports it through the
+  # provisioning-owned extension hook (docs/provider-contracts/pi.yaml):
+  # hook_config names that file.
+  pi:
+    executable: "/usr/local/bin/pi"
+    hook_config: "~/.pi/noisedeck-provider-hook.js"
+  # The shell utility provider: identity-none, never resumable. No
+  # hook_config — its contract does not use one.
+  shell:
+    executable: "/bin/bash"
+
+experiments:
+  # Default-off capacity-routing experiment. This process-capability control
+  # surface is explicitly unconfined and provides no identity, custody, or
+  # isolation claim.
+  unconfined_capacity_routing: false
+  # Default-off font-substitution bench: serves /bench.html behind the
+  # ordinary browser authentication. Off, the path 404s like any unknown one.
+  font_bench: false
+  # Default-off dev preview: reverse-proxies a Vite dev server at /__dev/,
+  # behind the ordinary browser authentication, so a frontend change is
+  # visible on a RUNNING deployment without rebuilding the embedded assets
+  # and replacing the container (which terminates every tmux session and
+  # provider). Off, the path 404s like any unknown one.
+  #
+  # It is same-origin with the app on purpose: the session cookie is
+  # host-only (the __Host- prefix in production forbids a Domain attribute
+  # outright) and Path=/, so a second hostname receives neither the session
+  # cookie nor the OIDC transaction cookie: it would need its own sign-in,
+  # and under oidc its own registered callback, since auth.google.redirect_url
+  # is a single value.
+  # Because it is same-origin, allowed_origins, the OIDC redirect_url, and
+  # the reverse proxy in front of the deployment all stay untouched.
+  #
+  # This route is the most permissive surface Deck mounts: it serves project
+  # source, executes it with your authority, and runs under a CSP
+  # that admits inline and eval'd script. Leave it off except while
+  # deliberately working on the frontend.
+  #
+  #   cd web
+  #   NOISEDECK_DEV_PREVIEW_BASE=/__dev/ \
+  #   NOISEDECK_DEV_PREVIEW_HOST=deck.example.com \
+  #   NOISEDECK_DEV_PREVIEW_TLS=1 pnpm dev
+  #
+  # then open https://<origin>/__dev/ in a browser already signed in.
+  dev_preview: false
+  # The dev server to forward to. Must be a loopback IP:port — the route
+  # carries your live session, so it may only ever reach a process
+  # on this host. web/vite.config.ts pins the port with strictPort.
+  dev_preview_upstream: "127.0.0.1:5173"
+
+sealed:
+  # Encrypted state. When true, boot refuses to
+  # serve unless every store Deck writes to is backed by dm-crypt or
+  # gocryptfs, verified from the container's own mount table or through the
+  # host preflight's launch-bound report at report_path. When false the same
+  # check runs and only logs. The profile names the layout the preflight
+  # qualified: shared-host (gocryptfs owned by the partner uid, /tmp on
+  # disk under it) or own-host (whole-disk LUKS, tmpfs /tmp).
+  require_encrypted_state: false
+  profile: shared-host
+  # Personal permits ordinary swap; paranoid requires verified encrypted swap.
+  # Independent of the filesystem profile.
+  swap_policy: personal
+  report_path: /run/noisedeck/sealed-state/report.json
+
+logging:
+  # Identifiers and state transitions only — never prompt bodies, terminal
+  # contents, environment secrets, or auth material.
+  level: "info"
+  format: "json"

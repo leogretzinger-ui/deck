@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+expected=${NOISEDECK_AUTH_MODE:?NOISEDECK_AUTH_MODE must be rendered explicitly}
+if [ "$expected" = builtin ]; then
+  expected=oidc
+fi
+
+headers=$(mktemp)
+trap 'rm -f "$headers"' EXIT HUP INT TERM
+set --
+base=http://127.0.0.1:8837
+if [ -n "${NOISEDECK_SERVER_UNIX_SOCKET:-}" ]; then
+  set -- --unix-socket "$NOISEDECK_SERVER_UNIX_SOCKET"
+  base=http://localhost
+fi
+curl "$@" --silent --output /dev/null --dump-header "$headers" "$base/auth/session"
+actual=$(sed -n 's/^[Xx]-[Nn]oisedeck-[Aa]uth-[Mm]ode:[[:space:]]*\([^[:space:]\r]*\).*/\1/p' "$headers" | tail -n 1)
+if [ "$actual" != "$expected" ]; then
+  echo "auth-mode healthcheck: running mode '$actual' does not match rendered mode '$expected'" >&2
+  exit 1
+fi
+
+curl "$@" --fail --silent --output /dev/null "$base/readyz"
