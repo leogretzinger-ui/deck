@@ -585,7 +585,7 @@ func (m *Manager) recoverAdmitted(ctx context.Context, id, suppliedWorkDir strin
 	}
 	tempReady = tempDir != ""
 	if tempReady {
-		extraEnv = append(extraEnv, "TMPDIR="+tempDir)
+		extraEnv = append(extraEnv, "TMPDIR="+tempDir, "NOISEDECK_ATTENTION_DIR="+tempDir)
 	}
 	extraEnv = append(extraEnv, hookDiagnosticsEnvironment(tempDir)...)
 	if hookErr := writeProvisionedHookSettings(desc, hookSettingsPath); hookErr != nil {

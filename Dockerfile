@@ -387,6 +387,7 @@ RUN case "${TARGETARCH}" in \
 # The SessionStart hook receiver, first-boot provisioner, and core bootstrap.
 COPY --from=go-build /out/noisedeck-provision /usr/local/bin/noisedeck-provision
 COPY deploy/provider-hook/noisedeck-provider-hook /usr/local/bin/noisedeck-provider-hook
+COPY deploy/provider-hook/noisedeck-attention-hook /usr/local/bin/noisedeck-attention-hook
 COPY deploy/provider-hook/noisedeck-codex-identity-hook /usr/local/bin/noisedeck-codex-identity-hook
 COPY deploy/provider-hook/noisedeck-hook-diagnostics /usr/local/bin/noisedeck-hook-diagnostics
 COPY deploy/provider-hook/noisedeck-bootstrap /usr/local/bin/noisedeck-bootstrap
@@ -397,7 +398,7 @@ COPY deploy/skills/install_skills.py /usr/local/lib/noisedeck/install_skills.py
 COPY deploy/skills/ /opt/noisedeck/skills/
 COPY deploy/mempalace/probe_a2a_receive.py deploy/mempalace/probe_a2a_claude.py deploy/mempalace/probe_a2a_kimi.py deploy/mempalace/probe_a2a_codex.py deploy/mempalace/probe_a2a_opencode_plugin.py /usr/local/lib/noisedeck/a2a-probe/
 COPY deploy/mempalace/hooks/ /usr/local/lib/noisedeck/a2a-probe/hooks/
-RUN chmod 0555 /usr/local/bin/noisedeck-provision /usr/local/bin/noisedeck-provider-hook /usr/local/bin/noisedeck-codex-identity-hook \
+RUN chmod 0555 /usr/local/bin/noisedeck-attention-hook /usr/local/bin/noisedeck-provision /usr/local/bin/noisedeck-provider-hook /usr/local/bin/noisedeck-codex-identity-hook \
     /usr/local/bin/noisedeck-hook-diagnostics \
     /usr/local/bin/noisedeck-bootstrap /usr/local/bin/noisedeck-auth-mode-healthcheck /usr/local/bin/noisedeck-deployment-host-guard \
     /usr/local/lib/noisedeck/configure-mempalace.py /usr/local/lib/noisedeck/install_skills.py \

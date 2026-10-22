@@ -1,0 +1,212 @@
+#!/usr/bin/python3
+"""Content-free native turn hook adapter. Always quiet; never answers approvals.
+
+Invocation: noisedeck-attention-hook codex|claude|codex-notify. The existing private capture
+URL/socket/token and generation-owned attention directory are inherited from Deck's launch.
+No provider config, hook trust, transcripts, or credentials are read or written.
+"""
+import fcntl
+import hashlib
+import http.client
+import json
+import os
+import socket
+import stat
+import sys
+import time
+import urllib.parse
+import uuid
+
+MAX_INPUT = 1024 * 1024
+MAX_TOOLS = 128
+
+
+def digest(value):
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+def transition(state, event, provider):
+    """Return a content-free snapshot kind, or None for unsupported/stale input."""
+    if event.get("agent_id"):
+        return None
+    name = event.get("hook_event_name")
+    native = event.get("session_id")
+    turn_id = event.get("turn_id" if provider == "codex" else "prompt_id")
+    if name == "SessionEnd" and state.get("native") == digest(native or ""):
+        state.update(tools={}, stopped=True)
+        return "unknown"
+    if not isinstance(native, str) or not native or len(native) > 128:
+        return None
+    # No invented Claude turn IDs: absent native prompt_id remains unknown.
+    if not isinstance(turn_id, str) or not turn_id or len(turn_id) > 256:
+        return None
+    turn = digest(native + "\0" + turn_id)
+    if name == "UserPromptSubmit":
+        if turn == state.get("turn") or turn in state.get("closed", []):
+            return None
+        closed = (state.get("closed", []) + [state.get("turn", "")])[-128:]
+        state.update(turn=turn, native=digest(native), tools={}, closed=closed, stopped=False)
+        return "started"
+    if turn != state.get("turn") or digest(native) != state.get("native"):
+        return None
+    tools = state.setdefault("tools", {})
+    tool_id = event.get("tool_use_id")
+    tool = event.get("tool_name")
+    key = digest(tool_id) if isinstance(tool_id, str) and 0 < len(tool_id) <= 256 else None
+    if name == "PreToolUse":
+        if not key or not isinstance(tool, str) or not tool or len(tool) > 256:
+            return None
+        if key in tools:
+            return None
+        if len(tools) >= MAX_TOOLS:
+            return "unknown"
+        tools[key] = {"name": digest(tool), "pending": "input" if tool in ("AskUserQuestion", "request_user_input") else ""}
+        state["stopped"] = False
+    elif name == "PermissionRequest":
+        if not isinstance(tool, str):
+            return None
+        matches = [item for item in tools.values() if item["name"] == digest(tool)]
+        if len(matches) != 1:
+            # No tool_use_id in either pinned PermissionRequest schema.
+            return "unknown"
+        matches[0]["pending"] = "approval"
+    elif name in ("PostToolUse", "PostToolUseFailure", "PermissionDenied"):
+        if not key or key not in tools:
+            return None
+        del tools[key]
+    elif name == "Stop":
+        # ALL native Stop hooks run before the provider decides whether to
+        # continue. a2a or another hook may block it. Never call this completed.
+        return None
+    elif name == "NativeCompletion" or (provider == "claude" and name == "Notification" and event.get("notification_type") == "idle_prompt"):
+        if state.get("stopped"):
+            return None
+        state.update(stopped=True, tools={})
+        return "completed"
+    elif name in ("Interrupt", "StopFailure", "SessionEnd"):
+        state.update(stopped=True, tools={})
+        return "unknown"
+    else:
+        return None
+    pending = [item["pending"] for item in tools.values()]
+    return "approval" if "approval" in pending else "input" if "input" in pending else "working"
+
+
+class UnixHTTPConnection(http.client.HTTPConnection):
+    def __init__(self, path):
+        super().__init__("localhost", timeout=2)
+        self.path = path
+
+    def connect(self):
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.settimeout(self.timeout)
+        self.sock.connect(self.path)
+
+
+def deliver(payload, url, token, socket_path):
+    parsed = urllib.parse.urlsplit(url)
+    # The capture channel is local only. No redirection or ambient proxy use.
+    if parsed.scheme != "http" or parsed.hostname not in ("localhost", "127.0.0.1", "::1") or parsed.path != "/api/hooks/capture" or parsed.query:
+        return False
+    body = json.dumps(payload, separators=(",", ":"))
+    for attempt in range(3):
+        connection = UnixHTTPConnection(socket_path) if socket_path else http.client.HTTPConnection(parsed.hostname, parsed.port or 80, timeout=2)
+        try:
+            connection.request("POST", "/api/hooks/attention", body=body, headers={"Content-Type": "application/json", "X-Noisedeck-Hook-Token": token})
+            response = connection.getresponse()
+            if 200 <= response.status < 300:
+                return True
+            if response.status < 500:
+                return None  # permanent rejection must not poison later snapshots
+        except (OSError, http.client.HTTPException):
+            pass
+        finally:
+            connection.close()
+        if attempt < 2:
+            time.sleep(0.2)
+    return False
+
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] not in ("codex", "claude", "codex-notify"):
+        return
+    mode = sys.argv[1]
+    provider = "codex" if mode == "codex-notify" else mode
+    url = os.environ.get("NOISEDECK_SESSION_HOOK_URL", "")
+    token = os.environ.get("NOISEDECK_SESSION_HOOK_TOKEN", "")
+    directory = os.environ.get("NOISEDECK_ATTENTION_DIR", "")
+    if not url or len(token) != 32 or not directory:
+        return
+    info = os.lstat(directory)
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or stat.S_IMODE(info.st_mode) & 0o077:
+        return
+    raw = sys.argv[2].encode() if mode == "codex-notify" and len(sys.argv) == 3 else sys.stdin.buffer.read(MAX_INPUT + 1)
+    if len(raw) > MAX_INPUT:
+        return
+    event = json.loads(raw)
+    if not isinstance(event, dict):
+        return
+    if mode == "codex-notify":
+        if event.get("type") != "agent-turn-complete":
+            return
+        event = {"hook_event_name": "NativeCompletion", "session_id": event.get("thread-id"),
+                 "turn_id": event.get("turn-id"), "cwd": event.get("cwd")}
+    # Dedicated launch-owned directory, not mutable provider TMPDIR or home.
+    fd = os.open(os.path.join(directory, "attention.lock"), os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, "r+") as lock:
+        deadline = time.monotonic() + 8
+        while True:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    return
+                time.sleep(0.02)
+        path = os.path.join(directory, "attention.json")
+        try:
+            state_fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(state_fd) as existing:
+                state = json.load(existing)
+        except FileNotFoundError:
+            state = {}
+        def save():
+            temp = path + ".tmp"
+            fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(fd, "w") as output:
+                json.dump(state, output, separators=(",", ":"))
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temp, path)
+
+        kind = transition(state, event, provider)
+        if kind is not None:
+            sequence = state.get("sequence", 0) + 1
+            state["sequence"] = sequence
+            payload = {"session_id": event["session_id"], "cwd": event.get("cwd", ""), "sequence": sequence,
+                       "turn": state["turn"], "revision": uuid.uuid4().hex, "kind": kind}
+            # Retain starts and completion edges across outages; coalesce only
+            # intermediate snapshots of the same turn. Bound recovery history.
+            outbox = [item for item in state.get("outbox", []) if item["session_id"] == payload["session_id"]]
+            if outbox and outbox[-1]["turn"] == payload["turn"] and outbox[-1]["kind"] not in ("started", "completed"):
+                outbox.pop()
+            outbox.append(payload)
+            if len(outbox) > 128:
+                # Saturation falls back to the newest turn's start + snapshot.
+                start = next((item for item in reversed(outbox) if item["kind"] == "started"), None)
+                outbox = [start, payload] if start and start is not payload else [payload]
+            state["outbox"] = outbox
+            save()  # monotonic fence and content-free outbox before delivery
+        while state.get("outbox"):
+            if deliver(state["outbox"][0], url, token, os.environ.get("NOISEDECK_SESSION_HOOK_SOCKET", "")) is False:
+                break
+            state["outbox"].pop(0)
+            save()
+
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, TypeError, KeyError):
+        pass

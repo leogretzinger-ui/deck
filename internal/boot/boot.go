@@ -490,6 +490,7 @@ func Up(ctx context.Context, cfg *config.Config, log zerolog.Logger, opts ...UpO
 	// classification sees the durable loss marker rather than mistaking NULL
 	// identity for proof that the session was empty.
 	h.Server.Handle("POST /api/hooks/capture", hookCaptures.Handle())
+	h.Server.Handle("POST /api/hooks/attention", h.Sessions.AttentionHook())
 	go func() {
 		tick := time.NewTicker(time.Minute)
 		defer tick.Stop()

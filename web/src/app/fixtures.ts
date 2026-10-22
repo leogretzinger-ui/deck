@@ -687,6 +687,14 @@ export class FixtureApiClient implements ApiClient, FileApiClient, LaneApiClient
     if (job === undefined) throw new ApiError(404, "not_found", "clone job not found");
     return job;
   }
+  async acknowledgeCompletion(sessionID: string, generation: number, revision: string): Promise<void> {
+    const row = Object.values(fixtureSessions).flat().find(session => session.id === sessionID);
+    if (row?.generation === generation && row.completion_revision === revision) {
+      row.completion_unread = false;
+      if (new URLSearchParams(location.search).has("conversation-badges")) sessionStorage.setItem(`fixture-completion:${sessionID}`, revision);
+    }
+  }
+
   async listSessions(projectID: string): Promise<SessionSummary[]> {
     return (fixtureSessions[projectID] ?? [])
       .filter((session) => !this.removedSessions.has(session.id));

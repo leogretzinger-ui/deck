@@ -69,6 +69,7 @@ export interface ApiClient {
   // the repository has any other history.
   commitStarter(projectID: string, paths: readonly string[]): Promise<StarterCommitResult>;
   listSessions(projectID: string): Promise<SessionSummary[]>;
+  acknowledgeCompletion?(sessionID: string, generation: number, revision: string): Promise<void>;
   createSession(projectID: string, provider: string): Promise<SessionSummary>;
   // recoverSession is the user's explicit retry (POST recover): the
   // same row revives in place and the result's outcome names what

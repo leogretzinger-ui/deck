@@ -36,7 +36,8 @@ const sessionColumns = `id, project_id, provider, display_name, tmux_socket_path
 	resume_next_at, resume_series_started_at, resume_probation_until,
 	stop_requested_at, last_output_at, identity_capture_lost_at, boot_epoch, color,
 	controller_revision, automatic_recoveries, automatic_recovery_series_at,
-	generation_started_at, generation_resumed, native_store_root, workspace_stop_generation`
+	generation_started_at, generation_resumed, native_store_root, workspace_stop_generation,
+ attention_state, completion_revision, completion_seen`
 
 // Create inserts a new session in `starting` and appends AuditCreated.
 func (r *Repository) Create(ctx context.Context, s *Session) error {
@@ -1109,7 +1110,7 @@ func scanFrom(row scanner) (*Session, error) {
 		&captureLostAt, &s.BootEpoch, &s.Color, &s.ControllerRevision,
 		&s.AutomaticRecoveries, &recoverySeriesAt,
 		&generationStartedAt, &s.GenerationResumed,
-		&s.NativeStoreRoot, &s.WorkspaceStopGeneration)
+		&s.NativeStoreRoot, &s.WorkspaceStopGeneration, &s.AttentionState, &s.CompletionRevision, &s.CompletionSeen)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -1146,6 +1147,7 @@ func scanFrom(row scanner) (*Session, error) {
 		}
 		*col.dst = &t
 	}
+	s.CompletionUnread = s.CompletionRevision != "" && s.CompletionRevision != s.CompletionSeen
 	return &s, nil
 }
 

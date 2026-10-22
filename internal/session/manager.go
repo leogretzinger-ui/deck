@@ -415,7 +415,7 @@ func (m *Manager) create(ctx context.Context, spec CreateSpec,
 		return nil, errors.Join(tempErr, revokeErr, rowErr)
 	}
 	if tempDir != "" {
-		extraEnv = append(extraEnv, "TMPDIR="+tempDir)
+		extraEnv = append(extraEnv, "TMPDIR="+tempDir, "NOISEDECK_ATTENTION_DIR="+tempDir)
 	}
 	extraEnv = append(extraEnv, hookDiagnosticsEnvironment(tempDir)...)
 	if hookErr := writeProvisionedHookSettings(desc, launchSpec.HookSettingsPath); hookErr != nil {

@@ -2,6 +2,7 @@
 // small and server-backed; this layer only coordinates their lifetimes and the
 // browser-owned WebSocket/controller lease. It never interprets terminal
 // output or invents provider/session state.
+import { CompletionReads, conversationVisible } from "./completion-reads.ts";
 import { TutorialModel } from "./tutorial/model.ts";
 import { TutorialPanel } from "./tutorial/panel.ts";
 import { tutorialCatalog } from "./tutorial/lesson-files.ts";
@@ -171,6 +172,14 @@ export class LiveWorkspace {
   private chatIndex: ChatIndex | null = null;
   private chatIndexTimer: number | null = null;
   private selectedSessionID: string | null = null;
+  private readonly completionReads = new CompletionReads((id, generation, revision) =>
+    this.api.acknowledgeCompletion?.(id, generation, revision) ?? Promise.reject(new Error("unavailable")));
+  private readonly readCompletion = (): void => {
+    if (this.disposed || this.authRequired || this.connection !== "connected" || this.terminal === null) return;
+    const session = this.sidebarModel.groups.flatMap(group => group.sessions).find(row => row.id === this.selectedSessionID);
+    if (session?.generation !== this.statusModel?.session?.generation) return;
+    void this.completionReads.observe(session, conversationVisible(this.root), () => this.sidebar.render());
+  };
   private connection: ConnectionState = "disconnected";
   private attachmentProblem: AttachmentProblem | null = null;
   private statusTimer: number | null = null;
@@ -559,7 +568,7 @@ export class LiveWorkspace {
     // A backgrounded tab stops draining its socket, so the proxy drops it
     // to keep the CLI unblocked. The user did not choose
     // that, so coming back reconnects rather than asking.
-    this.reclaimOnFocus = () => this.maybeReclaim();
+    this.reclaimOnFocus = () => { this.maybeReclaim(); this.readCompletion(); };
     document.addEventListener("visibilitychange", this.reclaimOnFocus);
     window.addEventListener("focus", this.reclaimOnFocus);
     // The frame follows the VISUAL viewport so a software keyboard
@@ -635,6 +644,7 @@ export class LiveWorkspace {
     this.dockBoundaryCleanup?.();
     this.dockBoundaryCleanup = null;
     this.disposed = true;
+    this.completionReads.dispose();
     this.stopTutorialTimers();
     this.tutorial.dispose();
     this.starter.dispose();
@@ -1309,6 +1319,7 @@ export class LiveWorkspace {
     await this.lastSession.adopt();
     if (this.disposed || lifecycle !== this.lifecycle) return;
     this.outputActivity.reconcile();
+    this.readCompletion();
     this.syncTutorial();
     this.sidebarModel.selectedSessionID = this.selectedSessionID;
     this.sidebar.render();
@@ -1571,6 +1582,7 @@ export class LiveWorkspace {
       onAttached: () => {
         if (!current()) return;
         this.connection = "connected";
+        this.readCompletion();
         this.tutorial.resume();
         this.starter.resume();
         this.attachmentProblem = null;

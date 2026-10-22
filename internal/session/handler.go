@@ -38,6 +38,7 @@ func (h *Handler) Mount(handle func(pattern string, hd http.Handler), wrap func(
 	handle("GET /api/sessions/{id}", wrap(http.HandlerFunc(h.Get)))
 	handle("POST /api/sessions/{id}/rename", wrap(http.HandlerFunc(h.Rename)))
 	handle("POST /api/sessions/{id}/color", wrap(http.HandlerFunc(h.SetColor)))
+	handle("POST /api/sessions/{id}/completion/ack", wrap(http.HandlerFunc(h.AcknowledgeCompletion)))
 	handle("POST /api/sessions/{id}/stop", wrap(http.HandlerFunc(h.Stop)))
 	handle("POST /api/sessions/{id}/recover", wrap(http.HandlerFunc(h.Recover)))
 	handle("GET /api/sessions/{id}/screen", wrap(http.HandlerFunc(h.Screen)))

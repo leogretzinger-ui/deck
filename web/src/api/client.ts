@@ -594,6 +594,12 @@ export class HttpApiClient implements ApiClient, FileApiClient, LaneApiClient {
     }));
   }
 
+  async acknowledgeCompletion(sessionID: string, generation: number, revision: string): Promise<void> {
+    await readJSON<void>(await this.request(`/api/sessions/${encodeURIComponent(sessionID)}/completion/ack`, {
+      method: "POST", headers: this.mutationHeaders(), body: JSON.stringify({ generation, revision }),
+    }));
+  }
+
   async listSessions(projectID: string): Promise<SessionSummary[]> {
     return (await readJSON<SessionSummary[] | null>(
       await this.get(`/api/projects/${encodeURIComponent(projectID)}/sessions`),

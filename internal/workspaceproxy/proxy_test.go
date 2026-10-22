@@ -196,7 +196,7 @@ func TestForwardingKeepsGatewayBearersOutsideWorkload(t *testing.T) {
 }
 
 func TestProxyRejectsUnqualifiedAccessBeforeBackendBytes(t *testing.T) {
-	for _, kind := range []string{"missing grant", "unknown runtime", "closed runtime", "revoked during observation", "wrong peer UID", "internal path", "encoded internal path", "encoded slash", "security path", "hook path"} {
+	for _, kind := range []string{"missing grant", "unknown runtime", "closed runtime", "revoked during observation", "wrong peer UID", "internal path", "encoded internal path", "encoded slash", "security path", "hook path", "attention hook path"} {
 		t.Run(kind, func(t *testing.T) {
 			var reached atomic.Int32
 			socket := unixBackend(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { reached.Add(1); w.WriteHeader(200) }))
@@ -232,6 +232,8 @@ func TestProxyRejectsUnqualifiedAccessBeforeBackendBytes(t *testing.T) {
 				path = "/api/security/v1/state"
 			case "hook path":
 				path = "/api/hooks/capture"
+			case "attention hook path":
+				path = "/api/hooks/attention"
 			}
 			server := proxyServer(t, socket, uid, access, runtime)
 			response := request(t, server, "GET", path, strings.Repeat("a", 64))

@@ -104,6 +104,12 @@ const (
 // registry): the browser client reads these keys verbatim, and an untagged
 // struct would silently emit PascalCase the client cannot consume.
 type Session struct {
+	// Native hook facts are separate from lifecycle, recovery, and PTY activity.
+	AttentionState     string `json:"attention_state"`
+	CompletionRevision string `json:"completion_revision,omitempty"`
+	CompletionUnread   bool   `json:"completion_unread"`
+	CompletionSeen     string `json:"-"`
+
 	ID        string `json:"id"`
 	ProjectID string `json:"project_id"`
 	Provider  string `json:"provider"`

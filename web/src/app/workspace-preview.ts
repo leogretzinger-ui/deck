@@ -2,6 +2,7 @@
 // (app/fixtures.ts) for deterministic screenshots and interaction probes.
 // NOT the app entry — main.ts is. It is terminal-native: the terminal is the
 // only input surface, and there is no composer/outbox.
+import { CompletionReads, conversationVisible } from "./completion-reads.ts";
 import { GitHubConnectDialog } from "../github-connect/dialog.ts";
 import { TutorialModel } from "./tutorial/model.ts";
 import { TutorialPanel } from "./tutorial/panel.ts";
@@ -163,6 +164,31 @@ if (state.frame === "phone") {
 const root = document.querySelector<HTMLDivElement>("#app")!;
 root.innerHTML = workspaceLayout();
 
+// Explicit synthetic attention fixture; normal previews keep their existing marks.
+const badgesFixture = new URLSearchParams(location.search).has("conversation-badges");
+if (badgesFixture) {
+  const rows = Object.values(fixtureSessions).flat();
+  for (const [id, attention] of [["sess-2", "input"], ["sess-1", "approval"]] as const) {
+    const row = rows.find(session => session.id === id);
+    if (row) row.attention_state = attention;
+  }
+  const completed = rows.find(session => session.id === "sess-9");
+  if (completed) {
+    completed.provider = "claude";
+    completed.display_name = "finished response";
+    completed.completion_revision = "c".repeat(32);
+    completed.completion_unread = sessionStorage.getItem(`fixture-completion:${completed.id}`) !== completed.completion_revision;
+  }
+}
+const completionReads = new CompletionReads((id, generation, revision) => api.acknowledgeCompletion(id, generation, revision));
+const readPreviewCompletion = (): void => {
+  if (!badgesFixture) return;
+  const selected = sidebarModel.groups.flatMap(group => group.sessions).find(session => session.id === sidebarModel.selectedSessionID);
+  void completionReads.observe(selected, conversationVisible(root), () => sidebar.render());
+};
+document.addEventListener("visibilitychange", readPreviewCompletion);
+window.addEventListener("focus", readPreviewCompletion);
+
 // Sidebar.
 const sidebarModel = new SidebarModel(api, { onProvidersChanged: () => sidebar.renderNewSessionPicker() });
 // Title bar: the session identity left — the selected session's own name,
@@ -204,6 +230,7 @@ const syncTitlebarIdentity = (): void => {
       ? titlebarIdentity()
       : null;
   if (html !== null && identity.outerHTML !== html) identity.outerHTML = html;
+  readPreviewCompletion();
 };
 const openGitHubPreview = (): void => {
   const dialog = new GitHubConnectDialog(region(root, "modals"), {

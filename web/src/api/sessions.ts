@@ -3,6 +3,10 @@ export interface SessionSummary {
   project_id: string;
   provider: string;
   codex_login_helper?: boolean;
+  // Structured native hook facts; missing/unknown conveys no agent state.
+  attention_state?: "unknown" | "working" | "input" | "approval" | "idle";
+  completion_revision?: string;
+  completion_unread?: boolean;
   // display_name is the user's own label; empty renders the
   // provider. Metadata, never identity.
   display_name: string;

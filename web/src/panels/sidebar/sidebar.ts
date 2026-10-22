@@ -97,6 +97,13 @@ export type ChatMark = "live" | "unseen" | null;
 
 export function sessionMetaHtml(session: SessionSummary, streaming: boolean, chat: ChatMark = null): string {
   const spinning = streaming && isVerifiedRunningSession(session);
+  const agent = session.attention_state === "approval" ? "approval"
+    : session.attention_state === "input" ? "input"
+    : session.completion_unread === true && session.completion_revision ? "completed" : null;
+  const label = agent === "approval" ? "Agent requests approval" : agent === "input" ? "Agent requests input"
+    : "Unseen completed turn (response ended, not task success)";
+  const badge = agent === null ? "" : `<span data-conversation-badge="${agent}" role="img" aria-label="${label}" title="${label}"
+    class="mr-1.5 inline-flex h-3 w-3 flex-none items-center justify-center rounded-full ${agent === "completed" ? "text-accent" : "text-warning"}">${lucideIcon(agent === "completed" ? "circle-check" : "circle-help", 12)}</span>`;
   // A listed-but-unverified session carries the content-free warning dot:
   // the row says "needs attention"
   // without the list ever speaking a status word.
@@ -129,7 +136,7 @@ export function sessionMetaHtml(session: SessionSummary, streaming: boolean, cha
   const slot = chat === null
     ? trailing
     : `<span data-meta-slot class="inline-flex w-[26px] flex-none items-center justify-end overflow-hidden whitespace-nowrap">${trailing}</span>`;
-  return `${mark}${attention}${slot}`;
+  return `${badge}${mark}${attention}${slot}`;
 }
 
 // modKeyLabel maps the platform to the shortcut chip's label:
