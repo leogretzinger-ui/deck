@@ -5,6 +5,7 @@
 // collapse control, a PROJECTS list with session rows (each carrying an
 // inline new-session +), and centered Open Project / folder-picker modals
 // mounted in the workspace's modal region.
+import { SidebarWidth } from "./width.ts";
 import { providerDisplayName, sessionTileColorStyle } from "../../ui/session-identity.ts";
 import { effectiveProjectTint, operatorProjectColorKey } from "../../lib/session-colors.ts";
 import {
@@ -99,6 +100,7 @@ const AGENT_CHOICE = "\u0000agent-choice";
 type IdentityForm = { purpose: "settings" | "project" } | { purpose: "apply"; projectID: string; provider: string | null };
 
 export class Sidebar {
+  private width: SidebarWidth | null = null;
   private container: HTMLElement;
   private model: SidebarModel;
   // onProjectListRendered reports that the project rows were redrawn.
@@ -369,6 +371,9 @@ export class Sidebar {
     this.onConnectGitHub = onConnectGitHub;
     this.projectActions = projectActions;
     this.render();
+    const workspace = container.closest<HTMLElement>("[data-workspace]");
+    const handle = workspace?.querySelector<HTMLElement>("[data-sidebar-resize]");
+    if (handle && workspace && typeof ResizeObserver !== "undefined") this.width = new SidebarWidth(workspace, handle);
     if (typeof window !== "undefined") {
       this.metaTimer = window.setInterval(() => this.refreshSessionMeta(), 30_000);
       void this.loadLayout();
@@ -913,6 +918,7 @@ export class Sidebar {
 
   dispose(): void {
     this.disposed = true;
+    this.width?.dispose();
     ++this.githubReadGeneration;
     this.githubRepositories?.close();
     this.previewDialog?.close(false);
@@ -1103,6 +1109,7 @@ export class Sidebar {
     this.container.inert = this.collapsed;
     this.container.setAttribute("aria-hidden", this.collapsed ? "true" : "false");
     this.renderSidebarExpand(workspace);
+    this.width?.refresh();
     const m = this.model;
     this.applyDefaultExpansion();
     // Saved project colours re-apply on every draw: a refresh rebuilt the

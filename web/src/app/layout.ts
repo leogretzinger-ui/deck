@@ -23,9 +23,12 @@ export function workspaceLayout(): string {
            inside the shell's column flex, so the info bar sits below it
            as the last row. -->
       <div class="flex min-h-0 flex-1 items-stretch overflow-hidden">
-        <aside data-region="sidebar"
+        <aside data-region="sidebar" id="project-sidebar"
           class="flex h-full w-(--sidebar-w) flex-none flex-col overflow-hidden border-r border-border bg-sidebar-surface max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-30 max-md:w-[min(86vw,var(--sidebar-w))]">
         </aside>
+        <div data-sidebar-resize role="separator" aria-label="Sidebar width" aria-orientation="vertical"
+          aria-controls="project-sidebar" tabindex="0"
+          title="Drag to resize sidebar. Arrow keys resize; Shift for larger steps. Home/End: minimum/maximum. Enter or double-click: reset to 272 pixels."></div>
         <!-- The mobile sidebar overlays rather than compressing: as a flex
              sibling it left the terminal 118px of a 390px viewport. The
              scrim dismisses it and exists only while it is open. -->

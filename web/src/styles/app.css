@@ -5220,3 +5220,34 @@
 [data-viewport="narrow"] .dialog[data-assets-dialog] [data-assets-outcome-word] { min-width: 0; }
 [data-viewport="narrow"] .dialog[data-assets-dialog] .assets-chip-row .font-mono { font-size: min(var(--type-mono-size), calc(var(--type-caption-size) * var(--type-mono-xh-ratio))); }
 [data-viewport="narrow"] [data-assets-header] button > svg { width: 18px; height: 18px; }
+
+/* Zero layout width preserves the existing rail seam and collapse geometry. */
+[data-sidebar-resize] {
+  position: relative;
+  flex: none;
+  width: 0;
+  z-index: 10;
+  cursor: col-resize;
+  touch-action: none;
+}
+[data-sidebar-resize]::before {
+  content: "";
+  position: absolute;
+  inset: 0 -4px;
+}
+[data-sidebar-resize]:hover::before,
+[data-sidebar-resize]:focus-visible::before,
+[data-sidebar-resizing] [data-sidebar-resize]::before {
+  background: var(--color-border-strong);
+}
+[data-sidebar-resize]:focus-visible { outline: none; }
+[data-sidebar-resizing], [data-sidebar-resizing] * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+[data-sidebar-resize][hidden],
+[data-collapsed="true"] [data-sidebar-resize],
+[data-viewport="narrow"] [data-sidebar-resize] { display: none; }
+@media (width < 48rem) {
+  [data-sidebar-resize] { display: none; }
+}

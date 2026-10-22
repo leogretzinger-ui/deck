@@ -52,3 +52,17 @@ browser overlay is configured, the resolver connects to it.
 Keep accessible names, DOM hooks, and preview fixtures aligned when changing
 markup. Update the matching browser probe in the same change. See
 [`docs/fonts.md`](../docs/fonts.md) for licensed font setup.
+
+## Sidebar width
+
+On desktop, drag the sidebar's right edge to resize it. Focus the divider
+with Tab to use Left/Right arrows (8px, or 32px with Shift), Home/End for
+minimum/maximum, and Enter to reset. Double-clicking the divider also resets
+to 272px. Width is saved in this browser; mobile keeps its existing drawer.
+The desktop range is 220–480px, capped to leave at least 480px for the
+workspace. Temporarily narrowing the window does not erase the chosen width.
+
+After building, run `NOISE_BROWSER_WS=<pinned-service-url> node tools/sidebar-width-probe.mjs`
+for synthetic browser checks, including real xterm refits. The probe uses
+an ephemeral loopback server and saves screenshots under `.deck/assets/`
+at the repository root.
